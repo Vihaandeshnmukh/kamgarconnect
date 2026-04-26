@@ -1,0 +1,35 @@
+{
+  "name": "kamgar-connect",
+  "version": "1.0.0",
+  "description": "Kamgar Connect — Find Workers Instantly, No Chowk Waits!",
+  "main": "server.js",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "kamgar",
+    "workers",
+    "daily-wage",
+    "india"
+  ],
+  "author": "Kamgar Connect",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.18.2",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.4.1",
+    "node-fetch": "^2.7.0",
+    "pouchdb": "^9.0.0",
+    "socket.io": "^4.8.3",
+    "twilio": "^5.13.1"
+  }
+}

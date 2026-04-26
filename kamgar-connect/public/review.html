@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave a Review — Kamgar Connect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { background: var(--bg-base); color: white; padding-top: 80px; }
+    .review-container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .worker-info {
+      background: var(--bg-surface);
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      margin-bottom: 30px;
+    }
+    .worker-info h2 { font-size: 1.5rem; margin-bottom: 5px; color: var(--accent); }
+    .worker-info p { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
+    
+    .rating-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-direction: row-reverse;
+    }
+    .star {
+      font-size: 44px;
+      color: #3f3f46;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    /* Magic CSS for right-to-left star hover/selection */
+    .rating-container .star:hover,
+    .rating-container .star:hover ~ .star,
+    .rating-container .star.selected,
+    .rating-container .star.selected ~ .star {
+      color: var(--orange-primary);
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .tag-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag-btn.active {
+      background: rgba(249, 115, 22, 0.2);
+      border-color: var(--orange-primary);
+      color: var(--orange-primary);
+    }
+    
+    .comment-box {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px;
+      color: white;
+      font-family: inherit;
+      min-height: 100px;
+      resize: vertical;
+      margin-bottom: 30px;
+    }
+    .comment-box:focus {
+      outline: none;
+      border-color: var(--orange-primary);
+    }
+
+    .success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg-base);
+      z-index: 1000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .tick-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      transform: scale(0);
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes popIn {
+      to { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar" style="background: var(--bg-base); border-bottom: 1px solid var(--border);">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <span class="logo-text">Kamgar<span class="logo-highlight">Connect</span></span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="review-container">
+    <div class="worker-info" id="workerInfoPanel">
+      <h2 id="workerName">Loading...</h2>
+      <p id="workerSkill">Please wait</p>
+    </div>
+
+    <form id="reviewForm">
+      <h3 style="margin-bottom: 15px;">Rate your experience</h3>
+      <div class="rating-container">
+        <span class="star" data-value="5">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="1">★</span>
+      </div>
+      <p id="ratingError" style="color: #EF4444; font-size: 0.8rem; display: none;">Please select a rating.</p>
+
+      <h3 style="margin-bottom: 15px;">What went well?</h3>
+      <div class="tags-container" id="tagsContainer">
+        <div class="tag-btn" data-tag="Punctual">Punctual</div>
+        <div class="tag-btn" data-tag="Skilled">Skilled</div>
+        <div class="tag-btn" data-tag="Honest">Honest</div>
+        <div class="tag-btn" data-tag="Would Hire Again">Would Hire Again</div>
+        <div class="tag-btn" data-tag="Needs Improvement">Needs Improvement</div>
+      </div>
+
+      <textarea id="comment" class="comment-box" placeholder="Optional comments about your experience..."></textarea>
+
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Submit Review</button>
+    </form>
+  </div>
+
+  <div class="success-overlay" id="successOverlay">
+    <div class="tick-circle">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <h2 style="color: var(--green); margin-bottom: 10px;">Thank you!</h2>
+    <p style="color: var(--text-secondary); px;">Your review helps other employers.</p>
+    <a href="/" class="btn btn-outline" style="margin-top: 30px;">Return Home</a>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const workerId = urlParams.get('workerId');
+    const jobId = urlParams.get('jobId');
+    let currentRating = 0;
+    const selectedTags = new Set();
+
+    // Fetch Worker Details
+    if (workerId) {
+      fetch(`${CONFIG.BACKEND_URL}/api/workers/${workerId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.name) {
+            document.getElementById('workerName').innerText = data.name;
+            document.getElementById('workerSkill').innerText = data.skill;
+          } else {
+            document.getElementById('workerInfoPanel').style.display = 'none';
+          }
+        })
+        .catch(err => console.error(err));
+    } else {
+      document.getElementById('workerInfoPanel').style.display = 'none';
+    }
+
+    // Rating Logic
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+      star.addEventListener('click', (e) => {
+        const value = parseInt(e.target.getAttribute('data-value'));
+        currentRating = value;
+        stars.forEach(s => s.classList.remove('selected'));
+        e.target.classList.add('selected');
+        document.getElementById('ratingError').style.display = 'none';
+      });
+    });
+
+    // Tags Logic
+    const tagBtns = document.querySelectorAll('.tag-btn');
+    tagBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tag = e.target.getAttribute('data-tag');
+        if (selectedTags.has(tag)) {
+          selectedTags.delete(tag);
+          e.target.classList.remove('active');
+        } else {
+          selectedTags.add(tag);
+          e.target.classList.add('active');
+        }
+      });
+    });
+
+    // Form Submit
+    document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (currentRating === 0) {
+        document.getElementById('ratingError').style.display = 'block';
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Submitting...';
+
+      const payload = {
+        workerId: workerId || '000000000000000000000000', // fallback if unknown
+        jobId: jobId || null,
+        rating: currentRating,
+        tags: Array.from(selectedTags),
+        comment: document.getElementById('comment').value
+      };
+
+      try {
+        const res = await fetch(`${CONFIG.BACKEND_URL}/api/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+          document.getElementById('reviewForm').style.display = 'none';
+          document.getElementById('workerInfoPanel').style.display = 'none';
+          document.getElementById('successOverlay').style.display = 'flex';
+        } else {
+          alert('Failed to submit review.');
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Submit Review';
+        }
+      } catch (err) {
+        alert('Network Error');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit Review';
+      }
+    });
+  </script>
+</body>
+</html>

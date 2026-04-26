@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteRule ^register-worker$ /register-worker.html [L]
+RewriteRule ^register-employer$ /register-employer.html [L]
+RewriteRule ^admin$ /admin.html [L]
