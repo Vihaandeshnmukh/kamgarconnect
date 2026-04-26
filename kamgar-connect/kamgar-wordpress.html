@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kamgar Connect — India's GPS-Powered Labour Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #050505; --bg-surface: #0F0F0F; --bg-elevated: #181818;
+      --border: rgba(255, 255, 255, 0.08); --border-hover: rgba(255, 255, 255, 0.15);
+      --text-primary: #FFFFFF; --text-secondary: #A0A0A0;
+      --accent: #FF5C00; --accent-blue: #3b82f6; --amber: #fbbf24;
+      --green: #10b981; --red: #ef4444; --font: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg-base); color: var(--text-primary); font-family: var(--font); overflow-x: hidden; scroll-behavior: smooth; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    button, input, select, textarea { font-family: inherit; }
+    a { text-decoration: none; color: inherit; }
+
+    /* FIX 3: TOP TIMER BAR */
+    #top-timer-bar-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 4px; z-index: 100000; display: none; background: rgba(255,255,255,0.05); }
+    #top-timer-bar { height: 100%; width: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent); transition: width 1s linear, background 0.5s; }
+
+    /* TESTING BANNER */
+    #test-banner { background: #ffd700; color: #000; padding: 8px; text-align: center; font-size: 0.75rem; font-weight: 900; position: fixed; top: 4px; left: 0; width: 100%; z-index: 99999; display: flex; align-items: center; justify-content: center; gap: 15px; }
+
+    /* HERO */
+    .hero { height: 90vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
+    #hero-canvas { position: absolute; inset: 0; z-index: -1; }
+    .hero-content h1 { font-size: clamp(3rem, 10vw, 6rem); font-weight: 800; line-height: 1; letter-spacing: -3px; }
+    .hero-content p { font-size: 1.2rem; color: var(--text-secondary); max-width: 700px; margin: 24px auto 40px; }
+
+    /* MISSION SECTION */
+    .mission-section { padding: 100px 0; background: var(--bg-surface); border-left: 5px solid var(--accent); margin: 40px 0; }
+
+    /* VIDEO SECTION */
+    .video-section { padding: 80px 0; position: relative; }
+    .vid-container { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid var(--border); background: #000; margin-top: 20px; }
+    .vid-overlay { position: absolute; bottom: 20px; width: 100%; padding: 0 20px; display: flex; justify-content: space-between; pointer-events: none; }
+    .vid-label { background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 5px; font-weight: 800; color: #fff; }
+    .scrubber { width: 100%; height: 6px; background: #333; margin-top: 15px; border-radius: 3px; position: relative; cursor: pointer; }
+    .scrubber-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; }
+    .scrubber-thumb { width: 14px; height: 14px; background: #fff; border-radius: 50%; position: absolute; top: -4px; transform: translateX(-50%); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+
+    /* NAVBAR */
+    .navbar { position: sticky; top: 40px; z-index: 1000; height: 80px; background: rgba(5,5,5,0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.4rem; font-weight: 800; cursor: pointer; } .logo span { color: var(--accent); }
+
+    /* DROPDOWN */
+    .profile-wrap { position: relative; }
+    .profile-dropdown { position: absolute; top: 50px; right: 0; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 15px; padding: 20px; width: 250px; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.5); z-index: 1001; }
+    .profile-initial { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; cursor: pointer; border: 2px solid var(--border); }
+
+    /* DASHBOARD TABS */
+    .tab-container { margin-top: 40px; background: var(--bg-surface); padding: 40px; border-radius: 30px; border: 1px solid var(--border); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+    .tab-bar { display: flex; background: var(--bg-elevated); border-radius: 12px; max-width: 500px; margin: 0 auto 40px; border: 1px solid var(--border); }
+    .tab-btn { flex: 1; padding: 15px; border: none; background: transparent; color: var(--text-secondary); font-weight: 800; transition: 0.3s; }
+    .tab-btn.active { background: var(--accent); color: white; }
+
+    /* CARDS */
+    .card-scene { perspective: 1200px; height: 380px; margin-bottom: 20px; }
+    .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; cursor: pointer; }
+    .card-inner.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 24px; background: var(--bg-elevated); border: 1px solid var(--border); padding: 25px; display: flex; flex-direction: column; }
+    .card-back { transform: rotateY(180deg); background: var(--bg-surface); }
+
+    /* ROOTS SVG */
+    #roots-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 200000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+    .root-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+    .root-node { transition: transform 0.3s; cursor: pointer; pointer-events: auto; }
+    .root-node:hover { transform: scale(1.5); }
+
+    /* FIX 4: SECRET ACCESS */
+    .secret-trigger { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000; color: white; font-size: 1.5rem; transition: 0.3s; }
+    #secret-page { position: fixed; inset: 0; background: #000; z-index: 150000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
+    .secret-input { background: transparent; border: 3px solid var(--accent); border-radius: 15px; font-size: 2rem; color: #fff; text-align: center; padding: 20px; margin-bottom: 30px; width: 100%; max-width: 500px; outline: none; }
+
+    /* MODAL */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
+    .modal-content { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 30px; padding: 40px; width: 100%; max-width: 600px; position: relative; }
+    .selector-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    .select-type { padding: 20px; border-radius: 15px; border: 2px solid var(--border); text-align: center; font-weight: 800; cursor: pointer; transition: 0.3s; }
+    .select-type.active { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
+    .select-type-worker.active { background: rgba(255,92,0,0.1); }
+    .select-type-employer.active { background: rgba(59,130,246,0.1); border-color: var(--accent-blue); box-shadow: 0 0 15px var(--accent-blue); }
+
+    .input-grp { margin-bottom: 20px; }
+    .input-grp label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--text-secondary); font-size: 0.9rem; }
+    .input-field { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 10px; outline: none; transition: 0.3s; }
+    .input-field:focus { border-color: var(--accent); }
+    .err-msg { color: var(--red); font-size: 0.8rem; margin-top: 5px; display: none; }
+
+    .availability-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 5px; }
+    .avail-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; }
+
+    .btn { padding: 12px 24px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-blue { background: var(--accent-blue); color: white; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--border-hover); color: white; }
+    .pulse { animation: pulse-anim 2s infinite; }
+    @keyframes pulse-anim { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 15px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+
+    .notif { position: fixed; top: 60px; right: 40px; background: var(--bg-elevated); border-right: 5px solid var(--accent); padding: 25px; border-radius: 15px; z-index: 200001; transform: translateX(180%); transition: 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); min-width: 300px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .notif.active { transform: translateX(0); }
+
+    .loader-s { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* GPS BUTTONS */
+    .gps-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+
+    @media (max-width: 768px) { .gps-row, .selector-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body onload="initApp()">
+
+  <!-- FIX 3: TOP TIMER BAR -->
+  <div id="top-timer-bar-wrap"><div id="top-timer-bar"></div></div>
+
+  <!-- TESTING BANNER -->
+  <div id="test-banner">
+    <span data-i18n="test_banner">TESTING MODE — All features unlocked for all accounts</span>
+    <button onclick="dismissBanner()" style="background:none; border:none; margin-left:15px; font-weight:900; color:black; cursor:pointer;">&times;</button>
+  </div>
+
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <div class="logo" onclick="gsap.to(window, {scrollTo:0, duration:1})">Kamgar<span>Connect</span></div>
+      <div style="display:flex; gap:20px; align-items:center;">
+        <button class="btn" onclick="gsap.to(window, {scrollTo:'#team-section', duration:1})" data-i18n="nav_team">Our Team</button>
+        <div class="lang-switcher" style="display:flex; gap:8px;">
+          <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('en')">EN</button>
+          <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('hi')">हिं</button>
+          <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('mr')">मरा</button>
+        </div>
+        <div class="profile-wrap">
+           <div id="profile-trigger" class="profile-initial" onclick="toggleDropdown()"><i class="fas fa-user"></i></div>
+           <div id="profile-dropdown" class="profile-dropdown">
+              <div id="prof-details"></div>
+              <hr style="margin:15px 0; opacity:0.1;">
+              <button class="btn btn-outline" style="width:100%; color:var(--red);" onclick="logout()" data-i18n="logout">Logout</button>
+           </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-content">
+      <h1 class="glitch" data-text="Dignity, Not Chowks." data-i18n="hero_title">Dignity, Not Chowks.</h1>
+      <p data-i18n="hero_subtitle">The marketplace connecting India's workforce instantly using AI and GPS.</p>
+      <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="handleFindWorkClick()" data-i18n="btn_worker">I am a Worker</button>
+        <button class="btn btn-outline" onclick="handleHireClick()" data-i18n="btn_employer">I Need a Worker</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIX 6: MISSION SECTION -->
+  <section class="mission-section" id="mission-section">
+     <div class="container">
+        <h2 style="font-size:3rem; font-weight:900; margin-bottom:20px;" data-i18n="mission_title">Our Mission</h2>
+        <p style="font-size:1.3rem; color:var(--text-secondary); line-height:1.6; max-width:800px;" data-i18n="mission_text"></p>
+     </div>
+  </section>
+
+  <!-- FIX 5: VIDEO SECTIONS -->
+  <section class="container video-section">
+     <div id="vid-1-wrap">
+        <h2 data-i18n="vid_title_1">Workers used to wait hours at the chowk...</h2>
+        <p style="color:var(--text-secondary);" data-i18n="vid_sub_1">See how Kamgar Connect changed everything</p>
+        <div class="vid-container">
+           <video id="vid-chowk" playsinline muted loop autoplay width="100%"></video>
+           <div class="vid-overlay">
+              <div class="vid-label" id="vid-lab-1">Before Kamgar</div>
+              <div class="vid-label" id="vid-lab-2" style="opacity:0;">After Kamgar</div>
+           </div>
+        </div>
+        <div class="scrubber" id="scrub-chowk" onmousedown="startScrub('chowk', event)" ontouchstart="startScrub('chowk', event)">
+           <div class="scrubber-fill" id="fill-chowk"></div>
+           <div class="scrubber-thumb" id="thumb-chowk"></div>
+        </div>
+     </div>
+
+     <div id="vid-2-wrap" style="margin-top:80px;">
+        <h2 data-i18n="vid_title_2">Finding home help used to be stressful...</h2>
+        <div class="vid-container">
+           <video id="vid-home" playsinline muted loop autoplay width="100%"></video>
+        </div>
+        <div class="scrubber" id="scrub-home" onmousedown="startScrub('home', event)" ontouchstart="startScrub('home', event)">
+           <div class="scrubber-fill" id="fill-home"></div>
+           <div class="scrubber-thumb" id="thumb-home"></div>
+        </div>
+     </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="container" id="dashboard-tabs" style="display:none; margin:60px auto 100px;">
+    <div class="tab-container">
+      <div class="tab-bar">
+         <button class="tab-btn active" id="tab-btn-worker" onclick="switchTab('worker')" data-i18n="tab_worker">Worker View</button>
+         <button class="tab-btn" id="tab-btn-employer" onclick="switchTab('employer')" data-i18n="tab_employer">Employer View</button>
+      </div>
+
+      <div id="pane-worker" style="display:none;">
+         <div style="text-align:center; padding:50px 0;">
+            <button class="btn btn-primary" id="main-live-btn" onclick="handleTogglePress()" style="padding:25px 60px; font-size:1.5rem; border-radius:20px;">
+               <i class="fas fa-search"></i> <span id="live-btn-text">START LOOKING</span>
+            </button>
+            <div id="countdown-wrap" style="display:none; margin-top:30px; font-weight:800; font-size:2.2rem; color:var(--accent);">
+               <span id="timer-val">00:00:00</span>
+            </div>
+         </div>
+         <hr style="margin:40px 0; opacity:0.1;">
+         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 data-i18n="available_jobs">Available Jobs in your City</h3>
+            <button class="btn btn-outline" style="padding:4px 12px; font-size:0.8rem;" onclick="loadCityJobs()"><i class="fas fa-sync"></i> Refresh</button>
+         </div>
+         <div id="city-jobs-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;"></div>
+      </div>
+
+      <div id="pane-employer" style="display:none;">
+         <div style="background:var(--bg-elevated); padding:30px; border-radius:20px; border:1px solid var(--border); margin-bottom:40px;">
+            <label style="display:block; margin-bottom:10px; font-weight:800; opacity:0.5; font-size:0.8rem;">SEARCH BY PHONE</label>
+            <div style="display:flex; gap:15px;">
+               <input type="tel" id="lookup-phone" placeholder="9876543210" style="flex:1; background:var(--bg-base); border:1px solid var(--border); color:white; padding:15px; border-radius:12px; outline:none; font-size:1.2rem; font-weight:800;">
+               <button class="btn btn-primary" onclick="lookupByPhone()"><i class="fas fa-search"></i> SEARCH</button>
+            </div>
+            <div id="phone-search-result" style="margin-top:20px;"></div>
+         </div>
+
+         <div class="gps-row">
+            <button class="btn btn-primary" onclick="findNearbyWorkers()"><i class="fas fa-location-arrow"></i> FIND NEAREST WORKER</button>
+            <select id="area-select" class="input-field" style="height:unset;" onchange="loadWorkersByArea()">
+               <option value="">SELECT AREA</option>
+               <option>Aurangabad Center</option><option>Cidco</option><option>Waluj</option><option>Nagpur Center</option><option>Pune Camp</option>
+            </select>
+         </div>
+
+         <div id="employer-stats" style="margin-bottom:20px; font-weight:800; color:var(--accent-blue); font-size:0.9rem;"></div>
+         <div id="worker-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:25px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" id="team-section" style="padding:100px 0; border-top:1px solid var(--border);">
+    <h2 style="text-align:center; font-size:3.5rem; font-weight:900; margin-bottom:70px;">OUR TEAM</h2>
+    <div class="team-grid">
+      <div class="team-card"><div style="width:70px; height:70px; background:var(--accent); border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.5rem;">VD</div><h3>Vihaan Deshmukh</h3><p style="color:var(--accent); font-weight:900; font-size:0.9rem;">CEO & Founder</p></div>
+      <div class="team-card"><div style="width:70px; height:70px; background:var(--accent); border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.5rem;">JK</div><h3>Joel Koddikar</h3><p style="color:var(--accent); font-weight:900; font-size:0.9rem;">CTO & Co-Founder</p></div>
+      <div class="team-card"><div style="width:70px; height:70px; background:var(--accent); border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.5rem;">AJ</div><h3>Aayush Jadhav</h3><p style="color:var(--accent); font-weight:900; font-size:0.9rem;">Co-Founder</p></div>
+    </div>
+  </section>
+
+  <!-- FIX 4: SECRET ACCESS -->
+  <div class="secret-trigger pulse" onclick="openSecretPage()" title="Enter Secret Code"><i class="fas fa-lock"></i></div>
+  <div id="secret-page">
+     <button class="btn btn-outline" style="position:fixed; top:40px; right:40px;" onclick="closeSecretPage()">&times;</button>
+     <h1 style="color:var(--accent); margin-bottom:30px; font-weight:900;">BACKSTAGE ACCESS</h1>
+     <input type="password" id="secret-access-code" class="secret-input" placeholder="TYPE YOUR SECRET CODE">
+     <button class="btn btn-primary" style="padding:20px 60px; font-size:1.3rem;" onclick="unlockSecret()">AUTHORIZE</button>
+     <p style="margin-top:40px; opacity:0.5; text-align:center; font-size:0.9rem;">
+        Use <b>TIME</b> for Project Timeline — Use <b>MIND</b> for Mind Map
+     </p>
+     <div id="secret-err" style="color:var(--red); margin-top:20px; font-weight:800; display:none;">You do not have access</div>
+  </div>
+
+  <!-- FIX 1: REGISTRATION MODAL -->
+  <div class="modal" id="reg-modal">
+    <div class="modal-content">
+       <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
+       <h2 style="margin-bottom:25px;" data-i18n="reg_title">Join the Marketplace</h2>
+       
+       <div class="selector-grid">
+          <div class="select-type select-type-worker active" onclick="selectType('Worker')">I AM A WORKER</div>
+          <div class="select-type select-type-employer" onclick="selectType('Employer')">I NEED A WORKER</div>
+       </div>
+
+       <form id="reg-form" onsubmit="handleRegistration(event)">
+          <div class="input-grp">
+             <label data-i18n="label_name">Full Name</label>
+             <input type="text" id="reg-name" class="input-field" placeholder="Vijay Kumar">
+             <div class="err-msg" id="err-name">Please enter your name</div>
+          </div>
+          <div class="input-grp">
+             <label data-i18n="label_phone">Phone Number</label>
+             <input type="tel" id="reg-phone" class="input-field" placeholder="9876543210" maxlength="10">
+             <div class="err-msg" id="err-phone">Please enter 10 digit phone number</div>
+          </div>
+          <div class="input-grp">
+             <label data-i18n="label_city">City</label>
+             <select id="reg-city" class="input-field">
+                <option value="">SELECT CITY</option>
+                <option>Aurangabad</option><option>Nagpur</option><option>Pune</option><option>Nashik</option><option>Mumbai</option>
+             </select>
+             <div class="err-msg" id="err-city">Please select your city</div>
+          </div>
+
+          <!-- WORKER EXTRA FIELDS -->
+          <div id="extra-worker">
+             <div class="input-grp">
+                <label>Skill</label>
+                <select id="reg-skill" class="input-field">
+                   <option value="">SELECT SKILL</option>
+                   <option>Mason</option><option>Electrician</option><option>Plumber</option><option>Domestic Help</option>
+                   <option>Factory Worker</option><option>Carpenter</option><option>Painter</option><option>Driver</option>
+                </select>
+                <div class="err-msg" id="err-skill">Please select your skill</div>
+             </div>
+             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="input-grp">
+                   <label>Experience (Years)</label>
+                   <input type="number" id="reg-exp" class="input-field" value="1">
+                </div>
+                <div class="input-grp">
+                   <label>Daily Salary (₹)</label>
+                   <input type="number" id="reg-salary" class="input-field" value="600">
+                </div>
+             </div>
+             <label style="display:block; margin-bottom:5px; font-weight:700; color:var(--text-secondary); font-size:0.9rem;">Availability</label>
+             <div class="availability-grid">
+                <div class="avail-item" onclick="toggleAvail('24/7')"><input type="checkbox" id="av-24-7"> 24/7</div>
+                <div class="avail-item" onclick="toggleAvail('Mon')"><input type="checkbox" id="av-Mon"> Mon</div>
+                <div class="avail-item" onclick="toggleAvail('Tue')"><input type="checkbox" id="av-Tue"> Tue</div>
+                <div class="avail-item" onclick="toggleAvail('Wed')"><input type="checkbox" id="av-Wed"> Wed</div>
+                <div class="avail-item" onclick="toggleAvail('Thu')"><input type="checkbox" id="av-Thu"> Thu</div>
+                <div class="avail-item" onclick="toggleAvail('Fri')"><input type="checkbox" id="av-Fri"> Fri</div>
+                <div class="avail-item" onclick="toggleAvail('Sat')"><input type="checkbox" id="av-Sat"> Sat</div>
+                <div class="avail-item" onclick="toggleAvail('Sun')"><input type="checkbox" id="av-Sun"> Sun</div>
+             </div>
+          </div>
+
+          <!-- EMPLOYER EXTRA FIELDS -->
+          <div id="extra-employer" style="display:none;">
+             <div class="input-grp">
+                <label>Worker Type Needed</label>
+                <select id="reg-needed" class="input-field">
+                   <option value="">SELECT TYPE</option>
+                   <option>Mason</option><option>Electrician</option><option>Plumber</option><option>Domestic Help</option>
+                </select>
+             </div>
+             <div class="input-grp">
+                <label>Number of Workers Needed</label>
+                <input type="number" id="reg-count" class="input-field" value="1">
+             </div>
+             <button type="button" class="btn btn-outline" style="width:100%; margin-bottom:20px;" onclick="getGPS()">
+                <i class="fas fa-crosshairs"></i> USE MY CURRENT LOCATION
+             </button>
+          </div>
+
+          <div id="reg-backend-err" style="color:var(--red); margin-bottom:15px; font-weight:800; display:none;"></div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%; padding:18px;">
+             <div class="loader-s" id="reg-loader"></div>
+             <span id="reg-btn-text">JOIN PLATFORM</span>
+          </button>
+       </form>
+    </div>
+  </div>
+
+  <!-- FIX 2: HIRE MODAL -->
+  <div class="modal" id="hire-modal">
+     <div class="modal-content">
+        <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
+        <h2 style="margin-bottom:25px;">Hire <span id="hire-worker-name"></span></h2>
+        <div class="input-grp">
+           <label>Job Location</label>
+           <input type="text" id="hire-loc" class="input-field" placeholder="Building No 5, Waluj MIDC">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+           <div class="input-grp">
+              <label>Date of Work</label>
+              <input type="date" id="hire-date" class="input-field">
+           </div>
+           <div class="input-grp">
+              <label>Reporting Time</label>
+              <input type="time" id="hire-time" class="input-field">
+           </div>
+        </div>
+        <div class="input-grp">
+           <label>Employer Name</label>
+           <input type="text" id="hire-emp-name" class="input-field">
+        </div>
+        <div class="input-grp">
+           <label>Special Instructions (Optional)</label>
+           <textarea id="hire-inst" class="input-field" rows="3"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%; padding:18px;" onclick="confirmHire()">
+           <div class="loader-s" id="hire-loader"></div>
+           <span>CONFIRM HIRE</span>
+        </button>
+     </div>
+  </div>
+
+  <!-- FIX 8: ROOTS OVERLAY -->
+  <div id="roots-overlay">
+     <h3 id="roots-title" style="margin-bottom:20px; font-weight:900; color:var(--accent);">WORKER JOB ROOTS</h3>
+     <div style="position:relative; width:100%; height:80vh; display:flex; align-items:center; justify-content:center;">
+        <svg id="roots-svg" width="1000" height="1000" viewBox="0 0 1000 1000"></svg>
+     </div>
+     <button class="btn btn-outline" style="position:fixed; top:40px; right:40px;" onclick="closeRoots()">&times; CLOSE</button>
+  </div>
+
+  <div id="notif-box"></div>
+
+  <script>
+    // ═════════════════════════════════════
+    // CONFIG & GLOBALS
+    // ═════════════════════════════════════
+    const CONFIG = { 
+       BACKEND_URL: 'https://kamgar-connect-production.up.railway.app' 
+    };
+
+    let selectedType = 'Worker';
+    let currentLang = localStorage.getItem('lang') || 'en';
+    let timerInt = null;
+    let gpsCoords = { lat: 0, lng: 0 };
+    let currentWorkerToHire = null;
+
+    // ═════════════════════════════════════
+    // TRANSLATIONS
+    // ═════════════════════════════════════
+    const TRANSLATIONS = {
+       en: {
+          nav_team: "Our Team", test_banner: "TESTING MODE — All features unlocked for all accounts",
+          hero_title: "Dignity, Not Chowks.", hero_subtitle: "The marketplace connecting India's workforce instantly using AI and GPS.",
+          btn_worker: "I am a Worker", btn_employer: "I Need a Worker",
+          mission_title: "Our Mission", mission_text: "Kamgar Connect was built for the workers who have been ignored by every other platform. The daily wage workers who stand at chowks every morning with no guarantee of work. We are building India's first platform specifically for workers without smartphones.",
+          vid_title_1: "Workers used to wait hours at the chowk...", vid_title_2: "Finding home help used to be stressful...",
+          tab_worker: "Worker View", tab_employer: "Employer View", logout: "Logout", reg_title: "Join the Marketplace",
+          label_name: "Full Name", label_phone: "Phone Number", label_city: "City", available_jobs: "Available Jobs in your City"
+       },
+       hi: {
+          nav_team: "हमारी टीम", test_banner: "टेस्टिंग मोड — सभी फीचर्स अनलॉक हैं",
+          hero_title: "सम्मान, चौक नहीं।", hero_subtitle: "AI और GPS का उपयोग करके भारत के कार्यबल को जोड़ने वाला बाज़ार।",
+          btn_worker: "मैं कामगार हूँ", btn_employer: "मुझे कामगार चाहिए",
+          mission_title: "हमारा मिशन", mission_text: "कामगार कनेक्ट उन मजदूरों के लिए बनाया गया है जिन्हें हर दूसरे प्लेटफॉर्म ने नजरअंदाज कर दिया है। दिहाड़ी मजदूर जो हर सुबह काम की गारंटी के बिना चौकों पर खड़े होते हैं।",
+          vid_title_1: "कामगार अक्सर घंटों चौक पर इंतजार करते थे...", vid_title_2: "मदद ढूँढना अक्सर तनावपूर्ण होता था...",
+          tab_worker: "कामगार व्यू", tab_employer: "नियोक्ता व्यू", logout: "लॉगआउट", reg_title: "मार्केटप्लेस से जुड़ें",
+          label_name: "पूरा नाम", label_phone: "फोन नंबर", label_city: "शहर", available_jobs: "आपके शहर में उपलब्ध काम"
+       },
+       mr: {
+          nav_team: "आमची टीम", test_banner: "चाचणी मोड — सर्व वैशिष्ट्ये अनलॉक आहेत",
+          hero_title: "सन्मान, चौक नाही।", hero_subtitle: "AI आणि GPS वापरून भारताच्या कार्यबलला जोडणारे बाजारपेठ।",
+          btn_worker: "मी कामगार आहे", btn_employer: "मला कामगार हवा आहे",
+          mission_title: "आमचे ध्येय", mission_text: "कामगार कनेक्ट त्या कामगारांसाठी बनवले गेले आहे ज्यांना प्रत्येक इतर प्लॅटफॉर्मने दुर्लक्षित केले आहे। रोजंदारी कामगार जे दररोज सकाळी चौकात काम मिळण्याच्या हमीशिवाय उभे असतात।",
+          vid_title_1: "कामगार अनेकदा चौकात तासनतास वाट पाहायचे...", vid_title_2: "मदत मिळवणे अनेकदा तणावपूर्ण असायचे...",
+          tab_worker: "कामगार व्यू", tab_employer: "एम्प्लॉयर व्यू", logout: "लॉगआउट", reg_title: "मार्केटप्लेसमध्ये सामील व्हा",
+          label_name: "पूर्ण नाव", label_phone: "फोन नंबर", label_city: "शहर", available_jobs: "तुमच्या शहरातील उपलब्ध कामे"
+       }
+    };
+
+    // ═════════════════════════════════════
+    // CORE APP INIT
+    // ═════════════════════════════════════
+
+    async function initApp() {
+       initThree();
+       setLang(currentLang);
+       loadVideos();
+       
+       if (sessionStorage.getItem('bannerDismissed')) dismissBanner();
+       
+       if (localStorage.getItem('user_id')) {
+          document.getElementById('dashboard-tabs').style.display = 'block';
+          updateProfileUI();
+          updateAvailabilityUI();
+          switchTab(localStorage.getItem('user_type').toLowerCase());
+       }
+    }
+
+    function setLang(l) {
+       currentLang = l; localStorage.setItem('lang', l);
+       document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (TRANSLATIONS[l][key]) el.innerText = TRANSLATIONS[l][key];
+       });
+    }
+
+    function initThree() {
+       const canv = document.getElementById('hero-canvas');
+       const scene = new THREE.Scene();
+       const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+       const renderer = new THREE.WebGLRenderer({canvas: canv, alpha:true});
+       renderer.setSize(window.innerWidth, window.innerHeight);
+       const geo = new THREE.BufferGeometry();
+       const count = 1500;
+       const pos = new Float32Array(count * 3);
+       for(let i=0; i<count*3; i++) pos[i] = (Math.random() - 0.5) * 50;
+       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+       const mat = new THREE.PointsMaterial({color: 0xFF5C00, size: 0.1, transparent:true, opacity:0.5});
+       const pts = new THREE.Points(geo, mat); scene.add(pts); camera.position.z = 20;
+       const animate = () => { requestAnimationFrame(animate); pts.rotation.y += 0.001; renderer.render(scene, camera); };
+       animate();
+    }
+
+    // ═════════════════════════════════════
+    // REGISTRATION (FIX 1)
+    // ═════════════════════════════════════
+
+    function selectType(t) {
+       selectedType = t;
+       document.querySelectorAll('.select-type').forEach(el => el.classList.remove('active'));
+       document.querySelector(`.select-type-${t.toLowerCase()}`).classList.add('active');
+       document.getElementById('extra-worker').style.display = t === 'Worker' ? 'block' : 'none';
+       document.getElementById('extra-employer').style.display = t === 'Employer' ? 'block' : 'none';
+    }
+
+    function toggleAvail(d) {
+       const id = `av-${d}`;
+       const cb = document.getElementById(id); cb.checked = !cb.checked;
+       if (d === '24/7' && cb.checked) {
+          ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day => document.getElementById(`av-${day}`).checked = false);
+       }
+    }
+
+    async function handleRegistration(e) {
+       e.preventDefault();
+       resetErrors();
+       const name = document.getElementById('reg-name').value;
+       const phone = document.getElementById('reg-phone').value;
+       const city = document.getElementById('reg-city').value;
+       
+       let valid = true;
+       if (!name) { document.getElementById('err-name').style.display='block'; valid=false; }
+       if (phone.length < 10) { document.getElementById('err-phone').style.display='block'; valid=false; }
+       if (!city) { document.getElementById('err-city').style.display='block'; valid=false; }
+
+       if (!valid) return;
+
+       const btn = document.getElementById('reg-btn-text');
+       const ldr = document.getElementById('reg-loader');
+       btn.style.display='none'; ldr.style.display='block';
+
+       try {
+          // Check Existence
+          const checkUrl = `${CONFIG.BACKEND_URL}/api/${selectedType === 'Worker' ? 'workers' : 'employers'}/check/${phone}`;
+          const checkRes = await fetch(checkUrl);
+          const checkData = await checkRes.json();
+
+          if (checkData.exists) {
+             loginUser(checkData.user, selectedType);
+             return;
+          }
+
+          // Register
+          const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
+          const body = { name, phone, city };
+          if (selectedType === 'Worker') {
+             body.skill = document.getElementById('reg-skill').value;
+             body.experience = document.getElementById('reg-exp').value;
+             body.salary = document.getElementById('reg-salary').value;
+             body.availability = getAvail();
+          } else {
+             body.workerTypeNeeded = document.getElementById('reg-needed').value;
+             body.workerCountNeeded = document.getElementById('reg-count').value;
+             body.location = gpsCoords;
+          }
+
+          const regRes = await fetch(regUrl, {
+             method: 'POST', headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify(body)
+          });
+          const regData = await regRes.json();
+
+          if (regRes.ok) {
+             loginUser(regData.user || regData.worker || regData.employer, selectedType);
+          } else {
+             document.getElementById('reg-backend-err').innerText = regData.message || "Registration failed";
+             document.getElementById('reg-backend-err').style.display = 'block';
+          }
+       } catch (err) {
+          showNotif("Network Error: " + err.message, "red");
+       } finally {
+          btn.style.display='block'; ldr.style.display='none';
+       }
+    }
+
+    function loginUser(u, type) {
+       localStorage.setItem('user_id', u.id || u._id);
+       localStorage.setItem('user_name', u.name);
+       localStorage.setItem('user_phone', u.phone);
+       localStorage.setItem('user_type', type);
+       localStorage.setItem('user_city', u.city);
+       localStorage.setItem('user_skill', u.skill || u.workerTypeNeeded || "");
+       
+       closeModal();
+       loadDashboard();
+       showNotif(type === 'Worker' ? "Aapka registration ho gaya! Kaam milne par hum call karenge." : "Welcome! Find the perfect worker for your needs.", "green");
+    }
+
+    function loadDashboard() {
+       document.getElementById('dashboard-tabs').style.display='block';
+       updateProfileUI();
+       updateAvailabilityUI();
+       switchTab(localStorage.getItem('user_type').toLowerCase());
+       gsap.to(window, {scrollTo: "#dashboard-tabs", duration: 1});
+    }
+
+    function resetErrors() {
+       document.querySelectorAll('.err-msg, #reg-backend-err').forEach(e => e.style.display='none');
+    }
+
+    function getAvail() {
+       if (document.getElementById('av-24-7').checked) return ['24/7'];
+       let d = [];
+       ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day => {
+          if (document.getElementById(`av-${day}`).checked) d.push(day);
+       });
+       return d;
+    }
+
+    // ═════════════════════════════════════
+    // DASHBOARD LOGIC (FIX 2)
+    // ═════════════════════════════════════
+
+    function switchTab(t) {
+       localStorage.setItem('active_tab', t);
+       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+       document.getElementById(`tab-btn-${t}`).classList.add('active');
+       document.getElementById('pane-worker').style.display = t === 'worker' ? 'block' : 'none';
+       document.getElementById('pane-employer').style.display = t === 'employer' ? 'block' : 'none';
+       
+       if (t === 'worker') loadCityJobs();
+       else loadEmployerGrid();
+    }
+
+    async function loadCityJobs() {
+       const city = localStorage.getItem('user_city');
+       const list = document.getElementById('city-jobs-list');
+       list.innerHTML = '<div class="loader-s" style="display:block; margin:20px auto;"></div>';
+       
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/available/${city}`);
+          const jobs = await res.json();
+          if (jobs.length === 0) {
+             list.innerHTML = '<p style="grid-column:1/-1; text-align:center; opacity:0.5;">No jobs right now — stay live and we will call you!</p>';
+             return;
+          }
+          list.innerHTML = jobs.map(j => `
+             <div class="card-front" style="height:auto;">
+                <h4 style="color:var(--accent);">${j.jobType}</h4>
+                <p>Employer: ${j.employerName}</p>
+                <div style="font-size:0.8rem; margin:10px 0; opacity:0.5;"><i class="fas fa-map-marker-alt"></i> ${j.location}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                   <span style="font-weight:900;">₹${j.pay}</span>
+                   <button class="btn btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="acceptJob('${j._id}')">Accept Job</button>
+                </div>
+             </div>
+          `).join('');
+       } catch (e) { list.innerHTML = '<p style="color:var(--red);">Failed to load jobs.</p>'; }
+    }
+
+    async function acceptJob(id) {
+       await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/accept`, {method:'PUT'});
+       showNotif("Job Accepted! Directions sent to mobile.", "green");
+       loadCityJobs();
+    }
+
+    async function loadEmployerGrid() {
+       const grid = document.getElementById('worker-grid');
+       grid.innerHTML = '<div class="loader-s" style="display:block; margin:20px auto;"></div>';
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers`);
+          let workers = await res.json();
+          
+          // FIX 7: FILTER HIRED
+          const now = new Date();
+          workers = workers.filter(w => !w.hiredUntil || new Date(w.hiredUntil) < now);
+          
+          document.getElementById('employer-stats').innerText = `${workers.length} workers currently available`;
+          
+          grid.innerHTML = workers.map(w => renderWorkerCard(w)).join('');
+       } catch (e) { grid.innerHTML = '<p>Error loading workers.</p>'; }
+    }
+
+    function renderWorkerCard(w) {
+       return `
+          <div class="card-scene" id="scene-${w._id}">
+             <div class="card-inner" onclick="this.classList.toggle('flipped')">
+                <div class="card-front">
+                   <h3>${w.name}</h3>
+                   <span class="vid-label" style="background:#222; font-size:0.6rem; align-self:flex-start; margin-top:5px;">${w.skill}</span>
+                   <div style="margin-top:20px; font-weight:800; color:var(--green);">₹${w.salary || 600} / day</div>
+                   <div style="font-size:0.8rem; margin-top:8px;">Rating: ★★★★☆ (12)</div>
+                   <button class="btn btn-primary" style="margin-top:auto; height:45px;" onclick="openHireModal('${w._id}', '${w.name}', '${w.phone}', '${w.skill}', event)">HIRE NOW</button>
+                </div>
+                <div class="card-back">
+                   <h4 style="color:var(--accent);">FULL PROFILE</h4>
+                   <p style="margin-top:10px;">Exp: ${w.experience} Years</p>
+                   <p>City: ${w.city}</p>
+                   <p>Availability: ${w.availability?.join(',') || 'Not specified'}</p>
+                   <button class="btn btn-outline" style="margin-top:auto; width:100%;" onclick="openRoots('${w._id}', event)">PREVIOUS JOBS</button>
+                </div>
+             </div>
+          </div>
+       `;
+    }
+
+    function openHireModal(id, name, phone, skill, e) {
+       if (e) e.stopPropagation();
+       currentWorkerToHire = { id, name, phone, skill };
+       document.getElementById('hire-worker-name').innerText = name;
+       document.getElementById('hire-emp-name').value = localStorage.getItem('user_name');
+       document.getElementById('hire-date').min = new Date().toISOString().split("T")[0];
+       document.getElementById('hire-modal').style.display = 'flex';
+    }
+
+    async function confirmHire() {
+       const ldr = document.getElementById('hire-loader');
+       ldr.style.display='block';
+       const body = {
+          workerId: currentWorkerToHire.id, workerPhone: currentWorkerToHire.phone,
+          workerName: currentWorkerToHire.name, workerSkill: currentWorkerToHire.skill,
+          employerName: document.getElementById('hire-emp-name').value,
+          location: document.getElementById('hire-loc').value,
+          date: document.getElementById('hire-date').value,
+          time: document.getElementById('hire-time').value,
+          instructions: document.getElementById('hire-inst').value
+       };
+
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/assign-job`, {
+             method: 'POST', headers: {'Content-Type':'application/json'},
+             body: JSON.stringify(body)
+          });
+          if (res.ok) {
+             confetti({ particleCount: 150, colors: ['#FF5C00', '#3b82f6'] });
+             closeModal();
+             gsap.to(`#scene-${currentWorkerToHire.id}`, {y: -1000, opacity:0, rotate:15, duration:1.5, ease:'power2.in', onComplete: () => {
+                showNotif(`Calling ${currentWorkerToHire.name} now... Twilio will call their number`, "green");
+                loadEmployerGrid();
+             }});
+          }
+       } catch (e) { showNotif("Hiring failed", "red"); }
+       finally { ldr.style.display='none'; }
+    }
+
+    // ═════════════════════════════════════
+    // FIX 3: TOP TIMER BAR
+    // ═════════════════════════════════════
+
+    function updateAvailabilityUI() {
+       const isLive = localStorage.getItem('isLooking') === 'true';
+       const barWrap = document.getElementById('top-timer-bar-wrap');
+       const countdown = document.getElementById('countdown-wrap');
+       const btn = document.getElementById('main-live-btn');
+       const btnText = document.getElementById('live-btn-text');
+
+       if (isLive) {
+          barWrap.style.display = 'block';
+          countdown.style.display = 'block';
+          btn.classList.add('pulse');
+          btn.style.background = 'var(--red)';
+          btnText.innerText = "STOP LOOKING";
+          startTimerLoop();
+       } else {
+          barWrap.style.display = 'none';
+          countdown.style.display = 'none';
+          btn.classList.remove('pulse');
+          btn.style.background = 'var(--accent)';
+          btnText.innerText = "START LOOKING";
+          if (timerInt) clearInterval(timerInt);
+       }
+    }
+
+    function startTimerLoop() {
+       if (timerInt) clearInterval(timerInt);
+       const until = new Date(localStorage.getItem('availableUntil'));
+       const startTime = new Date(localStorage.getItem('liveStartTime') || new Date().getTime());
+       const totalDuration = until - startTime;
+
+       timerInt = setInterval(() => {
+          const now = new Date();
+          const diff = until - now;
+          if (diff <= 0) {
+             handleTogglePress(); // Auto offline
+             return;
+          }
+          
+          const h = Math.floor(diff/3600000);
+          const m = Math.floor((diff%3600000)/60000);
+          const s = Math.floor((diff%60000)/1000);
+          document.getElementById('timer-val').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+          // PROGRESS BAR
+          const pct = (diff / totalDuration) * 100;
+          const bar = document.getElementById('top-timer-bar');
+          bar.style.width = pct + '%';
+          
+          if (pct > 50) bar.style.background = 'var(--accent)';
+          else if (pct > 20) { bar.style.background = 'var(--amber)'; bar.style.boxShadow = '0 0 15px var(--amber)'; }
+          else { bar.style.background = 'var(--red)'; bar.style.boxShadow = '0 0 15px var(--red)'; bar.style.animation = 'pulse-anim 1s infinite'; }
+
+       }, 1000);
+    }
+
+    async function handleTogglePress() {
+       const uid = localStorage.getItem('user_id');
+       const isLive = localStorage.getItem('isLooking') === 'true';
+       
+       if (isLive) {
+          await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-offline`, {method:'PUT'});
+          localStorage.setItem('isLooking', 'false');
+          gsap.to(window, {scrollTo: 0, duration: 1});
+       } else {
+          const until = new Date(); until.setHours(until.getHours() + 4);
+          await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-live`, {
+             method:'PUT', headers:{'Content-Type':'application/json'},
+             body: JSON.stringify({ availableUntil: until.toISOString() })
+          });
+          localStorage.setItem('isLooking', 'true');
+          localStorage.setItem('liveStartTime', new Date().getTime());
+          localStorage.setItem('availableUntil', until.toISOString());
+       }
+       updateAvailabilityUI();
+    }
+
+    // ═════════════════════════════════════
+    // FIX 8: JOB ROOTS
+    // ═════════════════════════════════════
+
+    async function openRoots(id, e) {
+       if (e) e.stopPropagation();
+       document.getElementById('roots-overlay').style.display='flex';
+       const svg = document.getElementById('roots-svg');
+       svg.innerHTML = '';
+       
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${id}/jobs`);
+          const jobs = await res.json();
+          
+          if (jobs.length === 0) {
+             drawStumpRoot();
+             return;
+          }
+
+          jobs.forEach((j, i) => {
+             const angle = (i / jobs.length) * (Math.PI * 2);
+             const length = 200 + Math.random() * 150;
+             const tx = 500 + Math.cos(angle) * length;
+             const ty = 500 + Math.sin(angle) * length;
+             
+             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+             path.setAttribute('d', `M500,500 Q${500 + (tx-500)/2 + (Math.random()-0.5)*100},${500+(ty-500)/2 + (Math.random()-0.5)*100} ${tx},${ty}`);
+             path.setAttribute('class', 'root-line');
+             svg.appendChild(path);
+             gsap.to(path, { strokeDashoffset: 0, duration: 2, delay: i*0.1 });
+
+             const node = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+             node.setAttribute('cx', tx); node.setAttribute('cy', ty); node.setAttribute('r', 12);
+             node.setAttribute('class', 'root-node');
+             let color = 'grey';
+             if (j.rating === 5) color = 'gold';
+             else if (j.rating >= 3) color = 'orange';
+             node.setAttribute('fill', color);
+             node.setAttribute('title', `${j.employerName} - ${j.jobType}`);
+             svg.appendChild(node);
+             gsap.from(node, { scale: 0, duration: 0.5, delay: 2 + i*0.1 });
+          });
+       } catch (e) { drawStumpRoot(); }
+    }
+
+    function drawStumpRoot() {
+       const svg = document.getElementById('roots-svg');
+       svg.innerHTML = '<path d="M500,500 L500,450" class="root-line" stroke-dashoffset="0"></path><text x="500" y="440" fill="white" text-anchor="middle" font-size="12">Just starting to grow...</text>';
+    }
+    function closeRoots() { document.getElementById('roots-overlay').style.display='none'; }
+
+    // ═════════════════════════════════════
+    // FIX 5: VIDEOS & SCRUBBERS
+    // ═════════════════════════════════════
+
+    function loadVideos() {
+       document.getElementById('vid-chowk').src = `${CONFIG.BACKEND_URL}/videos/chowk.mp4`;
+       document.getElementById('vid-home').src = `${CONFIG.BACKEND_URL}/videos/home.mp4`;
+       
+       const v1 = document.getElementById('vid-chowk');
+       v1.ontimeupdate = () => {
+          const pct = (v1.currentTime / v1.duration) * 100;
+          document.getElementById('fill-chowk').style.width = pkt + '%';
+          document.getElementById('thumb-chowk').style.left = pct + '%';
+          const lab1 = document.getElementById('vid-lab-1');
+          const lab2 = document.getElementById('vid-lab-2');
+          if (v1.currentTime > v1.duration/2) { lab1.style.opacity=0; lab2.style.opacity=1; }
+          else { lab1.style.opacity=1; lab2.style.opacity=0; }
+       };
+
+       document.getElementById('vid-home').ontimeupdate = (e) => {
+          const v = e.target;
+          const pct = (v.currentTime / v.duration) * 100;
+          document.getElementById('fill-home').style.width = pct + '%';
+          document.getElementById('thumb-home').style.left = pct + '%';
+       };
+    }
+
+    function startScrub(id, e) {
+       const vid = document.getElementById(`vid-${id}`);
+       const scrub = document.getElementById(`scrub-${id}`);
+       const move = (ev) => {
+          const rect = scrub.getBoundingClientRect();
+          const x = (ev.clientX || ev.touches[0].clientX) - rect.left;
+          const pct = Math.max(0, Math.min(1, x / rect.width));
+          vid.currentTime = pct * vid.duration;
+          vid.play();
+       };
+       const end = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', end); window.removeEventListener('touchmove', move); window.removeEventListener('touchend', end); };
+       window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+       window.addEventListener('touchmove', move); window.addEventListener('touchend', end);
+    }
+
+    // ═════════════════════════════════════
+    // UTILS & PROFILE
+    // ═════════════════════════════════════
+
+    function toggleDropdown() {
+       const d = document.getElementById('profile-dropdown');
+       const isShow = d.style.display === 'block';
+       d.style.display = isShow ? 'none' : 'block';
+    }
+
+    function updateProfileUI() {
+       const name = localStorage.getItem('user_name');
+       const type = localStorage.getItem('user_type');
+       const initial = name ? name[0].toUpperCase() : "?";
+       const trigger = document.getElementById('profile-trigger');
+       trigger.innerText = initial;
+       trigger.style.background = type === 'Worker' ? 'var(--accent)' : 'var(--accent-blue)';
+       
+       document.getElementById('prof-details').innerHTML = `
+          <div style="font-weight:900;">${name}</div>
+          <div style="font-size:0.7rem; opacity:0.5;">${type} | ${localStorage.getItem('user_phone')}</div>
+          <div style="font-size:0.75rem; margin-top:5px; color:var(--accent);">${localStorage.getItem('user_skill')}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">${localStorage.getItem('user_city')}</div>
+       `;
+    }
+
+    function logout() { localStorage.clear(); location.reload(); }
+    function dismissBanner() { sessionStorage.setItem('bannerDismissed', 'true'); document.getElementById('test-banner').style.display='none'; }
+    function showNotif(m, color) {
+       const b = document.getElementById('notif-box');
+       const d = document.createElement('div');
+       d.className = 'notif'; d.innerText = m;
+       d.style.borderRightColor = color === 'green' ? 'var(--green)' : 'var(--red)';
+       b.appendChild(d);
+       setTimeout(() => d.classList.add('active'), 10);
+       setTimeout(() => { d.classList.remove('active'); setTimeout(() => d.remove(), 600); }, 5000);
+    }
+
+    function openModal() { document.getElementById('reg-modal').style.display='flex'; }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+    function handleFindWorkClick() { selectType('Worker'); openModal(); }
+    function handleHireClick() { selectType('Employer'); openModal(); }
+
+    function openSecretPage() { document.getElementById('secret-page').style.display='flex'; document.getElementById('secret-access-code').focus(); }
+    function closeSecretPage() { document.getElementById('secret-page').style.display='none'; }
+    
+    function unlockSecret() {
+       const code = document.getElementById('secret-access-code').value.toUpperCase();
+       if (code === 'TIME' || code === 'MIND') {
+          showNotif("Access Granted", "green");
+          // Implementation of Timeline/Mindmap rendering could go here
+       } else {
+          document.getElementById('secret-err').style.display='block';
+          gsap.to('.secret-input', {x: 10, repeat:5, yoyo:true, duration:0.05});
+          setTimeout(() => { document.getElementById('secret-err').style.display='none'; document.getElementById('secret-access-code').value=''; }, 2000);
+       }
+    }
+
+    async function lookupByPhone() {
+       const phone = document.getElementById('lookup-phone').value;
+       const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/phone/${phone}`);
+       const data = await res.json();
+       const result = document.getElementById('phone-search-result');
+       if (data.exists) {
+          result.innerHTML = renderWorkerCard(data.worker);
+       } else {
+          result.innerHTML = '<p style="color:var(--red);">No worker found with this phone number.</p>';
+       }
+    }
+
+    function getGPS() {
+       navigator.geolocation.getCurrentPosition(p => {
+          gpsCoords = { lat: p.coords.latitude, lng: p.coords.longitude };
+          showNotif("Location Secured!", "green");
+       });
+    }
+
+  </script>
+</body>
+</html>

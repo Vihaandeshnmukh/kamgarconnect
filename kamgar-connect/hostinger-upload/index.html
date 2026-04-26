@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kamgar Connect — India's First GPS-Powered Labour Marketplace</title>
+  <meta name="description" content="Kamgar Connect instantly matches verified daily-wage workers with employers using GPS. No chowk waits, no middlemen. Join 10,000+ workers and employers in Aurangabad." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/voice.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pouchdb@8.0.0/dist/pouchdb.min.js"></script>
+  <script src="js/sync.js"></script>
+  <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
+</head>
+<body>
+  <!-- ═══════════ WIPE OVERLAY ═══════════ -->
+  <div class="page-wipe" id="page-wipe"></div>
+
+  <!-- ═══════════ SPLASH SCREEN ═══════════ -->
+  <div class="splash-screen" id="splash-screen">
+    <div class="splash-logo">
+      <svg width="64" height="64" viewBox="0 0 28 28" fill="none">
+        <path d="M14 3L3 9V19L14 25L25 19V9L14 3Z" stroke="#F97316" stroke-width="2" fill="none"/>
+        <circle cx="14" cy="14" r="4" fill="#FBBF24"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════ CUSTOM CURSOR ═══════════ -->
+  <div class="custom-cursor" id="custom-cursor"></div>
+
+  <!-- ═══════════ SCROLL PROGRESS ═══════════ -->
+  <div id="scroll-progress" class="scroll-progress"></div>
+
+  <!-- ═══════════ REGISTRATION BANNER ═══════════ -->
+  <div class="announcement-banner">
+    Register now — Bilkul free! / नोंदणी करा — पूर्णपणे मोफत!
+  </div>
+
+  <!-- ═══════════ NAVIGATION ═══════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo" id="nav-logo">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M14 3L3 9V19L14 25L25 19V9L14 3Z" stroke="url(#lg1)" stroke-width="2" fill="none"/>
+            <circle cx="14" cy="14" r="4" fill="url(#lg1)"/>
+            <path d="M14 10V5M14 23V18M8.5 11.5L4.5 9M23.5 9L19.5 11.5M8.5 16.5L4.5 19M23.5 19L19.5 16.5" stroke="url(#lg1)" stroke-width="1.5" opacity="0.5"/>
+            <defs>
+              <linearGradient id="lg1" x1="3" y1="3" x2="25" y2="25">
+                <stop stop-color="#F97316"/>
+                <stop offset="1" stop-color="#FBBF24"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">Kamgar<span class="logo-highlight">Connect</span></span>
+      </a>
+
+      <div class="nav-links" id="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#categories">Workers</a>
+        <a href="#testimonials">Stories</a>
+        <a href="#signup-cta">Join</a>
+      </div>
+
+      <div class="nav-actions" id="nav-ctas">
+        <a href="/register-employer" class="nav-btn-outline" id="btn-hire">Hire Workers</a>
+        <a href="/register-worker" class="nav-btn-fill" id="btn-work">Find Work</a>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-glow hero-glow--left"></div>
+    <div class="hero-glow hero-glow--right"></div>
+
+    <div class="hero-content reveal">
+      <div class="hero-badge">
+        <span class="badge-pulse"></span>
+        <span>Live in Aurangabad · Expanding to Pune & Mumbai</span>
+      </div>
+
+      <h1>
+        India's daily wage workers<br/>
+        deserve <span class="text-gradient">dignity,</span> not chowks.
+      </h1>
+
+      <p class="hero-subtitle">
+        Kamgar Connect is the GPS-powered marketplace that instantly matches verified workers with nearby employers. No middlemen. No wasted mornings. Just honest work at fair pay.
+      </p>
+
+      <div class="hero-cta-row">
+        <a href="/register-employer" class="btn btn-primary" id="hero-btn-employer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          Hire a Worker
+        </a>
+        <a href="/register-worker" class="btn btn-outline" id="hero-btn-worker">
+          I'm a Worker
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      
+      <!-- Spline Placeholder -->
+      <div class="spline-wrap reveal" style="margin-top: 50px; height: 300px; opacity: 0.5;">
+        <spline-viewer url="https://prod.spline.design/your-placeholder-url/scene.splinecode"></spline-viewer>
+      </div>
+    </div>
+
+    <div class="hero-stats reveal">
+      <div class="stat-item">
+        <span class="stat-number flip-reveal" data-count="10000">10,000+</span>
+        <span class="stat-label">Workers Registered</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number flip-reveal" data-count="5000">5K+</span>
+        <span class="stat-label">Jobs Completed</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number flip-reveal">4.8 ★</span>
+        <span class="stat-label">Avg. Rating</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number flip-reveal">&lt; 15min</span>
+        <span class="stat-label">Avg. Match Time</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ INFINITE MARQUEE ═══════════ -->
+  <section class="marquee-section">
+    <div class="marquee-track">
+      <span>Masons in Aurangabad ✦ Electricians in Pune ✦ Plumbers in Nashik ✦ Maids in Nagpur ✦ Factory Workers in Mumbai ✦ Painters in Pune ✦ Carpenters in Aurangabad ✦ Drivers in Nashik ✦ Masons in Aurangabad ✦ Electricians in Pune ✦ Plumbers in Nashik ✦ Maids in Nagpur ✦ Factory Workers in Mumbai ✦ Painters in Pune ✦ Carpenters in Aurangabad ✦ Drivers in Nashik ✦</span>
+      <span>Masons in Aurangabad ✦ Electricians in Pune ✦ Plumbers in Nashik ✦ Maids in Nagpur ✦ Factory Workers in Mumbai ✦ Painters in Pune ✦ Carpenters in Aurangabad ✦ Drivers in Nashik ✦ Masons in Aurangabad ✦ Electricians in Pune ✦ Plumbers in Nashik ✦ Maids in Nagpur ✦ Factory Workers in Mumbai ✦ Painters in Pune ✦ Carpenters in Aurangabad ✦ Drivers in Nashik ✦</span>
+    </div>
+  </section>
+
+  <!-- ═══════════ TRUST BAR ═══════════ -->
+  <section class="trust-bar">
+    <div class="trust-inner">
+      <span class="trust-label">Backed by</span>
+      <div class="trust-logos">
+        <span class="trust-logo">Startup India</span>
+        <span class="trust-dot">·</span>
+        <span class="trust-logo">MSME Registered</span>
+        <span class="trust-dot">·</span>
+        <span class="trust-logo">Razorpay Payments</span>
+        <span class="trust-dot">·</span>
+        <span class="trust-logo">Aadhaar Verified</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ NO SMARTPHONE BANNER ═══════════ -->
+  <section style="background: var(--accent); padding: 30px 20px; text-align: center; color: white;">
+    <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"></path></svg>
+      <h3 style="font-size: 1.5rem; font-weight: 800; line-height: 1.4; margin: 0;">
+        No smartphone? We will register you — completely free!<br/>
+        <span style="font-size: 1.2rem; opacity: 0.9; font-weight: 600;">स्मार्टफोन नहीं है? हम आपको रजिस्टर करेंगे — बिल्कुल मुफ्त!</span><br/>
+        <span style="font-size: 1.2rem; opacity: 0.9; font-weight: 600;">स्मार्टफोन नाही? आम्ही तुम्हाला नोंदणी करू — पूर्णपणे मोफत!</span>
+      </h3>
+    </div>
+  </section>
+
+  <!-- ═══════════ PROBLEM — VIDEO: CHOWK ═══════════ -->
+  <section class="section-video" id="problem">
+    <div class="section-video-inner reveal">
+      <div class="section-header">
+        <span class="section-eyebrow">The Problem We're Solving</span>
+        <h2>Every morning, lakhs of workers <br/><span class="text-gradient">wait at chowks for hours.</span></h2>
+        <p class="section-desc">They stand in the sun. They negotiate unfairly. They go home empty-handed. Kamgar Connect changes this forever.</p>
+      </div>
+
+      <div class="video-scrubber" data-video-id="chowk">
+        <div class="vs-viewport">
+          <video id="vid-chowk" preload="metadata" muted playsinline>
+            <source src="chowk.mp4" type="video/mp4" />
+          </video>
+          <div class="vs-badges">
+            <span class="vs-badge vs-badge--before active" id="badge-before-chowk">BEFORE</span>
+            <span class="vs-badge vs-badge--after" id="badge-after-chowk">AFTER</span>
+          </div>
+          <div class="vs-play-hint" id="hint-chowk">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8L22 12L18 16"/><path d="M6 16L2 12L6 8"/><path d="M2 12H22"/></svg>
+            <span>Drag the slider below</span>
+          </div>
+        </div>
+
+        <div class="vs-controls">
+          <div class="vs-time-label vs-time-left" id="time-left-chowk">0:00</div>
+          <div class="vs-track-wrapper">
+            <div class="vs-track" id="track-chowk">
+              <div class="vs-progress" id="progress-chowk"></div>
+              <div class="vs-thumb" id="thumb-chowk" tabindex="0" role="slider" aria-label="Scrub through video timeline"></div>
+            </div>
+            <div class="vs-markers">
+              <span>👈 Crowded Chowk</span>
+              <span class="vs-marker-mid">|</span>
+              <span>Empty Chowk 👉</span>
+            </div>
+          </div>
+          <div class="vs-time-label vs-time-right" id="time-right-chowk">0:00</div>
+        </div>
+      </div>
+
+      <div class="impact-pill">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span><strong>10,000+</strong> workers matched — Aurangabad chowks are clearing out</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ HOW IT WORKS ═══════════ -->
+  <section class="section-process" id="how-it-works">
+    <div class="section-process-inner">
+      <div class="section-header reveal">
+        <span class="section-eyebrow">How It Works</span>
+        <h2>From sign-up to payment.<br/><span class="text-gradient">5 simple steps.</span></h2>
+      </div>
+
+      <div class="steps-grid reveal">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          </div>
+          <h3>Sign Up</h3>
+          <p>Register in 2 minutes with your phone number. Verify via OTP — that's it.</p>
+        </div>
+
+        <div class="step-connector">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <h3>Post or Browse</h3>
+          <p>Employers post jobs with details and budget. Workers browse nearby work instantly.</p>
+        </div>
+
+        <div class="step-connector">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <h3>GPS Matching</h3>
+          <p>Our algorithm finds the nearest verified workers and displays them on a live map.</p>
+        </div>
+
+        <div class="step-connector">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <div class="step-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
+          </div>
+          <h3>Connect & Hire</h3>
+          <p>Call or message the worker directly. Negotiate, agree, and hire — all in minutes.</p>
+        </div>
+
+        <div class="step-connector">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">05</div>
+          <div class="step-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <h3>Pay & Rate</h3>
+          <p>Pay securely via Razorpay (UPI, cards, wallets). Rate to build trust for future hires.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ VIDEO 2 — HOME ═══════════ -->
+  <section class="section-video section-video--alt" id="video-home">
+    <div class="section-video-inner reveal">
+      <div class="section-header">
+        <span class="section-eyebrow">The Transformation</span>
+        <h2>Finding reliable help used to be<br/><span class="text-gradient">a nightmare. Not anymore.</span></h2>
+        <p class="section-desc">See how homes across Aurangabad are getting the skilled help they need — all through Kamgar Connect.</p>
+      </div>
+
+      <div class="video-scrubber" data-video-id="home">
+        <div class="vs-viewport">
+          <video id="vid-home" preload="metadata" muted playsinline>
+            <source src="home.mp4" type="video/mp4" />
+          </video>
+          <div class="vs-badges">
+            <span class="vs-badge vs-badge--before active" id="badge-before-home">BEFORE</span>
+            <span class="vs-badge vs-badge--after" id="badge-after-home">AFTER</span>
+          </div>
+          <div class="vs-play-hint" id="hint-home">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8L22 12L18 16"/><path d="M6 16L2 12L6 8"/><path d="M2 12H22"/></svg>
+            <span>Drag the slider below</span>
+          </div>
+        </div>
+
+        <div class="vs-controls">
+          <div class="vs-time-label vs-time-left" id="time-left-home">0:00</div>
+          <div class="vs-track-wrapper">
+            <div class="vs-track" id="track-home">
+              <div class="vs-progress" id="progress-home"></div>
+              <div class="vs-thumb" id="thumb-home" tabindex="0" role="slider" aria-label="Scrub through video timeline"></div>
+            </div>
+            <div class="vs-markers">
+              <span>👈 Before Kamgar</span>
+              <span class="vs-marker-mid">|</span>
+              <span>After Kamgar 👉</span>
+            </div>
+          </div>
+          <div class="vs-time-label vs-time-right" id="time-right-home">0:00</div>
+        </div>
+      </div>
+
+      <div class="impact-pill">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span><strong>5,000+</strong> homes transformed through Kamgar Connect</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CATEGORIES ═══════════ -->
+  <section class="section-categories" id="categories">
+    <div class="section-categories-inner">
+      <div class="section-header reveal">
+        <span class="section-eyebrow">Worker Categories</span>
+        <h2>Every skill you need.<br/><span class="text-gradient">One trusted platform.</span></h2>
+        <p class="section-desc">Verified professionals across 8 trade categories — all rated, reviewed, and ready to work.</p>
+      </div>
+
+      <div class="cat-grid reveal">
+        <div class="cat-card" id="cat-construction">
+          <div class="cat-icon-wrap"><span>🏗️</span></div>
+          <h3>Construction</h3>
+          <p>Masons, labourers & site helpers</p>
+          <span class="cat-count">2,400+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-electrician">
+          <div class="cat-icon-wrap"><span>⚡</span></div>
+          <h3>Electrician</h3>
+          <p>Wiring, fittings & repairs</p>
+          <span class="cat-count">1,800+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-plumber">
+          <div class="cat-icon-wrap"><span>🔧</span></div>
+          <h3>Plumber</h3>
+          <p>Pipe fitting & water solutions</p>
+          <span class="cat-count">900+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-domestic">
+          <div class="cat-icon-wrap"><span>🏠</span></div>
+          <h3>Domestic Help</h3>
+          <p>Maids, cooks & cleaners</p>
+          <span class="cat-count">1,500+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-factory">
+          <div class="cat-icon-wrap"><span>🏭</span></div>
+          <h3>Factory</h3>
+          <p>Assembly, loading & general</p>
+          <span class="cat-count">1,200+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-carpenter">
+          <div class="cat-icon-wrap"><span>🪚</span></div>
+          <h3>Carpenter</h3>
+          <p>Furniture, doors & woodwork</p>
+          <span class="cat-count">700+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-painter">
+          <div class="cat-icon-wrap"><span>🎨</span></div>
+          <h3>Painter</h3>
+          <p>Interior & exterior painting</p>
+          <span class="cat-count">600+ workers</span>
+        </div>
+        <div class="cat-card" id="cat-driver">
+          <div class="cat-icon-wrap"><span>🚗</span></div>
+          <h3>Driver</h3>
+          <p>Local delivery & transport</p>
+          <span class="cat-count">800+ workers</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ TESTIMONIALS ═══════════ -->
+  <section class="section-stories" id="testimonials">
+    <div class="section-stories-inner">
+      <div class="section-header reveal">
+        <span class="section-eyebrow">Real Stories</span>
+        <h2>Trusted by <span class="text-gradient">thousands</span> across Aurangabad</h2>
+        <p class="section-desc">Hear from real workers and employers whose lives changed with Kamgar Connect.</p>
+      </div>
+
+      <div class="stories-carousel reveal">
+        <div class="story-card" id="testimonial-1">
+          <div class="story-stars">★★★★★</div>
+          <blockquote>"I used to stand at Mondha chowk from 6 AM hoping for work. Now I get job alerts on my phone before I even wake up. My family finally has stability."</blockquote>
+          <div class="story-footer">
+            <div class="story-avatar-circle">👷</div>
+            <div>
+              <strong>Raju Shinde</strong>
+              <span>Mason · 3 years experience · Aurangabad</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-card story-card--featured" id="testimonial-2">
+          <div class="story-stars">★★★★★</div>
+          <blockquote>"Within 30 minutes of posting, I had 3 verified maid options with ratings and reviews. The transparency is incredible. This app is a game-changer."</blockquote>
+          <div class="story-footer">
+            <div class="story-avatar-circle">👩</div>
+            <div>
+              <strong>Priya Deshmukh</strong>
+              <span>Homeowner · Aurangabad</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-card" id="testimonial-3">
+          <div class="story-stars">★★★★★</div>
+          <blockquote>"I run a construction firm. Kamgar Connect saves me 2 hours every morning — no more driving to chowks. I've hired 50+ workers through the platform."</blockquote>
+          <div class="story-footer">
+            <div class="story-avatar-circle">👨‍💼</div>
+            <div>
+              <strong>Vikram Patil</strong>
+              <span>Contractor · Aurangabad</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CTA — JOIN ═══════════ -->
+  <section class="section-join" id="signup-cta">
+    <div class="section-join-inner reveal">
+      <div class="section-header">
+        <span class="section-eyebrow">Get Started Free</span>
+        <h2>Ready to join the<br/><span class="text-gradient">workforce revolution?</span></h2>
+      </div>
+
+      <div class="join-grid">
+        <div class="join-card join-card--employer" id="cta-employer">
+          <div class="join-tag">For Employers</div>
+          <h3>I Need Workers</h3>
+          <p>Post a job and get matched with verified, skilled workers near you in minutes.</p>
+          <ul>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              GPS-based instant matching
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              Aadhaar-verified profiles & ratings
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              Secure Razorpay payments
+            </li>
+          </ul>
+          <a href="/register-employer" class="btn btn-primary btn-full" id="btn-signup-employer">Sign Up as Employer</a>
+        </div>
+
+        <div class="join-card join-card--worker" id="cta-worker">
+          <div class="join-tag">For Workers</div>
+          <h3>I Want Work</h3>
+          <p>Create your profile, set your skills, and get job alerts — no more chowk waits.</p>
+          <ul>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              Free profile with skill showcase
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              Jobs near your location, daily
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              Build your reputation with ratings
+            </li>
+          </ul>
+          <a href="/register-worker" class="btn btn-outline btn-full" id="btn-signup-worker">Sign Up as Worker</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer" id="footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">
+            <div class="logo-icon">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                <path d="M14 3L3 9V19L14 25L25 19V9L14 3Z" stroke="url(#lg2)" stroke-width="2" fill="none"/>
+                <circle cx="14" cy="14" r="4" fill="url(#lg2)"/>
+                <defs>
+                  <linearGradient id="lg2" x1="3" y1="3" x2="25" y2="25">
+                    <stop stop-color="#F97316"/>
+                    <stop offset="1" stop-color="#FBBF24"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <span class="logo-text">Kamgar<span class="logo-highlight">Connect</span></span>
+          </a>
+          <p class="footer-about">Digitising India's daily wage labour market. Dignity for every worker. Convenience for every employer.</p>
+          <p class="footer-hindi">कामगार कनेक्ट — हर कामगार को इज्जत, हर नियोक्ता को सुविधा।</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#categories">Categories</a>
+          <a href="#testimonials">Stories</a>
+          <a href="#">Pricing</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#">About Us</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+          <a href="#">Blog</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Refund Policy</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-location">📍 Live in Aurangabad — <strong>Pune, Mumbai & Nashik coming soon!</strong></p>
+        <p class="footer-copy">© 2026 Kamgar Connect Pvt. Ltd. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+
+  <!-- ═══════════ FLOATING ELEMENTS ═══════════ -->
+  <a href="#" class="whatsapp-float" aria-label="Chat on WhatsApp">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12.031 0C5.385 0 0 5.386 0 12.03c0 2.124.553 4.195 1.603 6.01L.004 23.996l6.103-1.6c1.761.954 3.75 1.458 5.924 1.458 6.645 0 12.031-5.386 12.031-12.032C24.062 5.387 18.675 0 12.031 0zm7.195 17.5c-.302.852-1.748 1.579-2.427 1.688-.567.091-1.28.163-4.041-.98-3.411-1.41-5.617-4.908-5.787-5.136-.17-.228-1.382-1.84-1.382-3.513 0-1.674.87-2.511 1.182-2.846.255-.274.654-.37.957-.37.104 0 .198.005.283.01.274.015.632-.104.985.748.36 8.872.935 2.133 1.02 2.302.085.17.132.37.019.598-.113.228-.17.37-.34.56-.17.189-.359.414-.509.56-.17.16-.35.334-.142.693.208.36 9.24 1.547 10.428 2.502 1.188.955.197 1.444.301 1.944s.35 1.533.284.188 1.417.892 1.417.892c.621.36.99.53.114.733-.122.203-1.076.622-1.928.622H19.226z"/></svg>
+  </a>
+
+  <div class="sticky-join-bar" id="sticky-join-bar">
+    <div class="sjb-inner">
+      <span>Get started with Kamgar Connect today.</span>
+      <div class="sjb-actions">
+        <a href="/register-employer" class="btn btn-primary">Hire Workers</a>
+        <a href="/register-worker" class="btn btn-outline">Find Work</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
