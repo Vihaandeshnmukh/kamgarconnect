@@ -1,5 +1,5 @@
 {
-  "dependencies": {
-    "mongodb": "^7.1.1"
+  "scripts": {
+    "start": "node kamgar-connect/server.js"
   }
 }
