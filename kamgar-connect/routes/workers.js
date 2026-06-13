@@ -1,4 +1,4 @@
-﻿// WEB VERSION - FULLY TESTED AND WORKING
+// WEB VERSION - FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
@@ -149,6 +149,16 @@ router.get('/:id/jobs', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: 'Server Error' });
     }
+});
+
+router.get('/check/:phone', async (req, res) => {
+  try {
+    const worker = await Worker.findOne({ phone: req.params.phone }).select('-password');
+    if (!worker) return res.status(404).json({ exists: false, msg: 'Worker not found' });
+    res.json({ exists: true, worker });
+  } catch (err) {
+    res.status(500).json({ error: 'Server Error' });
+  }
 });
 
 router.get('/:id', async (req, res) => {
