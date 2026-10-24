@@ -3,6 +3,7 @@
 // Do not change core logic when converting to React Native
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const Worker = require('../models/Worker');
 const Job = require('../models/Job');
@@ -88,14 +89,24 @@ router.get('/phone/:phone', async (req, res) => {
   }
 });
 
+// Returns a valid Date for value, or null if it is missing/unparseable
+const parseDate = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+};
+
 router.put('/:id/go-live', async (req, res) => {
     try {
-        const { availableUntil } = req.body;
+        if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ msg: 'Invalid worker id' });
+        const availableUntil = parseDate(req.body.availableUntil);
+        if (!availableUntil) return res.status(400).json({ msg: 'Valid availableUntil date is required' });
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
-            { isLooking: true, availableUntil: new Date(availableUntil) },
+            { isLooking: true, availableUntil },
             { new: true }
         ).select('-password');
+        if (!worker) return res.status(404).json({ msg: 'Worker not found' });
         res.json(worker);
     } catch (err) {
         res.status(500).json({ error: 'Server Error' });
@@ -117,12 +128,15 @@ router.put('/:id/go-offline', async (req, res) => {
 
 router.put('/:id/hire', async (req, res) => {
     try {
-        const { hiredUntil } = req.body;
+        if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ msg: 'Invalid worker id' });
+        const hiredUntil = parseDate(req.body.hiredUntil);
+        if (!hiredUntil) return res.status(400).json({ msg: 'Valid hiredUntil date is required' });
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
-            { hiredUntil: new Date(hiredUntil), isLooking: false, availableUntil: null },
+            { hiredUntil, isLooking: false, availableUntil: null },
             { new: true }
         ).select('-password');
+        if (!worker) return res.status(404).json({ msg: 'Worker not found' });
         res.json(worker);
     } catch (err) {
         res.status(500).json({ error: 'Server Error' });
