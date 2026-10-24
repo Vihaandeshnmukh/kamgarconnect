@@ -1,5 +1,9 @@
 {
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
+    "postinstall": "npm ci --prefix kamgar-connect",
     "start": "node kamgar-connect/server.js"
   }
 }
