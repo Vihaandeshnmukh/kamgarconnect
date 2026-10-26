@@ -1,4 +1,4 @@
 export const CONFIG = {
-  BACKEND_URL: 'https://your-app.railway.app',
+  BACKEND_URL: 'https://api.kamgar.de',
   SITE_URL: 'https://kamgar.de'
 };
