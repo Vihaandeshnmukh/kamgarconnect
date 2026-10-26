@@ -6,6 +6,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
+const twilioWebhook = require('../middleware/twilioWebhook');
 const { requireRole } = require('../middleware/roles');
 const twilio = require('twilio');
 const Call = require('../models/Call');
@@ -104,7 +105,7 @@ router.post('/notify/:workerId', adminAuth, async (req, res) => {
    POST /api/calls/twiml-notify
    TwiML for the simple notification call
    ═══════════════════════════════════════════ */
-router.post('/twiml-notify', express.urlencoded({ extended: false }), (req, res) => {
+router.post('/twiml-notify', twilioWebhook, express.urlencoded({ extended: false }), (req, res) => {
   const twiml = new twilio.twiml.VoiceResponse();
 
   twiml.say(
@@ -206,7 +207,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
    POST /api/calls/twiml-assign
    TwiML for the assign job call with Gather
    ═══════════════════════════════════════════ */
-router.post('/twiml-assign', express.urlencoded({ extended: false }), async (req, res) => {
+router.post('/twiml-assign', twilioWebhook, express.urlencoded({ extended: false }), async (req, res) => {
   const twiml = new twilio.twiml.VoiceResponse();
 
   try {
@@ -270,7 +271,7 @@ router.post('/twiml-assign', express.urlencoded({ extended: false }), async (req
    POST /api/calls/job-response
    Twilio webhook when worker presses 1 or 2
    ═══════════════════════════════════════════ */
-router.post('/job-response', express.urlencoded({ extended: false }), async (req, res) => {
+router.post('/job-response', twilioWebhook, express.urlencoded({ extended: false }), async (req, res) => {
   const twiml = new twilio.twiml.VoiceResponse();
 
   try {
@@ -358,7 +359,7 @@ router.post('/job-response', express.urlencoded({ extended: false }), async (req
 /* ═══════════════════════════════════════════
    POST /api/calls/twiml  (existing bridge call)
    ═══════════════════════════════════════════ */
-router.post('/twiml', express.urlencoded({ extended: false }), (req, res) => {
+router.post('/twiml', twilioWebhook, express.urlencoded({ extended: false }), (req, res) => {
   const twiml = new twilio.twiml.VoiceResponse();
   const toNumber = req.query.toNumber;
   if (toNumber) {
@@ -373,7 +374,7 @@ router.post('/twiml', express.urlencoded({ extended: false }), (req, res) => {
 /* ═══════════════════════════════════════════
    POST /api/calls/webhook  (Twilio status updates)
    ═══════════════════════════════════════════ */
-router.post('/webhook', express.urlencoded({ extended: false }), async (req, res) => {
+router.post('/webhook', twilioWebhook, express.urlencoded({ extended: false }), async (req, res) => {
   try {
     const { CallSid, CallStatus, CallDuration } = req.body;
 
