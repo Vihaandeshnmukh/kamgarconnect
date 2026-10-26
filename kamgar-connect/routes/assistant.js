@@ -1,4 +1,4 @@
-// WEB VERSION � FULLY TESTED AND WORKING
+// WEB VERSION — FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
@@ -6,6 +6,10 @@ const router = express.Router();
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const twilio = require('twilio');
 const CallSession = require('../models/CallSession');
+const Worker = require('../models/Worker');
+const bcrypt = require('bcryptjs');
+const twilioWebhook = require('../middleware/twilioWebhook');
+const { parseNumber, matchCity, matchSkill, extractName, localPhone } = require('../utils/voiceParse');
 
 // ── Rate Limiter: 60 requests per minute per IP ──
 const rateLimitMap = new Map();
@@ -122,111 +126,136 @@ router.post('/tts', rateLimit, async (req, res) => {
   }
 });
 
-// POST /api/assistant/voice - Initial Voice Webhook
-router.post('/voice', express.urlencoded({ extended: false }), async (req, res) => {
+// ── Phone registration call (Twilio speech, Hindi) ──
+// A caller answers 6 questions; when done, a worker profile is created
+// with their phone number, so they can also log in on the website.
+const QUESTIONS = [
+  null,
+  'आपका नाम क्या है?',
+  'आप किस शहर में रहते हैं?',
+  'आपका काम क्या है? जैसे कि प्लम्बर, इलेक्ट्रीशियन, मिस्त्री।',
+  'आपको कितने साल का अनुभव है?',
+  'एक दिन की कितनी दिहाड़ी लेते हैं आप?',
+  'हफ़्ते में कितने दिन काम कर सकते हैं?'
+];
+const LAST_QUESTION = QUESTIONS.length - 1;
+const VOICE = { voice: 'Polly.Aditi', language: 'hi-IN' };
+const MAX_SILENT_TURNS = 2;
+
+// Speaks the text and listens for the caller's answer
+function ask(twiml, text) {
+  const gather = twiml.gather({ input: 'speech', action: '/api/assistant/gather', language: 'hi-IN', speechTimeout: 'auto' });
+  gather.say(VOICE, text);
+  // If the caller says nothing, Twilio continues here: counts as a silent turn
+  twiml.redirect({ method: 'POST' }, '/api/assistant/gather');
+}
+
+function sayAndHangUp(twiml, text) {
+  twiml.say(VOICE, text);
+  twiml.hangup();
+}
+
+// Creates the worker profile from a finished registration call (only once)
+async function saveWorkerFromCall(session) {
+  if (session.workerId || !session.phone) return;
+  const existing = await Worker.findOne({ phone: session.phone });
+  if (existing) { session.workerId = existing._id; return; }
+
+  const d = session.collectedData;
+  const worker = new Worker({
+    name: d.name || 'Caller',
+    phone: session.phone,
+    city: d.city || 'Unknown',
+    skill: d.skill || 'Unknown',
+    experience: d.experience_years || 0,
+    expectedSalary: d.expected_salary_per_day || undefined,
+    availability: d.availability_days ? [`${d.availability_days} days/week`] : [],
+    // Same login rule as website sign-up: the phone number
+    password: await bcrypt.hash(session.phone, await bcrypt.genSalt(10))
+  });
+  await worker.save();
+  session.workerId = worker._id;
+}
+
+// POST /api/assistant/voice - Twilio calls this when someone rings the number
+router.post('/voice', twilioWebhook, express.urlencoded({ extended: false }), async (req, res) => {
+  const twiml = new twilio.twiml.VoiceResponse();
   try {
     const { CallSid, From } = req.body;
-    
-    let session = await CallSession.findOne({ callSid: CallSid });
-    if (!session) {
-      session = new CallSession({
-        callSid: CallSid,
-        phone: From,
-        language: 'hindi',
-        currentQuestion: 1,
-        collectedData: {},
-        conversationHistory: []
-      });
-      await session.save();
+    const phone = localPhone(From);
+
+    // Already registered: greet by name instead of registering again
+    const existing = phone ? await Worker.findOne({ phone }) : null;
+    if (existing) {
+      sayAndHangUp(twiml, `नमस्ते ${existing.name}! आप पहले से कामगार कनेक्ट पर रजिस्टर हैं। काम मिलने पर हम आपको कॉल करेंगे। धन्यवाद।`);
+    } else {
+      let session = await CallSession.findOne({ callSid: CallSid });
+      if (!session) {
+        session = new CallSession({ callSid: CallSid, phone, currentQuestion: 1 });
+        await session.save();
+      }
+      ask(twiml, 'नमस्ते! कामगार कनेक्ट में आपका स्वागत है। ' + QUESTIONS[1]);
     }
-
-    const twiml = new twilio.twiml.VoiceResponse();
-    const gather = twiml.gather({
-      input: 'speech',
-      action: '/api/assistant/gather',
-      language: 'hi-IN',
-      speechTimeout: 'auto'
-    });
-    gather.say({ language: 'hi-IN' }, 'नमस्ते! कामगार कनेक्ट में आपका स्वागत है। आपका नाम क्या है?');
-
-    res.type('text/xml');
-    res.send(twiml.toString());
   } catch (err) {
     console.error('Voice Webhook Error:', err);
-    res.status(500).json({ error: 'Server Error' });
+    sayAndHangUp(twiml, 'माफ़ कीजिए, एक तकनीकी समस्या है। कृपया फिर से कॉल करें।');
   }
+  res.type('text/xml').send(twiml.toString());
 });
 
-// POST /api/assistant/gather - Subsequent Voice Exchanges
-router.post('/gather', express.urlencoded({ extended: false }), async (req, res) => {
+// POST /api/assistant/gather - each answer the caller speaks
+router.post('/gather', twilioWebhook, express.urlencoded({ extended: false }), async (req, res) => {
+  const twiml = new twilio.twiml.VoiceResponse();
   try {
-    const { CallSid, SpeechResult } = req.body;
-    let session = await CallSession.findOne({ callSid: CallSid });
+    const { CallSid } = req.body;
+    const speech = (req.body.SpeechResult || '').trim();
+    const session = await CallSession.findOne({ callSid: CallSid });
 
     if (!session) {
-      const twiml = new twilio.twiml.VoiceResponse();
-      twiml.say({ language: 'hi-IN' }, 'माफ़ कीजिए, एक तकनीकी समस्या है। कृपया फिर से कॉल करें।');
-      twiml.hangup();
-      res.type('text/xml');
-      return res.send(twiml.toString());
-    }
-
-    session.conversationHistory.push({ role: 'user', content: SpeechResult });
-
-    let nextPrompt = '';
-
-    if (session.currentQuestion === 1) {
-      session.collectedData.name = SpeechResult;
-      session.currentQuestion = 2;
-      nextPrompt = 'धन्यवाद। आप किस शहर में रहते हैं?';
-    } else if (session.currentQuestion === 2) {
-      session.collectedData.city = SpeechResult;
-      session.currentQuestion = 3;
-      nextPrompt = 'आपका काम क्या है? जैसे कि प्लम्बर, इलेक्ट्रीशियन।';
-    } else if (session.currentQuestion === 3) {
-      session.collectedData.skill = SpeechResult;
-      session.currentQuestion = 4;
-      nextPrompt = 'आपको कितने साल का अनुभव है?';
-    } else if (session.currentQuestion === 4) {
-      session.collectedData.experience_years = parseInt(SpeechResult ? SpeechResult.replace(/[^0-9]/g, '') : 0) || 0;
-      session.currentQuestion = 5;
-      nextPrompt = 'एक दिन की कितनी दिहाड़ी लेते हैं आप?';
-    } else if (session.currentQuestion === 5) {
-      session.collectedData.expected_salary_per_day = parseInt(SpeechResult ? SpeechResult.replace(/[^0-9]/g, '') : 0) || 0;
-      session.currentQuestion = 6;
-      nextPrompt = 'हफ़्ते में कितने दिन काम कर सकते हैं?';
-    } else if (session.currentQuestion === 6) {
-      session.collectedData.availability_days = parseInt(SpeechResult ? SpeechResult.replace(/[^0-9]/g, '') : 0) || 0;
-      session.currentQuestion = 7;
-      nextPrompt = 'धन्यवाद! आपकी जानकारी रजिस्टर हो गई है। हम आपको जल्द ही काम देंगे।';
+      sayAndHangUp(twiml, 'माफ़ कीजिए, एक तकनीकी समस्या है। कृपया फिर से कॉल करें।');
+    } else if (session.currentQuestion > LAST_QUESTION) {
+      sayAndHangUp(twiml, 'आपकी जानकारी रजिस्टर हो गई है। धन्यवाद।');
+    } else if (!speech) {
+      session.silentTurns += 1;
+      await session.save();
+      if (session.silentTurns > MAX_SILENT_TURNS) {
+        sayAndHangUp(twiml, 'हमें आपकी आवाज़ नहीं सुनाई दी। कृपया बाद में फिर से कॉल करें। धन्यवाद।');
+      } else {
+        ask(twiml, 'माफ़ कीजिए, आवाज़ नहीं आई। ' + QUESTIONS[session.currentQuestion]);
+      }
     } else {
-      nextPrompt = 'आपकी जानकारी रजिस्टर हो गई है। धन्यवाद।';
+      session.silentTurns = 0;
+      session.conversationHistory.push({ role: 'user', content: speech });
+
+      const data = session.collectedData;
+      switch (session.currentQuestion) {
+        case 1: data.name = extractName(speech) || speech; break;
+        case 2: data.city = matchCity(speech) || speech; break;
+        case 3: data.skill = matchSkill(speech) || speech; break;
+        case 4: data.experience_years = parseNumber(speech) || 0; break;
+        case 5: data.expected_salary_per_day = parseNumber(speech) || 0; break;
+        case 6: data.availability_days = parseNumber(speech) || 0; break;
+      }
+      session.currentQuestion += 1;
+
+      if (session.currentQuestion <= LAST_QUESTION) {
+        const next = 'धन्यवाद। ' + QUESTIONS[session.currentQuestion];
+        session.conversationHistory.push({ role: 'assistant', content: next });
+        await session.save();
+        ask(twiml, next);
+      } else {
+        await saveWorkerFromCall(session);
+        const done = 'धन्यवाद! आपकी जानकारी रजिस्टर हो गई है। काम मिलने पर हम आपको कॉल करेंगे।';
+        session.conversationHistory.push({ role: 'assistant', content: done });
+        await session.save();
+        sayAndHangUp(twiml, done);
+      }
     }
-
-    session.conversationHistory.push({ role: 'assistant', content: nextPrompt });
-    await session.save();
-
-    const twiml = new twilio.twiml.VoiceResponse();
-    
-    if (session.currentQuestion <= 6) {
-      const gather = twiml.gather({
-        input: 'speech',
-        action: '/api/assistant/gather',
-        language: 'hi-IN',
-        speechTimeout: 'auto'
-      });
-      gather.say({ language: 'hi-IN' }, nextPrompt);
-    } else {
-      twiml.say({ language: 'hi-IN' }, nextPrompt);
-      twiml.hangup();
-    }
-
-    res.type('text/xml');
-    res.send(twiml.toString());
   } catch (err) {
     console.error('Gather Webhook Error:', err);
-    res.status(500).json({ error: 'Server Error' });
+    sayAndHangUp(twiml, 'माफ़ कीजिए, एक तकनीकी समस्या है। कृपया फिर से कॉल करें।');
   }
+  res.type('text/xml').send(twiml.toString());
 });
 
 module.exports = router;
