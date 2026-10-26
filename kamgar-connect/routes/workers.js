@@ -38,10 +38,11 @@ router.get('/', async (req, res) => {
   try {
     await autoExpireAvailability();
     const { city, skill } = req.query;
-    let query = { 
-        isLooking: true, 
+    let query = {
+        isLooking: true,
         availableUntil: { $gt: new Date() },
-        hiredUntil: null 
+        hiredUntil: null,
+        isWithdrawn: { $ne: true }
     };
     if (city) query.city = city;
     if (skill) query.skill = skill;
@@ -61,6 +62,7 @@ router.get('/nearby', async (req, res) => {
       isLooking: true,
       availableUntil: { $gt: new Date() },
       hiredUntil: null,
+      isWithdrawn: { $ne: true },
       location: {
         $near: {
           $geometry: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
@@ -81,7 +83,8 @@ router.get('/phone/:phone', async (req, res) => {
     await autoExpireAvailability();
     const worker = await Worker.findOne({ 
         phone: req.params.phone,
-        hiredUntil: null
+        hiredUntil: null,
+        isWithdrawn: { $ne: true }
     }).select('-password');
     if (!worker) return res.status(404).json({ msg: 'No available worker found.' });
     res.json(worker);
@@ -104,7 +107,8 @@ router.put('/:id/go-live', auth, requireRole('worker'), requireSelf(), async (re
         if (!availableUntil) return res.status(400).json({ msg: 'Valid availableUntil date is required' });
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
-            { isLooking: true, availableUntil },
+            // Going live means the worker wants work again, so show them in search
+            { isLooking: true, availableUntil, isWithdrawn: false },
             { new: true }
         ).select('-password');
         if (!worker) return res.status(404).json({ msg: 'Worker not found' });
@@ -127,11 +131,43 @@ router.put('/:id/go-offline', auth, requireRole('worker'), requireSelf(), async 
     }
 });
 
+// PUT /api/workers/:id/withdraw - worker removes themselves from search results (reversible)
+router.put('/:id/withdraw', auth, requireRole('worker'), requireSelf(), async (req, res) => {
+    try {
+        const worker = await Worker.findByIdAndUpdate(
+            req.params.id,
+            { isWithdrawn: true, isLooking: false, availableUntil: null },
+            { new: true }
+        ).select('-password');
+        if (!worker) return res.status(404).json({ msg: 'Worker not found' });
+        res.json(worker);
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// PUT /api/workers/:id/rejoin - worker shows up in search results again
+router.put('/:id/rejoin', auth, requireRole('worker'), requireSelf(), async (req, res) => {
+    try {
+        const worker = await Worker.findByIdAndUpdate(
+            req.params.id,
+            { isWithdrawn: false },
+            { new: true }
+        ).select('-password');
+        if (!worker) return res.status(404).json({ msg: 'Worker not found' });
+        res.json(worker);
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
 router.put('/:id/hire', auth, requireRole('employer'), async (req, res) => {
     try {
         if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ msg: 'Invalid worker id' });
         const hiredUntil = parseDate(req.body.hiredUntil);
         if (!hiredUntil) return res.status(400).json({ msg: 'Valid hiredUntil date is required' });
+        const target = await Worker.findById(req.params.id).select('isWithdrawn');
+        if (target && target.isWithdrawn) return res.status(409).json({ msg: 'This worker is not available' });
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
             { hiredUntil, isLooking: false, availableUntil: null },

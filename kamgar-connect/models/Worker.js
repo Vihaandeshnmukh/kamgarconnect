@@ -16,6 +16,7 @@ const WorkerSchema = new mongoose.Schema({
   availability: { type: [String], default: [] }, // ['monday', 'wednesday'] or ['24/7']
   isLooking: { type: Boolean, default: false }, // Whether the worker is currently seeking jobs
   availableUntil: { type: Date, default: null }, // Timestamp until which the worker is available
+  isWithdrawn: { type: Boolean, default: false }, // Worker removed themselves from search results
   location: {
     type: { type: String, default: 'Point' },
     coordinates: { type: [Number], default: [0, 0] } // [longitude, latitude]
