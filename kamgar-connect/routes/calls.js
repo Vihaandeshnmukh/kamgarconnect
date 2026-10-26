@@ -136,6 +136,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
 
     const worker = await Worker.findById(workerId);
     if (!worker) return res.status(404).json({ success: false, msg: 'Worker not found' });
+    if (worker.isWithdrawn) return res.status(409).json({ success: false, msg: 'This worker is not available' });
 
     const employer = await Employer.findById(req.user.id);
     const employerName = req.body.employerName || (employer ? employer.name : 'Employer');
