@@ -589,7 +589,7 @@
           if (regRes.ok) {
              loginUser(regData.user, selectedType, regData.token);
           } else {
-             document.getElementById('reg-backend-err').innerText = regData.msg || (regData.errors && regData.errors[0].msg) || "Registration failed. Please try again.";
+             document.getElementById('reg-backend-err').innerText = regData.msg || (regData.errors ? regData.errors[0].msg : '') || "Registration failed. Please try again.";
              document.getElementById('reg-backend-err').style.display = 'block';
           }
        } catch (err) {
