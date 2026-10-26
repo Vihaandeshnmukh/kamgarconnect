@@ -14,7 +14,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
 
   <style>
     :root {
@@ -26,7 +26,7 @@
     }
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg-base); color: var(--text-primary); font-family: var(--font); overflow-x: hidden; scroll-behavior: smooth; padding-top: 40px; }
+    body { background: var(--bg-base); color: var(--text-primary); font-family: var(--font); overflow-x: hidden; scroll-behavior: smooth; padding-top: 0; }
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
     button, input, select, textarea { font-family: inherit; }
     a { text-decoration: none; color: inherit; }
@@ -141,10 +141,6 @@
 
   <div id="top-timer-bar-wrap"><div id="top-timer-bar"></div></div>
 
-  <div id="test-banner">
-    <span data-i18n="test_banner">TESTING MODE — All features unlocked for all accounts</span>
-    <button onclick="dismissBanner()" style="background:none; border:none; margin-left:15px; font-weight:900; color:black; cursor:pointer;">&times;</button>
-  </div>
 
   <nav class="navbar">
     <div class="container nav-inner">
@@ -532,12 +528,13 @@
     }
 
     function toggleAvail(d) {
-       const id = `av-${d}`;
-       const cb = document.getElementById(id);
+       // The 24/7 checkbox's id is av-24-7 (a slash is not usable in the id)
+       const cb = document.getElementById(d === '24/7' ? 'av-24-7' : `av-${d}`);
        if (!cb) return;
-       cb.checked = !cb.checked;
-       if (d === '24/7' && cb.checked) {
-          ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day => {
+       // A click on the checkbox itself already toggled it; only toggle for clicks on the label area
+       if (!window.event || window.event.target !== cb) cb.checked = !cb.checked;
+       if (d === '24/7') {
+          if (cb.checked) ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(day => {
              const el = document.getElementById(`av-${day}`);
              if (el) el.checked = false;
           });
@@ -939,7 +936,7 @@
 
     function dismissBanner() {
        sessionStorage.setItem('bannerDismissed', 'true');
-       document.getElementById('test-banner').style.display='none';
+       const banner = document.getElementById('test-banner'); if (banner) banner.style.display='none';
        document.body.style.paddingTop='0';
     }
 
