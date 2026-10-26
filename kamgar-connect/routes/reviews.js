@@ -1,24 +1,29 @@
-// WEB VERSION — FULLY TESTED AND WORKING
+// WEB VERSION â€” FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
 const Worker = require('../models/Worker');
+const auth = require('../middleware/auth');
+const { requireRole } = require('../middleware/roles');
 
-// POST /api/reviews
-router.post('/', async (req, res) => {
+// POST /api/reviews - only logged-in employers; the reviewer is taken from the token
+router.post('/', auth, requireRole('employer'), async (req, res) => {
   try {
-    const { workerId, jobId, rating, tags, comment, employerId } = req.body;
-    
+    const { workerId, jobId, rating, tags, comment } = req.body;
+
     if (!workerId || !rating) {
       return res.status(400).json({ success: false, msg: 'Worker ID and rating are required' });
+    }
+    if (!(Number(rating) >= 1 && Number(rating) <= 5)) {
+      return res.status(400).json({ success: false, msg: 'Rating must be between 1 and 5' });
     }
 
     const review = new Review({
       workerId,
-      jobId, 
-      employerId,
+      jobId,
+      employerId: req.user.id,
       rating,
       tags,
       comment

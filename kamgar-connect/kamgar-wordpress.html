@@ -477,6 +477,10 @@
        setLang(currentLang);
        loadVideos();
        if (sessionStorage.getItem('bannerDismissed')) dismissBanner();
+       // Logins saved before tokens existed must sign in again
+       if (localStorage.getItem('user_id') && !localStorage.getItem('auth_token')) {
+          ['user_id','user_name','user_phone','user_type','user_city','user_skill','isLooking','availableUntil','liveStartTime'].forEach(k => localStorage.removeItem(k));
+       }
        if (localStorage.getItem('user_id')) {
           document.getElementById('dashboard-tabs').style.display = 'block';
           updateProfileUI();
@@ -560,11 +564,14 @@
        const ldr = document.getElementById('reg-loader');
        btn.style.display='none'; ldr.style.display='block';
        try {
-          const checkUrl = `${CONFIG.BACKEND_URL}/api/${selectedType === 'Worker' ? 'workers' : 'employers'}/check/${phone}`;
-          const checkRes = await fetch(checkUrl);
-          if (!checkRes.ok) throw new Error("Could not reach server");
-          const checkData = await checkRes.json();
-          if (checkData.exists) { loginUser(checkData.user, selectedType); return; }
+          // Existing user: log in with the phone number (404 means not registered yet)
+          const loginRes = await fetch(`${CONFIG.BACKEND_URL}/api/auth/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ phone }) });
+          if (loginRes.ok) {
+             const loginData = await loginRes.json();
+             loginUser(loginData.user, loginData.user.role === 'employer' ? 'Employer' : 'Worker', loginData.token);
+             return;
+          }
+          if (loginRes.status !== 404) throw new Error("Could not reach server");
           const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
           const body = { name, phone, city };
           if (selectedType === 'Worker') {
@@ -580,9 +587,9 @@
           const regRes = await fetch(regUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
           const regData = await regRes.json();
           if (regRes.ok) {
-             loginUser(regData.user || regData.worker || regData.employer, selectedType);
+             loginUser(regData.user, selectedType, regData.token);
           } else {
-             document.getElementById('reg-backend-err').innerText = regData.message || "Registration failed. Please try again.";
+             document.getElementById('reg-backend-err').innerText = regData.msg || (regData.errors && regData.errors[0].msg) || "Registration failed. Please try again.";
              document.getElementById('reg-backend-err').style.display = 'block';
           }
        } catch (err) {
@@ -592,7 +599,21 @@
        }
     }
 
-    function loginUser(u, type) {
+    // Headers for API calls that need the logged-in user's token
+    function authHeaders(extra = {}) {
+       return { ...extra, 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` };
+    }
+
+    // Token missing or expired (tokens last 5 days): ask the user to log in again
+    function sessionExpired(res) {
+       if (res.status !== 401) return false;
+       showNotif("Session expired. Please log in again.", "red");
+       setTimeout(logout, 2000);
+       return true;
+    }
+
+    function loginUser(u, type, token) {
+       localStorage.setItem('auth_token', token);
        localStorage.setItem('user_id', u.id || u._id);
        localStorage.setItem('user_name', u.name);
        localStorage.setItem('user_phone', u.phone);
@@ -662,7 +683,8 @@
     async function acceptJob(id) {
        showNotif("Processing job acceptance...", "green");
        try {
-          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/accept`, {method:'PUT'});
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/accept`, {method:'PUT', headers: authHeaders()});
+          if (sessionExpired(res)) return;
           if (!res.ok) throw new Error("Failed to accept");
           showNotif("Job Accepted! Directions sent to mobile.", "green");
           loadCityJobs();
@@ -735,7 +757,8 @@
           instructions: document.getElementById('hire-inst').value
        };
        try {
-          const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/assign-job`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/assign-job`, { method: 'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify(body) });
+          if (sessionExpired(res)) return;
           if (res.ok) {
              confetti({ particleCount: 150, colors: ['#FF5C00', '#3b82f6'] });
              closeModal();
@@ -794,15 +817,19 @@
        showNotif(isLive ? "Going offline..." : "Going live...", "green");
        try {
           if (isLive) {
-             await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-offline`, {method:'PUT'});
+             const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-offline`, {method:'PUT', headers: authHeaders()});
+             if (sessionExpired(res)) return;
+             if (!res.ok) throw new Error("Failed to go offline");
              localStorage.setItem('isLooking', 'false');
              gsap.to(window, {scrollTo: 0, duration: 1});
           } else {
              const until = new Date(); until.setHours(until.getHours() + 4);
-             await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-live`, {
-                method:'PUT', headers:{'Content-Type':'application/json'},
+             const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-live`, {
+                method:'PUT', headers: authHeaders({'Content-Type':'application/json'}),
                 body: JSON.stringify({ availableUntil: until.toISOString() })
              });
+             if (sessionExpired(res)) return;
+             if (!res.ok) throw new Error("Failed to go live");
              localStorage.setItem('isLooking', 'true');
              localStorage.setItem('liveStartTime', new Date().getTime());
              localStorage.setItem('availableUntil', until.toISOString());

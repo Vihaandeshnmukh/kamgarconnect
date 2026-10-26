@@ -22,8 +22,7 @@ router.post('/', auth, async (req, res) => {
     const { jobType, city, workerCount, amount } = req.body;
     
     // Only employers can post jobs
-    // RESTRICTION REMOVED FOR TESTING — ADD BACK BEFORE PRODUCTION
-    // if (req.user.role !== 'employer') return res.status(401).json({ msg: 'Not authorized' });
+    if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
 
     const job = new Job({
       employerId: req.user.id,
@@ -73,15 +72,15 @@ router.get('/:id', async (req, res) => {
 // PUT /api/jobs/:id/accept - Worker accepts a job
 router.put('/:id/accept', auth, async (req, res) => {
   try {
-    // RESTRICTION REMOVED FOR TESTING — ADD BACK BEFORE PRODUCTION
-    // if (req.user.role !== 'worker') return res.status(401).json({ msg: 'Not authorized' });
+    // Only workers can accept jobs
+    if (req.user.role !== 'worker') return res.status(403).json({ msg: 'Not authorized' });
 
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (job.status !== 'pending') return res.status(400).json({ msg: 'Job already accepted' });
 
     const worker = await Worker.findById(req.user.id);
-    const employer = await Employer.findById(job.employerId);
+    const employer = await Employer.findById(job.employerId).select('+push_token');
 
     job.workerId = worker.id;
     job.status = 'accepted';
@@ -143,11 +142,12 @@ router.put('/:id/accept', auth, async (req, res) => {
 // PUT /api/jobs/:id/complete - Employer marks job as completed
 router.put('/:id/complete', auth, async (req, res) => {
   try {
-    // RESTRICTION REMOVED FOR TESTING — ADD BACK BEFORE PRODUCTION
-    // if (req.user.role !== 'employer') return res.status(401).json({ msg: 'Not authorized' });
+    // Only the employer who posted the job can complete it
+    if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
 
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status === 'completed') return res.status(400).json({ msg: 'Already completed' });
 
     job.status = 'completed';
@@ -192,6 +192,7 @@ router.get('/available/:city', async (req, res) => {
 // POST /api/jobs/post (alias for mobile app)
 router.post('/post', auth, async (req, res) => {
   try {
+    if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
     const { jobType, city, workerCount, amount } = req.body;
     const job = new Job({
       employerId: req.user.id,
