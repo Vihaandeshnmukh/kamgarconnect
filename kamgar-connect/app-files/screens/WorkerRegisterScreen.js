@@ -52,7 +52,7 @@ export default function WorkerRegisterScreen({ navigation }) {
           if (pushToken) {
             await fetch(`${CONFIG.BACKEND_URL}/api/notifications/workers/${data.user.id}/push-token`, {
               method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${data.token}` },
               body: JSON.stringify({ push_token: pushToken })
             });
           }

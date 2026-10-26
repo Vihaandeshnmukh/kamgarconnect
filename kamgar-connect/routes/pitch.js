@@ -1,10 +1,11 @@
-// WEB VERSION — FULLY TESTED AND WORKING
+// WEB VERSION â€” FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
 const router = express.Router();
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
+const adminAuth = require('../middleware/adminAuth');
 
 // POST /api/register/worker
 router.post('/worker', async (req, res) => {
@@ -66,14 +67,9 @@ router.post('/employer', async (req, res) => {
 });
 
 // GET /api/admin/data
-router.get('/admin-data', async (req, res) => {
-  const auth = req.headers.authorization;
-  if (auth !== process.env.ADMIN_PASSWORD) {
-    return res.status(401).json({ msg: 'Unauthorized' });
-  }
-
+router.get('/admin-data', adminAuth, async (req, res) => {
   try {
-    const workers = await Worker.find().sort({ rating: -1, createdAt: -1 });
+    const workers = await Worker.find().select('+aadhaar').sort({ rating: -1, createdAt: -1 });
     const employers = await Employer.find().sort({ createdAt: -1 });
     res.json({ workers, employers });
   } catch (err) {

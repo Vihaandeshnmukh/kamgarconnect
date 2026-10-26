@@ -11,6 +11,8 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 
 const app = express();
+// Behind Render's proxy: lets req.ip be the visitor's IP (used by the rate limiters)
+app.set('trust proxy', 1);
 // Socket.io will be attached to the server created by app.listen
 let io;
 

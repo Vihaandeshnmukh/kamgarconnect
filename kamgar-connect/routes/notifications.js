@@ -1,4 +1,4 @@
-// WEB VERSION — FULLY TESTED AND WORKING
+// WEB VERSION â€” FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
@@ -6,9 +6,12 @@ const router = express.Router();
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
 const { sendPushNotification } = require('../utils/notifications');
+const auth = require('../middleware/auth');
+const adminAuth = require('../middleware/adminAuth');
+const { requireRole, requireSelf } = require('../middleware/roles');
 
-// PUT /api/workers/:id/push-token
-router.put('/workers/:id/push-token', async (req, res) => {
+// PUT /api/notifications/workers/:id/push-token - a worker sets their own token
+router.put('/workers/:id/push-token', auth, requireRole('worker'), requireSelf(), async (req, res) => {
   try {
     const { push_token } = req.body;
     await Worker.findByIdAndUpdate(req.params.id, { push_token });
@@ -18,8 +21,8 @@ router.put('/workers/:id/push-token', async (req, res) => {
   }
 });
 
-// PUT /api/employers/:id/push-token
-router.put('/employers/:id/push-token', async (req, res) => {
+// PUT /api/notifications/employers/:id/push-token - an employer sets their own token
+router.put('/employers/:id/push-token', auth, requireRole('employer'), requireSelf(), async (req, res) => {
   try {
     const { push_token } = req.body;
     await Employer.findByIdAndUpdate(req.params.id, { push_token });
@@ -30,15 +33,15 @@ router.put('/employers/:id/push-token', async (req, res) => {
 });
 
 // POST /api/notifications/send (Admin manual send)
-router.post('/send', async (req, res) => {
+router.post('/send', adminAuth, async (req, res) => {
   try {
     const { userId, userType, title, body, data } = req.body;
-    
+
     let user;
     if (userType === 'worker') {
-      user = await Worker.findById(userId);
+      user = await Worker.findById(userId).select('+push_token');
     } else {
-      user = await Employer.findById(userId);
+      user = await Employer.findById(userId).select('+push_token');
     }
 
     if (!user || !user.push_token) {

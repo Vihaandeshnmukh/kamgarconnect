@@ -5,15 +5,16 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const { requireRole, requireSelf } = require('../middleware/roles');
 const Worker = require('../models/Worker');
 const Job = require('../models/Job');
 
 // TODO BEFORE PRODUCTION:
-// 1. Add back user type checks
-// 2. Workers only see worker dashboard
-// 3. Employers only see employer dashboard
-// 4. Remove testing mode banner
-// 5. Remove self hire capability
+// 1. Workers only see worker dashboard
+// 2. Employers only see employer dashboard
+// 3. Remove testing mode banner
+// (User type checks and the self-hire block are back: only a worker can change
+//  their own availability, and only employers can hire or release.)
 
 const autoExpireAvailability = async () => {
     try {
@@ -96,7 +97,7 @@ const parseDate = (value) => {
     return isNaN(date.getTime()) ? null : date;
 };
 
-router.put('/:id/go-live', async (req, res) => {
+router.put('/:id/go-live', auth, requireRole('worker'), requireSelf(), async (req, res) => {
     try {
         if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ msg: 'Invalid worker id' });
         const availableUntil = parseDate(req.body.availableUntil);
@@ -113,7 +114,7 @@ router.put('/:id/go-live', async (req, res) => {
     }
 });
 
-router.put('/:id/go-offline', async (req, res) => {
+router.put('/:id/go-offline', auth, requireRole('worker'), requireSelf(), async (req, res) => {
     try {
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
@@ -126,7 +127,7 @@ router.put('/:id/go-offline', async (req, res) => {
     }
 });
 
-router.put('/:id/hire', async (req, res) => {
+router.put('/:id/hire', auth, requireRole('employer'), async (req, res) => {
     try {
         if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ msg: 'Invalid worker id' });
         const hiredUntil = parseDate(req.body.hiredUntil);
@@ -143,7 +144,7 @@ router.put('/:id/hire', async (req, res) => {
     }
 });
 
-router.put('/:id/release', async (req, res) => {
+router.put('/:id/release', auth, requireRole('employer'), async (req, res) => {
     try {
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,

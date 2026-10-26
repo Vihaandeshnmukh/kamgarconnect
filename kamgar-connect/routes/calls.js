@@ -1,9 +1,12 @@
-// WEB VERSION � FULLY TESTED AND WORKING
+// WEB VERSION — FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const adminAuth = require('../middleware/adminAuth');
+const { requireRole } = require('../middleware/roles');
 const twilio = require('twilio');
 const Call = require('../models/Call');
 const Worker = require('../models/Worker');
@@ -32,11 +35,20 @@ function getBaseUrl(req) {
   return `${req.protocol}://${req.get('host')}`;
 }
 
+// ── Helper: find the employer behind an assignment call ──
+function findEmployerForCall(callRecord) {
+  if (callRecord.callerId) return Employer.findById(callRecord.callerId);
+  // Older call records only stored the typed name; match it as plain text
+  const name = (callRecord.assignmentData && callRecord.assignmentData.employerName) || '';
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return Employer.findOne({ name: { $regex: new RegExp(escaped, 'i') } });
+}
+
 /* ═══════════════════════════════════════════
    POST /api/calls/notify/:workerId
    Admin clicks CALL → simple Hindi notification
    ═══════════════════════════════════════════ */
-router.post('/notify/:workerId', async (req, res) => {
+router.post('/notify/:workerId', adminAuth, async (req, res) => {
   try {
     const worker = await Worker.findById(req.params.workerId);
     if (!worker) return res.status(404).json({ success: false, msg: 'Worker not found' });
@@ -109,10 +121,32 @@ router.post('/twiml-notify', express.urlencoded({ extended: false }), (req, res)
 
 /* ═══════════════════════════════════════════
    POST /api/calls/assign-job
-   Admin clicks    // Save call record first so TwiML webhook can look it up
+   Employer hires a worker → interactive call with the job details
+   ═══════════════════════════════════════════ */
+router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
+  try {
+    const { workerId, location, date, time } = req.body;
+    if (!workerId || !location || !date || !time) {
+      return res.status(400).json({ success: false, msg: 'workerId, location, date and time are required' });
+    }
+    if (!mongoose.isValidObjectId(workerId)) {
+      return res.status(400).json({ success: false, msg: 'Invalid worker id' });
+    }
+
+    const worker = await Worker.findById(workerId);
+    if (!worker) return res.status(404).json({ success: false, msg: 'Worker not found' });
+
+    const employer = await Employer.findById(req.user.id);
+    const employerName = req.body.employerName || (employer ? employer.name : 'Employer');
+
+    const baseUrl = getBaseUrl(req);
+    let callSid = 'MOCK_SID_' + Date.now();
+
+    // Save call record first so TwiML webhook can look it up
     const callRecord = new Call({
+      callerId: req.user.id,
       receiverId: worker._id,
-      callerType: 'admin',
+      callerType: 'employer',
       callType: 'assign',
       callSid, 
       status: 'initiated',
@@ -263,7 +297,7 @@ router.post('/job-response', express.urlencoded({ extended: false }), async (req
       if (twilioClient && process.env.TWILIO_PHONE_NUMBER) {
         // SMS to employer
         try {
-          const employer = await Employer.findOne({ name: { $regex: new RegExp(employerName, 'i') } });
+          const employer = await findEmployerForCall(callRecord);
           const toPhone = employer ? employer.phone : null;
           if (toPhone) {
             await twilioClient.messages.create({
@@ -298,7 +332,7 @@ router.post('/job-response', express.urlencoded({ extended: false }), async (req
       if (twilioClient && process.env.TWILIO_PHONE_NUMBER) {
         // SMS to employer
         try {
-          const employer = await Employer.findOne({ name: { $regex: new RegExp(employerName, 'i') } });
+          const employer = await findEmployerForCall(callRecord);
           const toPhone = employer ? employer.phone : null;
           if (toPhone) {
             await twilioClient.messages.create({
@@ -368,7 +402,7 @@ router.post('/webhook', express.urlencoded({ extended: false }), async (req, res
 /* ═══════════════════════════════════════════
    POST /api/calls/initiate  (existing employer→worker bridge)
    ═══════════════════════════════════════════ */
-router.post('/initiate', auth, async (req, res) => {
+router.post('/initiate', auth, requireRole('employer'), async (req, res) => {
   try {
     const { receiverId, jobId } = req.body;
 
@@ -423,7 +457,7 @@ router.post('/initiate', auth, async (req, res) => {
    GET /api/calls/history/:workerId
    Call history for a specific worker
    ═══════════════════════════════════════════ */
-router.get('/history/:workerId', async (req, res) => {
+router.get('/history/:workerId', auth, async (req, res) => {
   try {
     const calls = await Call.find({
       receiverId: req.params.workerId

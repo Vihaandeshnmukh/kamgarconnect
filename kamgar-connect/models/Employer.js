@@ -1,4 +1,4 @@
-// WEB VERSION — FULLY TESTED AND WORKING
+// WEB VERSION â€” FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const mongoose = require('mongoose');
@@ -6,13 +6,13 @@ const mongoose = require('mongoose');
 const EmployerSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
-  password: { type: String }, // Optional for pitch
+  password: { type: String, select: false }, // Optional for pitch; never returned unless asked with select('+password')
   city: { type: String, required: true },
   companyName: { type: String },
   workerType: { type: String },
   workerCount: { type: Number },
   jobsPosted: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
-  push_token: { type: String, default: null },
+  push_token: { type: String, default: null, select: false },
   createdAt: { type: Date, default: Date.now }
 });
 

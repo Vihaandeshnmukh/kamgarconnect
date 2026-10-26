@@ -6,11 +6,11 @@ const mongoose = require('mongoose');
 const WorkerSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },
-  password: { type: String }, // Optional for pitch
+  password: { type: String, select: false }, // Optional for pitch; never returned unless asked with select('+password')
   city: { type: String, required: true },
   skill: { type: String, required: true }, // Plumber, Mason, etc.
   experience: { type: Number, required: true, default: 0 },
-  aadhaar: { type: String }, // Optional for pitch
+  aadhaar: { type: String, select: false }, // Optional; private, only admin routes select('+aadhaar')
   expectedSalary: { type: Number },
   hiredUntil: { type: Date, default: null }, // Timestamp until which the worker is currently booked
   availability: { type: [String], default: [] }, // ['monday', 'wednesday'] or ['24/7']
@@ -27,7 +27,7 @@ const WorkerSchema = new mongoose.Schema({
   rating: { type: Number, default: 0 },
   totalRatings: { type: Number, default: 0 },
   jobHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
-  push_token: { type: String, default: null },
+  push_token: { type: String, default: null, select: false },
   createdAt: { type: Date, default: Date.now }
 });
 
