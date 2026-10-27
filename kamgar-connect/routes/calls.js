@@ -29,6 +29,13 @@ function formatPhone(phone) {
   return '+91' + digits;
 }
 
+// ── Helper: only real Indian mobile numbers (10 digits starting 6-9) get a real call ──
+// Demo/test accounts use numbers like 0000000101: their hire is recorded without dialling
+function isCallablePhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '').slice(-10);
+  return /^[6-9]\d{9}$/.test(digits);
+}
+
 // ── Helper: get base URL for Twilio webhooks ──
 function getBaseUrl(req) {
   // In production use the BACKEND_URL env or the request host
@@ -57,7 +64,7 @@ router.post('/notify/:workerId', adminAuth, async (req, res) => {
     const baseUrl = getBaseUrl(req);
     let callSid = 'MOCK_SID_' + Date.now();
 
-    if (twilioClient && process.env.TWILIO_PHONE_NUMBER) {
+    if (twilioClient && process.env.TWILIO_PHONE_NUMBER && isCallablePhone(worker.phone)) {
       try {
         const call = await twilioClient.calls.create({
           url: `${baseUrl}/api/calls/twiml-notify?workerId=${worker._id}`,
@@ -163,7 +170,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     });
     await callRecord.save();
 
-    if (twilioClient && process.env.TWILIO_PHONE_NUMBER) {
+    if (twilioClient && process.env.TWILIO_PHONE_NUMBER && isCallablePhone(worker.phone)) {
       try {
         const lang = worker.language || 'hi';
         const call = await twilioClient.calls.create({
@@ -415,7 +422,7 @@ router.post('/initiate', auth, requireRole('employer'), async (req, res) => {
 
     let call;
     try {
-      if (twilioClient && process.env.TWILIO_PHONE_NUMBER) {
+      if (twilioClient && process.env.TWILIO_PHONE_NUMBER && isCallablePhone(employer.phone) && isCallablePhone(worker.phone)) {
         const baseUrl = getBaseUrl(req);
         call = await twilioClient.calls.create({
           url: `${baseUrl}/api/calls/twiml?toNumber=${encodeURIComponent(formatPhone(worker.phone))}`,
