@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (res.ok) {
           localStorage.setItem('kamgar-token', data.token);
-          workerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Connect, ${data.user.name}</p>`;
+          workerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Connect, ${String(data.user.name).replace(/[<>&"']/g, '')}</p>`;
         } else {
           alert('Signup failed: ' + (data.msg || (data.errors ? data.errors[0].msg : 'Unknown error')));
           btn.innerText = originalText;
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (res.ok) {
           localStorage.setItem('kamgar-token', data.token);
-          employerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Connect, ${data.user.name}</p>`;
+          employerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Connect, ${String(data.user.name).replace(/[<>&"']/g, '')}</p>`;
         } else {
           alert('Signup failed: ' + (data.msg || (data.errors ? data.errors[0].msg : 'Unknown error')));
           btn.innerText = originalText;
@@ -798,6 +798,8 @@ async function initTopWorkers() {
       return;
     }
 
+    // Worker data is shown as text, never as HTML
+    const esc = (v) => String(v === undefined || v === null ? '' : v).replace(/[&<>"'`]/g, c => '&#' + c.charCodeAt(0) + ';');
     list.innerHTML = workers.slice(0, 8).map(w => {
       const avg = Number(w.rating) || 0;
       const count = w.totalRatings || 0;
@@ -810,8 +812,8 @@ async function initTopWorkers() {
             <div class="worker-avatar">👷</div>
             <span class="availability-pill">Available</span>
           </div>
-          <h3>${w.name}</h3>
-          <div class="worker-skill-tag">${w.skill}</div>
+          <h3>${esc(w.name)}</h3>
+          <div class="worker-skill-tag">${esc(w.skill)}</div>
           <div class="worker-rating">
             <span class="star-fill">${stars}</span>
             <span class="rating-num">${avg > 0 ? avg.toFixed(1) : 'New'}</span>
@@ -820,7 +822,7 @@ async function initTopWorkers() {
           <div class="worker-details">
             <div class="detail-item">
               <span class="detail-label">Experience</span>
-              <span class="detail-val">${w.experience}y</span>
+              <span class="detail-val">${esc(w.experience)}y</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Verified</span>

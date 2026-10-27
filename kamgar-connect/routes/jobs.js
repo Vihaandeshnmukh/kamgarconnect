@@ -10,6 +10,26 @@ const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
 const Call = require('../models/Call');
 const { sendPushNotification } = require('../utils/notifications');
+const mongoose = require('mongoose');
+const { CITIES, SKILLS } = require('../utils/sanitize');
+
+// Every :id must be a real MongoDB id (400 instead of a 500)
+router.param('id', (req, res, next, id) => {
+  if (!mongoose.isValidObjectId(id)) return res.status(400).json({ msg: 'Invalid job id' });
+  next();
+});
+
+// Checks a new job's fields; returns an error message or null
+function jobError({ jobType, city, workerCount, amount }) {
+  if (!SKILLS.includes(jobType)) return 'Please choose a worker type';
+  if (!CITIES.includes(city)) return 'Please choose a city';
+  if (workerCount !== undefined && !(Number.isInteger(Number(workerCount)) && workerCount >= 1 && workerCount <= 500)) return 'Number of workers must be 1-500';
+  if (amount !== undefined && !(Number(amount) >= 0 && Number(amount) <= 100000)) return 'Invalid amount';
+  return null;
+}
+
+// What workers browsing open jobs may see (no employer id)
+const OPEN_JOB_FIELDS = 'jobType city workerCount amount postedAt status';
 
 let twilioClient;
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
@@ -23,6 +43,8 @@ router.post('/', auth, async (req, res) => {
     
     // Only employers can post jobs
     if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
+    const invalid = jobError(req.body);
+    if (invalid) return res.status(400).json({ msg: invalid });
 
     const job = new Job({
       employerId: req.user.id,
@@ -39,7 +61,7 @@ router.post('/', auth, async (req, res) => {
     await employer.save();
 
     // Emit Socket.IO event to all matching workers in that city
-    req.io.to(city).emit('new-job', job);
+    if (req.io) req.io.to(city).emit('new-job', job);
 
     res.status(201).json(job);
   } catch (err) {
@@ -48,22 +70,26 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// GET /api/jobs
-router.get('/', async (req, res) => {
+// GET /api/jobs - your own jobs (employer: posted, worker: accepted)
+router.get('/', auth, async (req, res) => {
   try {
-    const jobs = await Job.find().sort({ postedAt: -1 });
+    const filter = req.user.role === 'employer' ? { employerId: req.user.id } : { workerId: req.user.id };
+    const jobs = await Job.find(filter).sort({ postedAt: -1 }).limit(100);
     res.json(jobs);
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }
 });
 
-// GET /api/jobs/:id
-router.get('/:id', async (req, res) => {
+// GET /api/jobs/:id - full details for the employer and worker of the job; others see an open job's basics
+router.get('/:id', auth, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ msg: 'Job not found' });
-    res.json(job);
+    const involved = [String(job.employerId), String(job.workerId)].includes(req.user.id);
+    if (involved) return res.json(job);
+    if (job.status !== 'pending') return res.status(404).json({ msg: 'Job not found' });
+    res.json(await Job.findById(job._id).select(OPEN_JOB_FIELDS));
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }
@@ -81,6 +107,7 @@ router.put('/:id/accept', auth, async (req, res) => {
 
     const worker = await Worker.findById(req.user.id);
     const employer = await Employer.findById(job.employerId).select('+push_token');
+    if (!worker || !employer) return res.status(404).json({ msg: 'Account not found' });
 
     job.workerId = worker.id;
     job.status = 'accepted';
@@ -91,13 +118,13 @@ router.put('/:id/accept', auth, async (req, res) => {
     await worker.save();
 
     // Socket Emit to Employer
-    req.io.to(`user-${employer.id}`).emit('job-accepted', { job, worker });
+    if (req.io) req.io.to(`user-${employer.id}`).emit('job-accepted', { job, worker: { _id: worker._id, name: worker.name, skill: worker.skill } });
 
     // Twilio SMS
     try {
       if (twilioClient && process.env.TWILIO_PHONE_NUMBER && process.env.TWILIO_PHONE_NUMBER !== 'your_twilio_number') {
         await twilioClient.messages.create({
-          body: `à¤¨à¤®à¤¸à¥à¤¤à¥‡ ${worker.name}! You have a new job from ${employer.name} in ${job.city}. They will call you shortly. â€” Kamgar Connect`,
+          body: `नमस्ते ${worker.name}! You have a new job from ${employer.name} in ${job.city}. They will call you shortly. - Kamgar Connect`,
           from: process.env.TWILIO_PHONE_NUMBER,
           to: worker.phone
         });
@@ -160,7 +187,8 @@ router.put('/:id/complete', auth, async (req, res) => {
     // Auto SMS to employer asking for a review
     if (worker && employer && twilioClient && process.env.TWILIO_PHONE_NUMBER) {
       try {
-        const reviewUrl = `https://kamgar.de/review.html?jobId=${job.id}&workerId=${worker.id}`;
+        // The website opens a rating box for this job (employer must be logged in)
+        const reviewUrl = `https://kamgar.de/?review=${job.id}&worker=${worker.id}`;
         await twilioClient.messages.create({
           body: `Kamgar Connect: Job complete! Please rate ${worker.name} at ${reviewUrl}`,
           from: process.env.TWILIO_PHONE_NUMBER,
@@ -181,7 +209,7 @@ router.put('/:id/complete', auth, async (req, res) => {
 // GET /api/jobs/available/:city
 router.get('/available/:city', async (req, res) => {
   try {
-    const jobs = await Job.find({ city: req.params.city, status: 'pending' }).sort({ postedAt: -1 });
+    const jobs = await Job.find({ city: String(req.params.city), status: 'pending' }).select(OPEN_JOB_FIELDS).sort({ postedAt: -1 }).limit(50);
     res.json(jobs);
   } catch (err) {
     console.error(err.message);
@@ -193,6 +221,8 @@ router.get('/available/:city', async (req, res) => {
 router.post('/post', auth, async (req, res) => {
   try {
     if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
+    const invalid = jobError(req.body);
+    if (invalid) return res.status(400).json({ msg: invalid });
     const { jobType, city, workerCount, amount } = req.body;
     const job = new Job({
       employerId: req.user.id,

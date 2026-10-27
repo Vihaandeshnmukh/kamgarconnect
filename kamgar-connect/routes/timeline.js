@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Timeline = require('../models/Timeline');
+const adminAuth = require('../middleware/adminAuth');
 
 // TODO BEFORE PRODUCTION:
 // 1. Add back user type checks
@@ -16,17 +17,16 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST /api/timeline - Add new entry (protected by header for testing)
-router.post('/', async (req, res) => {
-    const accessCode = req.header('x-access-code');
-    if (accessCode !== 'KAMGAR2025PLAN') {
-        return res.status(401).json({ msg: 'Unauthorized' });
-    }
+// POST /api/timeline - Add new entry (admin password in the Authorization header)
+// Only these fields are taken; the model cleans and length-limits them
+router.post('/', adminAuth, async (req, res) => {
     try {
-        const newEntry = new Timeline(req.body);
+        const { date, title, description, category, status } = req.body;
+        const newEntry = new Timeline({ date, title, description, category, status });
         const entry = await newEntry.save();
         res.json(entry);
     } catch (err) {
+        if (err.name === 'ValidationError') return res.status(400).json({ msg: 'Date, title, description and status (Done / In Progress / Planned) are required' });
         res.status(500).json({ error: 'Server Error' });
     }
 });

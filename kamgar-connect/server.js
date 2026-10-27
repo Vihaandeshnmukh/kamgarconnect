@@ -9,10 +9,13 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { Server } = require('socket.io');
+const { stripOperators } = require('./utils/sanitize');
 
 const app = express();
 // Behind Render's proxy: lets req.ip be the visitor's IP (used by the rate limiters)
 app.set('trust proxy', 1);
+// ?city[$ne]=x stays a plain key instead of becoming a MongoDB operator
+app.set('query parser', 'simple');
 // Socket.io will be attached to the server created by app.listen
 let io;
 
@@ -25,8 +28,14 @@ app.use((req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 // Basic Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50kb' }));
+app.use(express.urlencoded({ extended: true, limit: '50kb' }));
+// No MongoDB operators ($ne, $gt, ...) from users, in the body or the query string
+app.use((req, res, next) => {
+  stripOperators(req.body);
+  stripOperators(req.query);
+  next();
+});
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -106,6 +115,7 @@ app.get('/videos/home.mp4', (req, res) => {
 
 // Existing generic video route
 app.get('/:filename.mp4', (req, res) => {
+  if (!/^[\w-]+$/.test(req.params.filename)) return res.status(404).send('Video not found');
   streamVideo(req, res, path.join(__dirname, 'public', `${req.params.filename}.mp4`));
 });
 

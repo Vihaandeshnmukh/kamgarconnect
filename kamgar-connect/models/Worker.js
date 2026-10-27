@@ -2,18 +2,20 @@
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const mongoose = require('mongoose');
+const { cleanText, cleanName } = require('../utils/sanitize');
 
 const WorkerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, set: v => cleanName(v) }, // letters only: never HTML
   phone: { type: String, required: true, unique: true },
   password: { type: String, select: false }, // Optional for pitch; never returned unless asked with select('+password')
-  city: { type: String, required: true },
-  skill: { type: String, required: true }, // Plumber, Mason, etc.
+  city: { type: String, required: true, set: v => cleanText(v, 40) },
+  skill: { type: String, required: true, set: v => cleanText(v, 40) }, // Plumber, Mason, etc.
   experience: { type: Number, required: true, default: 0 },
   aadhaar: { type: String, select: false }, // Optional; private, only admin routes select('+aadhaar')
   expectedSalary: { type: Number },
   hiredUntil: { type: Date, default: null }, // Timestamp until which the worker is currently booked
-  availability: { type: [String], default: [] }, // ['monday', 'wednesday'] or ['24/7']
+  hiredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer', default: null }, // Employer who booked them
+  availability: { type: [{ type: String, set: v => cleanText(v, 20) }], default: [] }, // ['monday', 'wednesday'] or ['24/7']
   isLooking: { type: Boolean, default: false }, // Whether the worker is currently seeking jobs
   availableUntil: { type: Date, default: null }, // Timestamp until which the worker is available
   isWithdrawn: { type: Boolean, default: false }, // Worker removed themselves from search results

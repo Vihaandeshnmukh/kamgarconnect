@@ -131,6 +131,8 @@
   <script src="/config.js"></script>
   <script>
     let adminToken = '';
+    // Data from the database is shown as text, never as HTML
+    const esc = (v) => String(v === undefined || v === null ? '' : v).replace(/[&<>"'`]/g, c => '&#' + c.charCodeAt(0) + ';');
 
     let workersData = [];
     let employersData = [];
@@ -171,13 +173,13 @@
       const wBody = document.querySelector('#workerTable tbody');
       wBody.innerHTML = data.workers.map(w => `
         <tr>
-          <td>${w.name}</td>
-          <td>${w.phone}</td>
-          <td>${w.city}</td>
-          <td>${w.skill}</td>
-          <td>${w.experience}y</td>
-          <td>₹${w.expectedSalary || 0}</td>
-          <td>${w.availabilityDays || 7} Days</td>
+          <td>${esc(w.name)}</td>
+          <td>${esc(w.phone)}</td>
+          <td>${esc(w.city)}</td>
+          <td>${esc(w.skill)}</td>
+          <td>${esc(w.experience)}y</td>
+          <td>₹${esc(w.expectedSalary || 0)}</td>
+          <td>${esc(w.availabilityDays || 7)} Days</td>
           <td>${w.rating > 0 ? w.rating.toFixed(1) + ' ★ (' + w.totalRatings + ')' : 'No reviews'}</td>
           <td>${new Date(w.createdAt).toLocaleDateString()}</td>
           <td>
@@ -191,12 +193,12 @@
       const eBody = document.querySelector('#employerTable tbody');
       eBody.innerHTML = data.employers.map(e => `
         <tr>
-          <td>${e.name}</td>
-          <td>${e.phone}</td>
-          <td>${e.city}</td>
-          <td>${e.companyName || '-'}</td>
-          <td>${e.workerType || '-'}</td>
-          <td>${e.workerCount || 1}</td>
+          <td>${esc(e.name)}</td>
+          <td>${esc(e.phone)}</td>
+          <td>${esc(e.city)}</td>
+          <td>${esc(e.companyName || '-')}</td>
+          <td>${esc(e.workerType || '-')}</td>
+          <td>${esc(e.workerCount || 1)}</td>
           <td>${new Date(e.createdAt).toLocaleDateString()}</td>
         </tr>
       `).join('');
@@ -281,7 +283,7 @@
     function downloadWorkersCSV() {
       let csv = 'Name,Phone,City,Skill,Experience,Salary,Availability,Date\n';
       workersData.forEach(w => {
-        csv += `${w.name},${w.phone},${w.city},${w.skill},${w.experience},${w.expectedSalary},${w.availabilityDays},${new Date(w.createdAt).toLocaleDateString()}\n`;
+        csv += `${esc(w.name)},${esc(w.phone)},${esc(w.city)},${esc(w.skill)},${esc(w.experience)},${w.expectedSalary},${w.availabilityDays},${new Date(w.createdAt).toLocaleDateString()}\n`;
       });
       downloadBlob(csv, 'workers.csv');
     }
@@ -289,7 +291,7 @@
     function downloadEmployersCSV() {
       let csv = 'Name,Phone,City,Company,WorkerType,Count,Date\n';
       employersData.forEach(e => {
-        csv += `${e.name},${e.phone},${e.city},${e.companyName},${e.workerType},${e.workerCount},${new Date(e.createdAt).toLocaleDateString()}\n`;
+        csv += `${esc(e.name)},${esc(e.phone)},${esc(e.city)},${e.companyName},${e.workerType},${e.workerCount},${new Date(e.createdAt).toLocaleDateString()}\n`;
       });
       downloadBlob(csv, 'employers.csv');
     }
@@ -323,9 +325,9 @@
               <span style="color:var(--text-muted); font-size:0.8rem;">${new Date(r.createdAt).toLocaleDateString()}</span>
             </div>
             ${r.tags && r.tags.length > 0 ? `<div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px;">
-              ${r.tags.map(t => `<span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:20px; font-size:0.7rem;">${t}</span>`).join('')}
+              ${r.tags.map(t => `<span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:20px; font-size:0.7rem;">${esc(t)}</span>`).join('')}
             </div>` : ''}
-            ${r.comment ? `<p style="font-size:0.9rem; margin:0; color:var(--text-secondary);">${r.comment}</p>` : ''}
+            ${r.comment ? `<p style="font-size:0.9rem; margin:0; color:var(--text-secondary);">${esc(r.comment)}</p>` : ''}
           </div>
         `).join('');
       } catch (err) {

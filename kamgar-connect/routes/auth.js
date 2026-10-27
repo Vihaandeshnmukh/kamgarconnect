@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('../middleware/rateLimit');
 const { verifyGoogleCredential } = require('../utils/googleAuth');
+const { cleanName, isValidName, cleanText, normalizePhone, isPhone, CITIES, SKILLS } = require('../utils/sanitize');
 
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
@@ -23,6 +24,10 @@ const issueToken = (user, role) => new Promise((resolve, reject) => {
   });
 });
 
+// How long a newly registered worker is shown to employers before they
+// need to press START LOOKING (or call again)
+const NEW_WORKER_VISIBLE_MS = 24 * 60 * 60 * 1000;
+
 // The fields the website and app need about the logged-in user
 const publicUser = (user, role) => ({
   id: user.id,
@@ -30,19 +35,28 @@ const publicUser = (user, role) => ({
   role,
   phone: user.phone,
   city: user.city,
-  skill: role === 'worker' ? user.skill : user.workerType
+  skill: role === 'worker' ? user.skill : user.workerType,
+  ...(role === 'worker' ? { isLooking: Boolean(user.isLooking), availableUntil: user.availableUntil } : {})
 });
+
+// Shared checks for both sign-up forms (all text is also cleaned by the models)
+const nameCheck = body('name').customSanitizer(v => cleanName(v)).custom(isValidName).withMessage('Please enter your name (letters only)');
+const phoneCheck = body('phone').customSanitizer(normalizePhone).custom(isPhone).withMessage('Please enter a valid 10-digit phone number');
+const cityCheck = body('city').isIn(CITIES).withMessage('Please select your city');
 
 // POST /api/auth/register-worker
 router.post('/register-worker', [
-  body('name', 'Name is required').notEmpty(),
-  body('phone', 'Please include a valid phone number').isLength({ min: 10 }),
-  body('city', 'City is required').notEmpty(),
-  body('skill', 'Skill is required').notEmpty(),
+  nameCheck,
+  phoneCheck,
+  cityCheck,
+  body('skill').isIn(SKILLS).withMessage('Please select your skill'),
+  body('experience').optional({ values: 'falsy' }).isInt({ min: 0, max: 60 }).withMessage('Experience must be 0-60 years'),
+  body(['salary', 'expectedSalary']).optional({ values: 'falsy' }).isInt({ min: 100, max: 5000 }).withMessage('Daily wage must be between 100 and 5000'),
+  body('availability').optional().isArray({ max: 8 }).withMessage('Invalid availability'),
   body('aadhaar', 'Aadhaar must be 12 digits').optional({ values: 'falsy' }).matches(/^\d{12}$/)
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(400).json({ msg: errors.array()[0].msg, errors: errors.array() });
 
   const { name, phone, city, skill, experience, aadhaar, availability } = req.body;
   // The website sends `salary`, the app sends `expectedSalary`
@@ -56,8 +70,11 @@ router.post('/register-worker', [
       name, phone, city, skill,
       experience: Number(experience) || 0,
       expectedSalary: Number(expectedSalary) || undefined,
-      availability: Array.isArray(availability) ? availability.map(String) : undefined,
-      aadhaar: aadhaar || undefined
+      availability: Array.isArray(availability) ? availability.map(a => cleanText(a, 20)) : undefined,
+      aadhaar: aadhaar || undefined,
+      // Registering means they want work: employers can find them straight away
+      isLooking: true,
+      availableUntil: new Date(Date.now() + NEW_WORKER_VISIBLE_MS)
     });
     // Signed up after "Sign in with Google": link that Google account for one-tap login
     const google = await verifyGoogleCredential(req.body.googleCredential);
@@ -78,12 +95,14 @@ router.post('/register-worker', [
 
 // POST /api/auth/register-employer
 router.post('/register-employer', [
-  body('name', 'Name is required').notEmpty(),
-  body('phone', 'Please include a valid phone number').isLength({ min: 10 }),
-  body('city', 'City is required').notEmpty()
+  nameCheck,
+  phoneCheck,
+  cityCheck,
+  body(['workerType', 'workerTypeNeeded']).optional({ values: 'falsy' }).isIn(SKILLS).withMessage('Please select a worker type'),
+  body(['workerCount', 'workerCountNeeded']).optional({ values: 'falsy' }).isInt({ min: 1, max: 500 }).withMessage('Number of workers must be 1-500')
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(400).json({ msg: errors.array()[0].msg, errors: errors.array() });
 
   const { name, phone, city, companyName } = req.body;
   // The website sends workerTypeNeeded / workerCountNeeded
@@ -118,7 +137,7 @@ router.post('/register-employer', [
 // POST /api/auth/login
 // NOTE: until OTP verification exists, knowing the phone number is enough to log in
 router.post('/login', [
-  body('phone', 'Please include a valid phone number').isLength({ min: 10 }),
+  phoneCheck
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

@@ -7,9 +7,10 @@ const ReviewSchema = new mongoose.Schema({
   workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker', required: true },
   employerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer' },
   jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' }, // To track which job this is for
+  hireId: { type: mongoose.Schema.Types.ObjectId, ref: 'Call' }, // Or the website hire (assign call) it is for
   rating: { type: Number, required: true, min: 1, max: 5 },
-  tags: [{ type: String }],
-  comment: { type: String },
+  tags: [{ type: String, maxlength: 30 }],
+  comment: { type: String, maxlength: 500 },
   createdAt: { type: Date, default: Date.now }
 });
 
