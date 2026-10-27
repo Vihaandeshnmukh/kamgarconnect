@@ -18,6 +18,7 @@ const CallSessionSchema = new mongoose.Schema({
   },
   conversationHistory: { type: Array, default: [] },
   silentTurns: { type: Number, default: 0 }, // consecutive answers with no speech
+  retries: { type: Number, default: 0 }, // times the current question was asked again (answer not understood)
   workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker', default: null }, // profile created from this call
   updatedAt: { type: Date, default: Date.now }
 });

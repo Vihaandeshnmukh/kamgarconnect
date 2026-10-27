@@ -3,6 +3,7 @@
 // Optional: without GEMINI_API_KEY, or if Gemini is slow or fails, returns null
 // and the call carries on with the rule-based value.
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { isLikelyName } = require('./voiceParse');
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 const TIMEOUT_MS = 5000; // Twilio waits ~15s for each answer, keep well under it
@@ -12,11 +13,12 @@ const SKILLS = ['Mason', 'Electrician', 'Plumber', 'Domestic Help', 'Factory Wor
 
 // What we ask Gemini for each question, and how to check its answer
 const FIELDS = {
-  name: { ask: "the caller's name only (no words like 'my name is')", check: v => typeof v === 'string' && v.trim() ? v.trim() : null },
+  // Only a believable name gets through (letters/spaces, short), never instructions or markup
+  name: { ask: "the caller's name only (no words like 'my name is')", check: v => isLikelyName(v) ? v.trim() : null },
   city: { ask: `the city, as one of ${CITIES.join(', ')} (Chhatrapati Sambhajinagar is Aurangabad), or null if none fits`, check: v => CITIES.includes(v) ? v : null },
   skill: { ask: `the type of work, as one of ${SKILLS.join(', ')}, or null if none fits`, check: v => SKILLS.includes(v) ? v : null },
-  experience_years: { ask: 'years of work experience as a whole number', check: v => Number.isFinite(Number(v)) ? Math.round(Number(v)) : null },
-  expected_salary_per_day: { ask: 'expected daily wage in rupees as a whole number', check: v => Number.isFinite(Number(v)) ? Math.round(Number(v)) : null },
+  experience_years: { ask: 'years of work experience as a whole number', check: v => v !== null && Number(v) >= 0 && Number(v) <= 60 ? Math.round(Number(v)) : null },
+  expected_salary_per_day: { ask: 'expected daily wage in rupees as a whole number', check: v => Number(v) >= 100 && Number(v) <= 5000 ? Math.round(Number(v)) : null },
   availability_days: { ask: 'how many days per week they can work, a whole number from 1 to 7', check: v => Number(v) >= 1 ? Math.min(7, Math.round(Number(v))) : null }
 };
 
@@ -37,7 +39,7 @@ async function aiUnderstand(field, speech) {
   const spec = FIELDS[field];
   const m = getModel();
   if (!spec || !m || !speech) return null;
-  const prompt = `A daily wage worker in Maharashtra, India is registering by phone and answered in Hindi or Marathi: "${speech}".
+  const prompt = `A daily wage worker in Maharashtra, India is registering by phone and answered in Hindi, Marathi or English: "${speech}".
 Extract ${spec.ask}. Reply with JSON only: {"value": ...}. Use null if the answer does not contain it.`;
   try {
     const result = await m.generateContent(prompt);

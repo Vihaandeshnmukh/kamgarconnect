@@ -13,6 +13,7 @@ const Call = require('../models/Call');
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
 const { sendPushNotification } = require('../utils/notifications');
+const { cleanText, cleanName } = require('../utils/sanitize');
 
 let twilioClient;
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
@@ -41,6 +42,22 @@ function getBaseUrl(req) {
   // In production use the BACKEND_URL env or the request host
   if (process.env.BACKEND_URL) return process.env.BACKEND_URL;
   return `${req.protocol}://${req.get('host')}`;
+}
+
+// ── Helper: end of the work day (India time) for a "YYYY-MM-DD" hire date, or null ──
+function endOfHireDay(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return null;
+  const end = new Date(`${date}T23:59:59+05:30`);
+  return isNaN(end.getTime()) ? null : end;
+}
+
+// ── Helper: worker said no / didn't answer: free them again if this call booked them ──
+async function releaseIfBookedBy(callRecord) {
+  if (!callRecord.callerId) return;
+  await Worker.updateOne(
+    { _id: callRecord.receiverId, hiredBy: callRecord.callerId },
+    { $set: { hiredUntil: null, hiredBy: null } }
+  );
 }
 
 // ── Helper: find the employer behind an assignment call ──
@@ -140,13 +157,24 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     if (!mongoose.isValidObjectId(workerId)) {
       return res.status(400).json({ success: false, msg: 'Invalid worker id' });
     }
+    const hiredUntil = endOfHireDay(date);
+    if (!hiredUntil || hiredUntil < new Date()) {
+      return res.status(400).json({ success: false, msg: 'Please choose today or a future date' });
+    }
+    if (!/^\d{1,2}:\d{2}/.test(String(time))) {
+      return res.status(400).json({ success: false, msg: 'Please choose a reporting time' });
+    }
 
     const worker = await Worker.findById(workerId);
     if (!worker) return res.status(404).json({ success: false, msg: 'Worker not found' });
     if (worker.isWithdrawn) return res.status(409).json({ success: false, msg: 'This worker is not available' });
+    // Booked by another employer: no double-hire
+    if (worker.hiredUntil > new Date() && String(worker.hiredBy) !== req.user.id) {
+      return res.status(409).json({ success: false, msg: 'This worker is already hired' });
+    }
 
     const employer = await Employer.findById(req.user.id);
-    const employerName = req.body.employerName || (employer ? employer.name : 'Employer');
+    const employerName = cleanName(req.body.employerName) || (employer ? employer.name : 'Employer');
 
     const baseUrl = getBaseUrl(req);
     let callSid = 'MOCK_SID_' + Date.now();
@@ -160,11 +188,11 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
       callSid, 
       status: 'initiated',
       assignmentData: {
-        location,
-        date,
-        time,
+        location: cleanText(location, 120),
+        date: cleanText(date, 20),
+        time: cleanText(time, 20),
         employerName,
-        instructions: req.body.instructions || '',
+        instructions: cleanText(req.body.instructions || '', 300),
         workerResponse: 'pending'
       }
     });
@@ -198,13 +226,17 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
       }
     }
 
-    // Update worker
+    // Book the worker for that day (off the search list; nobody else can hire them)
     await Worker.findByIdAndUpdate(worker._id, {
       last_called_at: new Date(),
-      call_status: 'assign-pending'
+      call_status: 'assign-pending',
+      hiredUntil,
+      hiredBy: req.user.id,
+      isLooking: false,
+      availableUntil: null
     });
 
-    res.json({ success: true, msg: 'Assignment call initiated', callSid, callRecordId: callRecord._id });
+    res.json({ success: true, msg: 'Assignment call initiated', callSid, callRecordId: callRecord._id, phone: worker.phone });
   } catch (err) {
     console.error('Assign-job error:', err.message);
     res.status(500).json({ success: false, msg: 'Server error' });
@@ -335,6 +367,7 @@ router.post('/job-response', twilioWebhook, express.urlencoded({ extended: false
       await callRecord.save();
 
       if (worker) await Worker.findByIdAndUpdate(worker._id, { call_status: 'job-declined' });
+      await releaseIfBookedBy(callRecord);
 
       twiml.say({ voice: 'Polly.Aditi', language: 'hi-IN' }, 'Theek hai, dhanyavaad.');
 
@@ -396,6 +429,7 @@ router.post('/webhook', twilioWebhook, express.urlencoded({ extended: false }), 
         callRecord.assignmentData.workerResponse = 'declined';
         // Update worker
         await Worker.findByIdAndUpdate(callRecord.receiverId, { call_status: 'no-answer' });
+        await releaseIfBookedBy(callRecord);
       }
 
       await callRecord.save();
@@ -414,6 +448,8 @@ router.post('/webhook', twilioWebhook, express.urlencoded({ extended: false }), 
 router.post('/initiate', auth, requireRole('employer'), async (req, res) => {
   try {
     const { receiverId, jobId } = req.body;
+    if (!mongoose.isValidObjectId(receiverId)) return res.status(400).json({ msg: 'Invalid worker id' });
+    if (jobId && !mongoose.isValidObjectId(jobId)) return res.status(400).json({ msg: 'Invalid job id' });
 
     const employer = await Employer.findById(req.user.id);
     const worker = await Worker.findById(receiverId);
@@ -464,13 +500,18 @@ router.post('/initiate', auth, requireRole('employer'), async (req, res) => {
 
 /* ═══════════════════════════════════════════
    GET /api/calls/history/:workerId
-   Call history for a specific worker
+   Call history for a specific worker: the worker sees their own calls,
+   an employer sees only the calls they made to that worker
    ═══════════════════════════════════════════ */
 router.get('/history/:workerId', auth, async (req, res) => {
   try {
-    const calls = await Call.find({
-      receiverId: req.params.workerId
-    }).sort({ timestamp: -1 }).limit(50);
+    const { workerId } = req.params;
+    if (!mongoose.isValidObjectId(workerId)) return res.status(400).json({ msg: 'Invalid worker id' });
+    const filter = { receiverId: workerId };
+    if (req.user.role === 'employer') filter.callerId = req.user.id;
+    else if (req.user.id !== workerId) return res.status(403).json({ msg: 'Not authorized' });
+
+    const calls = await Call.find(filter).sort({ timestamp: -1 }).limit(50);
 
     res.json(calls);
   } catch (err) {
