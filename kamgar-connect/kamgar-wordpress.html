@@ -135,6 +135,68 @@
     .gps-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
 
     @media (max-width: 768px) { .gps-row, .selector-grid { grid-template-columns: 1fr; } }
+
+    /* ===== Redesign v2 (from the Google Stitch brief): light, warm, big tap targets ===== */
+    :root {
+      --bg-base: #FFF8F2; --bg-surface: #FFFFFF; --bg-elevated: #FFF1E6;
+      --border: rgba(15, 30, 60, 0.12); --border-hover: rgba(15, 30, 60, 0.30);
+      --text-primary: #0F1E3C; --text-secondary: #4A5670;
+      --accent: #FF5C00; --accent-blue: #1E3A8A; --navy: #0F1E3C;
+      --shadow: 0 12px 32px rgba(15, 30, 60, 0.08);
+    }
+    body { font-size: 17px; line-height: 1.5; }
+    .navbar { background: rgba(255, 255, 255, 0.94); box-shadow: 0 2px 12px rgba(15, 30, 60, 0.06); }
+    .navbar .btn, .lang-switcher .btn { color: var(--navy); }
+    #profile-trigger, #profile-trigger i { color: var(--navy); }
+    .hero-content { padding: 0 20px; width: 100%; }
+    .logo { color: var(--navy); }
+
+    #hero-canvas { display: none; }
+    .hero { height: auto; min-height: 68vh; padding: 70px 0 50px; background: linear-gradient(165deg, #FFE6D2 0%, #FFF8F2 55%, #FFFFFF 100%); }
+    .hero-content h1 { color: var(--navy); letter-spacing: -1.5px; }
+    .hero-content h1::before, .hero-content h1::after { display: none; }
+    .hero-content p { color: var(--text-secondary); font-size: 1.25rem; }
+    .hero .btn { min-height: 64px; min-width: 260px; font-size: 1.2rem; padding: 18px 32px; border-radius: 18px; box-shadow: var(--shadow); }
+    .hero .btn-outline { background: #FFFFFF; border: 2px solid var(--navy); color: var(--navy); }
+
+    .btn { min-height: 48px; }
+    .btn-outline { color: var(--navy); border: 2px solid var(--border-hover); background: #FFFFFF; }
+    .btn-primary:hover { filter: brightness(1.05); }
+
+    .call-register { margin-top: -10px; margin-bottom: 10px; }
+    .call-card { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; background: #FFFFFF; border-left: 6px solid var(--accent); border-radius: 22px; padding: 24px 28px; box-shadow: var(--shadow); }
+    .call-card h3 { font-size: 1.3rem; color: var(--navy); margin-bottom: 6px; }
+    .call-card p { color: var(--text-secondary); }
+    .call-icon { width: 64px; height: 64px; border-radius: 50%; background: #FFE6D2; color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+    .call-card .call-btn { margin-left: auto; min-height: 56px; font-size: 1.1rem; border-radius: 16px; }
+
+    .mission-section { background: #FFFFFF; box-shadow: var(--shadow); border-radius: 0 24px 24px 0; }
+    .tab-container { box-shadow: var(--shadow); }
+    .tab-bar { background: var(--bg-elevated); }
+    .tab-btn { color: var(--text-secondary); font-size: 1.05rem; min-height: 54px; }
+    .card-front, .card-back { box-shadow: var(--shadow); }
+    .team-card { box-shadow: var(--shadow); }
+
+    .modal { background: rgba(15, 30, 60, 0.55); }
+    .modal-content { box-shadow: 0 30px 80px rgba(15, 30, 60, 0.25); }
+    .modal-content > .btn[onclick="closeModal()"] { color: var(--navy) !important; }
+    .select-type { min-height: 64px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+    .input-grp label { color: var(--navy); font-size: 1rem; }
+    .input-field, #lookup-phone { background: #FFFFFF !important; color: var(--navy) !important; border: 2px solid var(--border) !important; min-height: 56px; font-size: 1.05rem; }
+    .input-field:focus { border-color: var(--accent) !important; }
+    .avail-item { font-size: 1rem; color: var(--navy); padding: 10px; border: 2px solid var(--border); border-radius: 12px; min-height: 48px; background: #FFFFFF; }
+    .notif { color: var(--navy); box-shadow: var(--shadow); }
+    .profile-dropdown { box-shadow: var(--shadow); }
+    #main-live-btn { min-height: 90px; box-shadow: 0 16px 40px rgba(255, 92, 0, 0.30); }
+
+    @media (max-width: 768px) {
+      .hero { padding: 40px 0 30px; }
+      .hero .btn { width: 100%; min-width: 0; }
+      .call-card { flex-direction: column; align-items: flex-start; }
+      .call-card .call-btn { margin-left: 0; width: 100%; }
+      .availability-grid { grid-template-columns: repeat(2, 1fr); }
+      .notif { right: 16px; left: 16px; }
+    }
   </style>
 </head>
 <body onload="initApp()">
@@ -176,39 +238,21 @@
     </div>
   </section>
 
+  <section class="container call-register">
+    <div class="call-card">
+      <div class="call-icon"><i class="fas fa-phone-volume"></i></div>
+      <div>
+        <h3>No smartphone? Register by phone call</h3>
+        <p>फ़ोन करें और हिंदी में 6 सवालों के जवाब दें, आपका प्रोफ़ाइल बन जाएगा।</p>
+      </div>
+      <a class="btn btn-primary call-btn" href="tel:+18148215946"><i class="fas fa-phone"></i> +1 814 821 5946</a>
+    </div>
+  </section>
+
   <section class="mission-section" id="mission-section">
      <div class="container">
         <h2 style="font-size:3rem; font-weight:900; margin-bottom:20px;" data-i18n="mission_title">Our Mission</h2>
         <p style="font-size:1.3rem; color:var(--text-secondary); line-height:1.6; max-width:800px;" data-i18n="mission_text"></p>
-     </div>
-  </section>
-
-  <section class="container video-section">
-     <div id="vid-1-wrap">
-        <h2 data-i18n="vid_title_1">Workers used to wait hours at the chowk...</h2>
-        <p style="color:var(--text-secondary);" data-i18n="vid_sub_1">See how Kamgar Connect changed everything</p>
-        <div class="vid-container">
-           <video id="vid-chowk" playsinline muted loop autoplay width="100%"></video>
-           <div class="vid-overlay">
-              <div class="vid-label" id="vid-lab-1">Before Kamgar</div>
-              <div class="vid-label" id="vid-lab-2" style="opacity:0;">After Kamgar</div>
-           </div>
-        </div>
-        <div class="scrubber" id="scrub-chowk" onmousedown="startScrub('chowk', event)" ontouchstart="startScrub('chowk', event)">
-           <div class="scrubber-fill" id="fill-chowk"></div>
-           <div class="scrubber-thumb" id="thumb-chowk"></div>
-        </div>
-     </div>
-
-     <div id="vid-2-wrap" style="margin-top:80px;">
-        <h2 data-i18n="vid_title_2">Finding home help used to be stressful...</h2>
-        <div class="vid-container">
-           <video id="vid-home" playsinline muted loop autoplay width="100%"></video>
-        </div>
-        <div class="scrubber" id="scrub-home" onmousedown="startScrub('home', event)" ontouchstart="startScrub('home', event)">
-           <div class="scrubber-fill" id="fill-home"></div>
-           <div class="scrubber-thumb" id="thumb-home"></div>
-        </div>
      </div>
   </section>
 
@@ -431,8 +475,6 @@
     // ═══════════════════════════════════════
     const CONFIG = {
       BACKEND_URL: 'https://api.kamgar.de',
-      CHOWK_VIDEO: 'https://res.cloudinary.com/devuir7xq/video/upload/v1777278108/YARiqRZW_ejnkgo.mp4',
-      HOME_VIDEO: 'https://res.cloudinary.com/devuir7xq/video/upload/v1777278127/Stressful_Woman_Scene_In_a_realistic_style_a_woman_in_a_yellow_dress_hfebYtVm_udfq8k.mp4'
     };
 
     let selectedType = 'Worker';
@@ -474,7 +516,6 @@
     async function initApp() {
        initThree();
        setLang(currentLang);
-       loadVideos();
        if (sessionStorage.getItem('bannerDismissed')) dismissBanner();
        // Logins saved before tokens existed must sign in again
        if (localStorage.getItem('user_id') && !localStorage.getItem('auth_token')) {
@@ -492,7 +533,7 @@
          console.log('Backend connected:', d);
        } catch (e) {
          document.body.insertAdjacentHTML('afterbegin',
-           '<div style="background:red;color:white;text-align:center;padding:8px;position:fixed;top:44px;width:100%;z-index:999999;font-size:0.8rem;">&#9888;&#65039; Backend not connected — Check Railway</div>'
+           '<div style="background:red;color:white;text-align:center;padding:8px;position:fixed;top:44px;width:100%;z-index:999999;font-size:0.8rem;">&#9888;&#65039; Server is waking up, please wait a minute and refresh</div>'
          );
        }
     }
@@ -892,41 +933,6 @@
 
     function closeRoots() { document.getElementById('roots-overlay').style.display='none'; }
 
-    function loadVideos() {
-       document.getElementById('vid-chowk').src = CONFIG.CHOWK_VIDEO;
-       document.getElementById('vid-home').src = CONFIG.HOME_VIDEO;
-       const v1 = document.getElementById('vid-chowk');
-       v1.ontimeupdate = () => {
-          const pct = (v1.currentTime / v1.duration) * 100;
-          document.getElementById('fill-chowk').style.width = pct + '%';
-          document.getElementById('thumb-chowk').style.left = pct + '%';
-          const lab1 = document.getElementById('vid-lab-1');
-          const lab2 = document.getElementById('vid-lab-2');
-          if (v1.currentTime > v1.duration/2) { lab1.style.opacity=0; lab2.style.opacity=1; }
-          else { lab1.style.opacity=1; lab2.style.opacity=0; }
-       };
-       document.getElementById('vid-home').ontimeupdate = (e) => {
-          const v = e.target;
-          const pct = (v.currentTime / v.duration) * 100;
-          document.getElementById('fill-home').style.width = pct + '%';
-          document.getElementById('thumb-home').style.left = pct + '%';
-       };
-    }
-
-    function startScrub(id, e) {
-       const vid = document.getElementById(`vid-${id}`);
-       const scrub = document.getElementById(`scrub-${id}`);
-       const move = (ev) => {
-          const rect = scrub.getBoundingClientRect();
-          const x = (ev.clientX || ev.touches[0].clientX) - rect.left;
-          const pct = Math.max(0, Math.min(1, x / rect.width));
-          vid.currentTime = pct * vid.duration;
-          vid.play();
-       };
-       const end = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', end); window.removeEventListener('touchmove', move); window.removeEventListener('touchend', end); };
-       window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
-       window.addEventListener('touchmove', move); window.addEventListener('touchend', end);
-    }
 
     function toggleDropdown() {
        const d = document.getElementById('profile-dropdown');
