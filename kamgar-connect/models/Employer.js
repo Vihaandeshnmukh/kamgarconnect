@@ -13,6 +13,8 @@ const EmployerSchema = new mongoose.Schema({
   workerCount: { type: Number },
   jobsPosted: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
   push_token: { type: String, default: null, select: false },
+  email: { type: String, select: false }, // From "Sign in with Google" (private)
+  googleId: { type: String, index: true, sparse: true, select: false }, // Google account linked for one-tap login
   createdAt: { type: Date, default: Date.now }
 });
 

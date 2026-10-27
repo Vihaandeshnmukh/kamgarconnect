@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('../middleware/rateLimit');
+const { verifyGoogleCredential } = require('../utils/googleAuth');
 
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
@@ -58,6 +59,10 @@ router.post('/register-worker', [
       availability: Array.isArray(availability) ? availability.map(String) : undefined,
       aadhaar: aadhaar || undefined
     });
+    // Signed up after "Sign in with Google": link that Google account for one-tap login
+    const google = await verifyGoogleCredential(req.body.googleCredential);
+    if (google) { worker.googleId = google.googleId; worker.email = google.email; }
+
     const salt = await bcrypt.genSalt(10);
     worker.password = await bcrypt.hash(phone, salt);
 
@@ -94,6 +99,9 @@ router.post('/register-employer', [
       workerType: workerType || undefined,
       workerCount: Number(workerCount) || undefined
     });
+    const google = await verifyGoogleCredential(req.body.googleCredential);
+    if (google) { employer.googleId = google.googleId; employer.email = google.email; }
+
     const salt = await bcrypt.genSalt(10);
     employer.password = await bcrypt.hash(phone, salt);
 
@@ -136,6 +144,41 @@ router.post('/login', [
 
     const isMatch = await bcrypt.compare(phone, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
+
+    const token = await issueToken(user, role);
+    res.json({ token, user: publicUser(user, role) });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/auth/google-config - the website shows the Google button only when this has a clientId
+router.get('/google-config', (req, res) => {
+  res.json({ clientId: process.env.GOOGLE_CLIENT_ID || null });
+});
+
+// POST /api/auth/google - "Sign in with Google"
+// Linked account (by Google id, or same email) -> logged in.
+// Unknown account -> 404 with the Google name/email so the site can finish sign-up (phone still needed).
+router.post('/google', async (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID) return res.status(503).json({ msg: 'Google sign-in is not configured' });
+  try {
+    const google = await verifyGoogleCredential(req.body.credential);
+    if (!google) return res.status(401).json({ msg: 'Google sign-in failed' });
+
+    const find = async (Model) =>
+      (await Model.findOne({ googleId: google.googleId }).select('+googleId')) ||
+      (await Model.findOne({ email: google.email }).select('+googleId +email'));
+
+    let user = await find(Worker);
+    let role = 'worker';
+    if (!user) { user = await find(Employer); role = 'employer'; }
+
+    if (!user) return res.status(404).json({ exists: false, profile: { name: google.name, email: google.email } });
+
+    // First Google login on an account matched by email: remember the Google id
+    if (!user.googleId) { user.googleId = google.googleId; await user.save(); }
 
     const token = await issueToken(user, role);
     res.json({ token, user: publicUser(user, role) });
