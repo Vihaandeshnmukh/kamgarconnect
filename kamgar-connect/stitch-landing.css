@@ -1,0 +1,84 @@
+
+    /* ===== Stitch landing layout (colours, fonts and structure from the Stitch design) ===== */
+    :root {
+      --bg-base: #F7F9FB; --bg-surface: #FFFFFF; --bg-elevated: #ECEEF0;
+      --accent: #CD4800; --navy: #131B2E; --text-primary: #191C1E; --text-secondary: #45464D;
+      --saffron-soft: #FFDBCE;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    h1, h2, h3, .logo, .st-step h3, .st-cat strong { font-family: 'Manrope', 'Plus Jakarta Sans', sans-serif; }
+
+    .logo { display: flex; flex-direction: column; line-height: 1.1; }
+    .logo small { font-size: 0.72rem; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; margin-top: 3px; }
+    .st-call-nav { min-height: 48px; border-radius: 999px; padding: 10px 20px; font-size: 0.95rem; }
+
+    .st-hero { background: #FFFFFF; padding: 56px 0 44px; min-height: 0; height: auto; }
+    .st-hero .hero-content { max-width: 880px; margin: 0 auto; }
+    .st-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--saffron-soft); color: #370E00; border-radius: 999px; padding: 8px 18px; font-weight: 700; font-size: 0.9rem; margin-bottom: 22px; }
+    .st-hero h1 { font-family: 'Manrope', sans-serif; font-weight: 800; color: var(--navy); font-size: clamp(2.4rem, 7vw, 4.2rem); line-height: 1.08; letter-spacing: -1px; }
+    .st-hi { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: clamp(1.15rem, 3vw, 1.6rem); color: var(--navy); margin: 14px auto 6px; }
+    .st-hero .hero-content > p[data-i18n] { max-width: 640px; }
+    .st-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 700px; margin: 28px auto 24px; }
+    .st-cta .btn { min-height: 76px; justify-content: flex-start; text-align: left; padding: 12px 22px; border-radius: 16px; font-size: 1.15rem; gap: 14px; min-width: 0; }
+    .st-cta .btn small { display: block; font-weight: 600; font-size: 0.8rem; opacity: 0.92; }
+    .st-cta .btn i { font-size: 1.7rem; width: 44px; text-align: center; }
+    .st-cta .st-employer { background: var(--navy); color: #FFFFFF; border: none; }
+    .st-chips { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .st-chips span { display: inline-flex; align-items: center; gap: 8px; background: #F2F4F6; color: var(--text-secondary); padding: 8px 16px; border-radius: 999px; font-size: 0.9rem; font-weight: 600; }
+    .st-chips i { color: var(--accent); }
+
+    .call-register { margin-top: 0; padding-top: 36px; padding-bottom: 8px; }
+    .call-card { border-left: 0; border-top: 8px solid var(--accent); border-radius: 22px; flex-wrap: wrap; }
+    .call-card h3 { font-family: 'Manrope', sans-serif; font-size: 1.5rem; }
+    .st-mini { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .st-mini span { background: var(--saffron-soft); color: #370E00; border-radius: 999px; padding: 4px 12px; font-size: 0.8rem; font-weight: 700; }
+
+    .st-section { padding: 64px 0; }
+    .st-eyebrow { color: var(--accent); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .st-title { font-family: 'Manrope', sans-serif; font-weight: 800; color: var(--navy); font-size: clamp(1.7rem, 4.5vw, 2.4rem); margin: 6px 0 8px; }
+    .st-sub { color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 30px; }
+    .st-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .st-step { background: #FFFFFF; border-radius: 20px; padding: 28px; box-shadow: var(--shadow); }
+    .st-step .ico { width: 64px; height: 64px; border-radius: 16px; background: var(--saffron-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.7rem; margin-bottom: 16px; }
+    .st-step h3 { color: var(--navy); font-size: 1.2rem; margin-bottom: 4px; }
+    .st-step .hi { color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+    .st-step p { color: var(--text-secondary); }
+
+    .st-cats-wrap { background: #ECEEF0; }
+    .st-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .st-cat { background: #FFFFFF; border-radius: 18px; padding: 22px 12px; text-align: center; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.15s; min-height: 150px; border: 0; font-family: inherit; }
+    .st-cat:active { transform: scale(0.96); }
+    .st-cat .ico { width: 64px; height: 64px; border-radius: 50%; background: #E6E8EA; color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 0 auto 10px; }
+    .st-cat strong { display: block; color: var(--navy); font-size: 1.05rem; }
+    .st-cat span { color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; }
+
+    .st-footer { background: #FFFFFF; padding: 36px 0 48px; margin-top: 30px; box-shadow: 0 -1px 8px rgba(0,0,0,0.04); }
+    .st-footer .container { display: flex; flex-wrap: wrap; gap: 14px 30px; align-items: center; justify-content: space-between; }
+    .st-footer strong { font-family: 'Manrope', sans-serif; font-size: 1.15rem; color: var(--navy); display: block; }
+    .st-footer em { color: var(--accent); font-style: normal; font-weight: 700; }
+    .st-footer a.tel { color: var(--accent); font-weight: 800; }
+
+    .st-dock { display: none; }
+
+    @media (max-width: 768px) {
+      .st-steps, .st-cats { grid-template-columns: 1fr 1fr; }
+      .st-steps { grid-template-columns: 1fr; }
+      .st-cta { grid-template-columns: 1fr; }
+      .st-call-nav { display: none; }
+      /* header must fit a 360px phone: drop "Our Team" (the page still scrolls to it from the footer), tighten gaps */
+      .navbar .btn[data-i18n="nav_team"] { display: none; }
+      .nav-inner { padding: 0 12px; gap: 8px; }
+      .nav-inner > div[style] { gap: 8px !important; }
+      .logo { font-size: 1.1rem; }
+      .logo small { font-size: 0.62rem; }
+      .lang-switcher { gap: 4px !important; }
+      .lang-switcher .btn { padding: 4px 8px !important; min-height: 40px; }
+      .profile-initial { width: 38px; height: 38px; }
+      .st-section { padding: 44px 0; }
+      body { padding-bottom: 76px; }
+      .secret-trigger { bottom: 88px; left: auto; right: 12px; width: 40px; height: 40px; opacity: 0.55; }
+      .st-dock { display: flex; gap: 10px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; background: rgba(255,255,255,0.97); padding: 10px 12px; box-shadow: 0 -4px 16px rgba(0,0,0,0.10); }
+      .st-dock a { flex: 1; min-height: 54px; border-radius: 14px; font-weight: 800; font-size: 0.98rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+      .st-dock .d1 { background: var(--accent); color: #FFFFFF; }
+      .st-dock .d2 { background: var(--navy); color: #FFFFFF; }
+    }
