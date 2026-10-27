@@ -10,6 +10,7 @@ const Worker = require('../models/Worker');
 const bcrypt = require('bcryptjs');
 const twilioWebhook = require('../middleware/twilioWebhook');
 const { parseNumber, matchCity, matchSkill, extractName, localPhone } = require('../utils/voiceParse');
+const { aiUnderstand } = require('../utils/aiUnderstand');
 
 // ── Rate Limiter: 60 requests per minute per IP ──
 const rateLimitMap = new Map();
@@ -48,8 +49,9 @@ setInterval(() => {
 
 // Gemini Setup
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-  model: 'gemini-2.5-flash',
+const model = genAI.getGenerativeModel({
+  // gemini-2.5-flash is retired for new keys; override with GEMINI_MODEL on Render if this one is too
+  model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
   systemInstruction: `You are Mitra, a friendly assistant for Kamgar Connect, a job platform for daily wage workers in Indian cities. Always reply in the same language the user is speaking — English, Hindi, or Marathi. Keep all answers very short and simple — many users have low literacy. Help with: registering as a worker, finding workers, posting jobs, understanding payments, tracking jobs. Never use complex words. Always be warm and encouraging.`
 });
 
@@ -150,6 +152,14 @@ function ask(twiml, text) {
   twiml.redirect({ method: 'POST' }, '/api/assistant/gather');
 }
 
+// Spoken digits ("700") are reliable; number words ("साढ़े छह सौ", "एक दशक")
+// go to Gemini first because the word rules can get them wrong
+async function understandNumber(field, speech) {
+  if (/^\D*\d+\D*$/.test(speech)) return parseNumber(speech);
+  const ai = await aiUnderstand(field, speech);
+  return ai ?? parseNumber(speech) ?? 0;
+}
+
 function sayAndHangUp(twiml, text) {
   twiml.say(VOICE, text);
   twiml.hangup();
@@ -227,14 +237,20 @@ router.post('/gather', twilioWebhook, express.urlencoded({ extended: false }), a
       session.silentTurns = 0;
       session.conversationHistory.push({ role: 'user', content: speech });
 
+      // Quick rules first; Gemini only when the rules can't understand the answer
       const data = session.collectedData;
       switch (session.currentQuestion) {
-        case 1: data.name = extractName(speech) || speech; break;
-        case 2: data.city = matchCity(speech) || speech; break;
-        case 3: data.skill = matchSkill(speech) || speech; break;
-        case 4: data.experience_years = parseNumber(speech) || 0; break;
-        case 5: data.expected_salary_per_day = parseNumber(speech) || 0; break;
-        case 6: data.availability_days = parseNumber(speech) || 0; break;
+        case 1: {
+          const name = extractName(speech);
+          const unclear = !name || name.split(/\s+/).length > 3;
+          data.name = (unclear ? await aiUnderstand('name', speech) : null) || name || speech;
+          break;
+        }
+        case 2: data.city = matchCity(speech) || await aiUnderstand('city', speech) || speech; break;
+        case 3: data.skill = matchSkill(speech) || await aiUnderstand('skill', speech) || speech; break;
+        case 4: data.experience_years = await understandNumber('experience_years', speech); break;
+        case 5: data.expected_salary_per_day = await understandNumber('expected_salary_per_day', speech); break;
+        case 6: data.availability_days = await understandNumber('availability_days', speech); break;
       }
       session.currentQuestion += 1;
 
