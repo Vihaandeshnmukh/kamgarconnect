@@ -15,6 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     :root {
@@ -334,6 +335,10 @@
        <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
        <h2 style="margin-bottom:25px;" data-i18n="reg_title">Join the Marketplace</h2>
        
+       <div id="google-signin-wrap" style="display:none; margin-bottom:20px; text-align:center;">
+          <div id="google-signin-btn" style="display:inline-block;"></div>
+          <p id="google-signin-note" style="display:none; margin-top:10px; font-weight:700; color:var(--accent);"></p>
+       </div>
        <div class="selector-grid">
           <div class="select-type select-type-worker active" onclick="selectType('Worker')">I AM A WORKER</div>
           <div class="select-type select-type-employer" onclick="selectType('Employer')">I NEED A WORKER</div>
@@ -517,6 +522,7 @@
        initThree();
        setLang(currentLang);
        if (sessionStorage.getItem('bannerDismissed')) dismissBanner();
+       initGoogleSignIn();
        // Logins saved before tokens existed must sign in again
        if (localStorage.getItem('user_id') && !localStorage.getItem('auth_token')) {
           ['user_id','user_name','user_phone','user_type','user_city','user_skill','isLooking','availableUntil','liveStartTime'].forEach(k => localStorage.removeItem(k));
@@ -585,6 +591,37 @@
        }
     }
 
+    // "Sign in with Google": shown only when the server has a Google Client ID
+    let pendingGoogleCredential = null;
+    async function initGoogleSignIn() {
+       try {
+          const cfg = await (await fetch(`${CONFIG.BACKEND_URL}/api/auth/google-config`)).json();
+          if (!cfg.clientId) return;
+          if (!window.google) { setTimeout(initGoogleSignIn, 1000); return; }
+          google.accounts.id.initialize({ client_id: cfg.clientId, callback: handleGoogleCredential });
+          google.accounts.id.renderButton(document.getElementById('google-signin-btn'), { theme: 'outline', size: 'large', text: 'continue_with', shape: 'pill' });
+          document.getElementById('google-signin-wrap').style.display = 'block';
+       } catch (e) { console.log('Google sign-in unavailable'); }
+    }
+
+    async function handleGoogleCredential(resp) {
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/auth/google`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ credential: resp.credential }) });
+          const data = await res.json();
+          if (res.ok) { loginUser(data.user, data.user.role === 'employer' ? 'Employer' : 'Worker', data.token); return; }
+          if (res.status === 404) {
+             // New person: keep the Google link and ask once for the remaining details
+             pendingGoogleCredential = resp.credential;
+             document.getElementById('reg-name').value = data.profile ? data.profile.name : '';
+             const note = document.getElementById('google-signin-note');
+             note.innerText = "Google linked. Add your phone number and details once - next time just tap Google.";
+             note.style.display = 'block';
+             return;
+          }
+          showNotif(data.msg || "Google sign-in failed", "red");
+       } catch (e) { showNotif("Google sign-in failed. Check your connection.", "red"); }
+    }
+
     async function handleRegistration(e) {
        e.preventDefault();
        resetErrors();
@@ -615,6 +652,7 @@
           if (loginRes.status !== 404) throw new Error("Could not reach server");
           const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
           const body = { name, phone, city };
+          if (pendingGoogleCredential) body.googleCredential = pendingGoogleCredential;
           if (selectedType === 'Worker') {
              body.skill = document.getElementById('reg-skill').value;
              body.experience = document.getElementById('reg-exp').value;
