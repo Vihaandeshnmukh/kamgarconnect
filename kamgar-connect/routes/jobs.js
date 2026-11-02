@@ -36,6 +36,25 @@ if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith(
   twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 }
 
+// Phones are stored as 10 local digits; Twilio needs +91XXXXXXXXXX.
+// Demo/test numbers (not 6-9 first digit) get no SMS, same rule as calls.js.
+function smsTo(phone) {
+  const digits = String(phone || '').replace(/\D/g, '').slice(-10);
+  return /^[6-9]\d{9}$/.test(digits) ? '+91' + digits : null;
+}
+
+// Sends one SMS if the number is a real Indian mobile; failures are only logged
+async function sendSms(phone, body) {
+  const to = smsTo(phone);
+  if (!twilioClient || !process.env.TWILIO_PHONE_NUMBER || !to) return;
+  try {
+    await twilioClient.messages.create({ body, from: process.env.TWILIO_PHONE_NUMBER, to });
+  } catch (smsErr) {
+    // Trial accounts can only text verified numbers
+    console.error('Twilio SMS error:', smsErr.message);
+  }
+}
+
 // POST /api/jobs - Employer posts a job
 router.post('/', auth, async (req, res) => {
   try {
@@ -56,9 +75,8 @@ router.post('/', auth, async (req, res) => {
 
     await job.save();
 
-    const employer = await Employer.findById(req.user.id);
-    employer.jobsPosted.push(job.id);
-    await employer.save();
+    // Token of a deleted employer account: the job is saved, just not listed on a profile
+    await Employer.updateOne({ _id: req.user.id }, { $push: { jobsPosted: job._id } });
 
     // Emit Socket.IO event to all matching workers in that city
     if (req.io) req.io.to(city).emit('new-job', job);
@@ -121,24 +139,8 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (req.io) req.io.to(`user-${employer.id}`).emit('job-accepted', { job, worker: { _id: worker._id, name: worker.name, skill: worker.skill } });
 
     // Twilio SMS
-    try {
-      if (twilioClient && process.env.TWILIO_PHONE_NUMBER && process.env.TWILIO_PHONE_NUMBER !== 'your_twilio_number') {
-        await twilioClient.messages.create({
-          body: `नमस्ते ${worker.name}! You have a new job from ${employer.name} in ${job.city}. They will call you shortly. - Kamgar Connect`,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: worker.phone
-        });
-
-        await twilioClient.messages.create({
-          body: `Your worker ${worker.name} (${worker.skill}) has accepted your job. Login to call them now.`,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: employer.phone
-        });
-      }
-    } catch (smsErr) {
-      console.error('Twilio SMS error:', smsErr.message);
-      // Fails silently if trial account limits prevent sms
-    }
+    await sendSms(worker.phone, `नमस्ते ${worker.name}! You have a new job from ${employer.name} in ${job.city}. They will call you shortly. - Kamgar Connect`);
+    await sendSms(employer.phone, `Your worker ${worker.name} (${worker.skill}) has accepted your job. Login to call them now.`);
 
     // Log pending call session automatically
     const pendingCall = new Call({
@@ -185,18 +187,10 @@ router.put('/:id/complete', auth, async (req, res) => {
     const employer = await Employer.findById(job.employerId);
 
     // Auto SMS to employer asking for a review
-    if (worker && employer && twilioClient && process.env.TWILIO_PHONE_NUMBER) {
-      try {
-        // The website opens a rating box for this job (employer must be logged in)
-        const reviewUrl = `https://kamgar.de/?review=${job.id}&worker=${worker.id}`;
-        await twilioClient.messages.create({
-          body: `Kamgar Connect: Job complete! Please rate ${worker.name} at ${reviewUrl}`,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: employer.phone
-        });
-      } catch (smsErr) {
-        console.error('Twilio SMS review error:', smsErr.message);
-      }
+    if (worker && employer) {
+      // The website opens a rating box for this job (employer must be logged in)
+      const reviewUrl = `https://kamgar.de/?review=${job.id}&worker=${worker.id}`;
+      await sendSms(employer.phone, `Kamgar Connect: Job complete! Please rate ${worker.name} at ${reviewUrl}`);
     }
 
     res.json(job);
