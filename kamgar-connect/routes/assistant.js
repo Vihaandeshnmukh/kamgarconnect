@@ -99,8 +99,12 @@ router.post('/chat', chatLimit, async (req, res) => {
 // POST /api/assistant/tts (ElevenLabs Proxy)
 router.post('/tts', rateLimit, async (req, res) => {
   try {
-    const { text, language } = req.body;
-    
+    const { language } = req.body;
+    // Open to visitors: plain text, short, so nobody can use up the ElevenLabs
+    // monthly characters (10,000 on the free plan) in a few requests
+    const text = typeof req.body.text === 'string' ? req.body.text.trim() : '';
+    if (!text || text.length > 300) return res.status(400).json({ msg: 'Text (up to 300 characters) is required' });
+
     // Map voice IDs based on requested language
     // Rachel (default) = 21m00Tcm4TlvDq8ikWAM, Matilda = XrExE9yKIg1WjnnlVkGX
     let voiceId = '21m00Tcm4TlvDq8ikWAM'; 
