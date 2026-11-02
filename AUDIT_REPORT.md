@@ -10,7 +10,7 @@ No secret values are printed in this report.
 |---|---|---|
 | Hosting / DNS | `api.kamgar.de` → CNAME `kamgar-api.onrender.com` (Render, Singapore). Health 200, CORS correct. No Railway records left. | Same. Fixes deployed and re-tested live (H-7) |
 | Backend | All routes registered and protected. No "RESTRICTION REMOVED FOR TESTING" left. 0 npm vulnerabilities. Several real bugs (below). | Fixed, 75/75 + 160 regression tests pass |
-| Database | 7 collections, indexes match the models, schema matches code. Leftover QA test data. | Unchanged: test-data deletion approved but not done (Atlas Data Explorer would not load in the browser; see D-2) |
+| Database | 7 collections, indexes match the models, schema matches code. Leftover QA test data. | Test data deleted (D-2); MCP user made read-only (D-4) |
 | Voice | Inbound webhook works with signature checks. Gemini step silently never worked on calls. Cold starts not prevented. | Gemini fixed; cold start needs your decision |
 | Website | All flows work. Theme header/footer/blog loop shown, 3 small JS bugs. | Fixed and live: theme wrappers removed, title set, 3 JS bugs fixed |
 
@@ -58,7 +58,8 @@ Severity: Critical / High / Medium / Low. Status: FIXED (verified), READY (writt
 | ID | Sev | Finding | Evidence | Status |
 |---|---|---|---|---|
 | D-1 | Info | 7 collections: workers 19, employers 8, jobs 3 (all pending), calls 7, callsessions 1, reviews 2, timelines 0. Indexes match models (phone unique, location 2dsphere, googleId sparse, callSid unique). Field types match the schemas. All workers have hashed passwords, valid 10-digit phones, cities and skills from the fixed lists. 17/19 workers are demo numbers (`0…`). | read-only audit script | OK |
-| D-2 | Low | Leftover QA test data in production: worker `QA (Demo) <img src=x onerror=…>` (XSS probe; shown as text, not executed), 2 reviews "QA test review one/two", plus this audit's test data (call sessions `CAauditTEST…` and `CAauditTEST2`, worker "Audit Test Worker" 0000000901, employer "Audit Test Employer" 0000000902, 1 call record) | DB query; live page shows no XSS execution | Approved; NOT deleted yet: Atlas Data Explorer would not connect in the built-in browser and the MCP user is read-only. IDs: workers `6ae07df495399944dc290fcf`, `6ae8b38d8e1c8dca577c940b`; employers `6ae8b3a88e1c8dca577c940c`; reviews `6ae0bfb2e9a7fab1bd03f999`, `6ae0bfb4e9a7fab1bd03f99b`; callsessions `6ae8b2c48e1c8dca577c940a`, `6ae8b5b885120474d3290900`; calls `6ae8b3b58e1c8dca577c940d`. After deleting the reviews, reset `QA Worker Two (Demo)` (`6ae0bf24e9a7fab1bd03f995`) to rating 0 / totalRatings 0 |
+| D-2 | Low | Leftover QA/audit test data in production: XSS-probe worker, 2 QA reviews, audit test worker/employer, 2 audit call sessions, 1 audit call record | DB query | FIXED: deleted by `_id` (8 docs) and `QA Worker Two (Demo)` rating reset to 0/0; counts now workers 18, employers 8, reviews 0, callsessions 0, calls 7 |
+| D-4 | Medium | The Mongo MCP user `kamgar-mcp-ro` had **readWriteAnyDatabase** although it was meant to be read-only | Created with the wrong built-in role | Atlas Database Users page | Role changed to `readAnyDatabase@admin` | Test write → rejected (AtlasError), reads OK | FIXED |
 | D-3 | Info | Roadmap (timeline) collection is empty, so the TIME page was blank | count 0 | Empty-state text in F-3 |
 
 ### Voice system (Twilio + Gemini + ElevenLabs)
@@ -90,7 +91,7 @@ Tested live in the browser: worker form (empty → 5 field errors; valid → reg
 ## Still broken / needs manual action from you
 
 1. **Revoke the leaked GitHub token** (S-1) at github.com/settings/tokens and **regenerate the recovery codes** (S-2). History is purged, but GitHub still serves the old commits by SHA; for full removal ask GitHub Support to purge cached views of `024c871` and `7988aa4`. Anyone with another clone made before 2 Nov must re-clone (history was rewritten).
-2. **Test data (D-2)** is not deleted yet. Either delete the listed IDs in Atlas Data Explorer in your normal Chrome, or let me temporarily give the `kamgar-mcp-ro` user write access and remove it again afterwards.
+2. ~~Test data (D-2)~~ done.
 3. **Cold starts (H-2):** choose Render Starter (~$7/month, never sleeps) or accept that the first call after idle may fail (the second works).
 4. **Twilio trial (V-6):** upgrading (adding funds) removes the trial message and the verified-numbers limit.
 5. **ElevenLabs (H-6), optional:** add `ELEVENLABS_API_KEY` in Render → Environment.
