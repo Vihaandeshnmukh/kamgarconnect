@@ -1144,7 +1144,9 @@
        currentWorkerToHire = { id, name: w.name };
        document.getElementById('hire-worker-name').innerText = w.name;
        document.getElementById('hire-emp-name').value = localStorage.getItem('user_name');
-       document.getElementById('hire-date').min = new Date().toISOString().split("T")[0];
+       // Today in the visitor's time zone (toISOString alone is UTC: yesterday before 5:30 am in India)
+       const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+       document.getElementById('hire-date').min = today.toISOString().split("T")[0];
        document.getElementById('hire-modal').style.display = 'flex';
     }
 
@@ -1347,7 +1349,13 @@
     function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     function handleFindWorkClick() { selectType('Worker'); openModal(); }
     function handleHireClick() { selectType('Employer'); openModal(); }
-    function openSecretPage() { document.getElementById('secret-page').style.display='flex'; document.getElementById('secret-access-code').focus(); }
+    function openSecretPage() {
+       const page = document.getElementById('secret-page');
+       // An earlier unlock hid the code screen: show it again so another code can be entered
+       page.querySelectorAll(':scope > *:not(#secret-err):not(#secret-content)').forEach(el => el.style.display = '');
+       document.getElementById('secret-content').style.display = 'none';
+       page.style.display='flex'; document.getElementById('secret-access-code').focus();
+    }
     function closeSecretPage() { document.getElementById('secret-page').style.display='none'; }
 
     function unlockSecret() {
@@ -1373,6 +1381,7 @@
        try {
           const res = await fetch(CONFIG.BACKEND_URL + '/api/timeline');
           const data = await res.json();
+          if (!data.length) { list.innerHTML = '<p style="opacity:0.6;">No roadmap entries yet.</p>'; return; }
           list.innerHTML = data.map((item) => `
              <div class="timeline-item">
                 <div class="timeline-dot"></div>
