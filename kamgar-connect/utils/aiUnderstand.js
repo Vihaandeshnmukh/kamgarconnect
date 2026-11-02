@@ -5,7 +5,9 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { isLikelyName } = require('./voiceParse');
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+// The "lite" model answers in ~1s; gemini-3.5-flash takes 5-14s, which always
+// hit the 5s timeout below, so the call never got Gemini's help
+const MODEL = process.env.GEMINI_CALL_MODEL || 'gemini-3.5-flash-lite';
 const TIMEOUT_MS = 5000; // Twilio waits ~15s for each answer, keep well under it
 
 const CITIES = ['Aurangabad', 'Nagpur', 'Pune', 'Nashik', 'Mumbai'];

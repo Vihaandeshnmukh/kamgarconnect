@@ -37,6 +37,9 @@ function isCallablePhone(phone) {
   return /^[6-9]\d{9}$/.test(digits);
 }
 
+// Status events Twilio accepts for outbound calls (anything else raises warning 21626)
+const STATUS_EVENTS = ['initiated', 'ringing', 'answered', 'completed'];
+
 // ── Helper: get base URL for Twilio webhooks ──
 function getBaseUrl(req) {
   // In production use the BACKEND_URL env or the request host
@@ -88,7 +91,8 @@ router.post('/notify/:workerId', adminAuth, async (req, res) => {
           to: formatPhone(worker.phone),
           from: process.env.TWILIO_PHONE_NUMBER,
           statusCallback: `${baseUrl}/api/calls/webhook`,
-          statusCallbackEvent: ['answered', 'completed', 'failed', 'no-answer', 'busy']
+          // Twilio's only status events; busy/no-answer/failed arrive as 'completed' with that CallStatus
+          statusCallbackEvent: STATUS_EVENTS
         });
         callSid = call.sid;
       } catch (twilioErr) {
@@ -206,7 +210,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
           to: formatPhone(worker.phone),
           from: process.env.TWILIO_PHONE_NUMBER,
           statusCallback: `${baseUrl}/api/calls/webhook`,
-          statusCallbackEvent: ['answered', 'completed', 'failed', 'no-answer', 'busy']
+          statusCallbackEvent: STATUS_EVENTS
         });
         callSid = call.sid;
         callRecord.callSid = callSid;
@@ -424,8 +428,11 @@ router.post('/webhook', twilioWebhook, express.urlencoded({ extended: false }), 
       callRecord.status = CallStatus;
       if (CallDuration) callRecord.duration = parseInt(CallDuration);
 
-      // If call failed/no-answer for an assignment, mark as declined
-      if (['failed', 'no-answer', 'busy', 'canceled'].includes(CallStatus) && callRecord.callType === 'assign') {
+      // If call failed/no-answer for an assignment, mark as declined.
+      // Also when the call ended without the worker pressing 1 or 2 (they hung up
+      // or the keypad prompt timed out): they never confirmed, so free them again.
+      const endedUnconfirmed = CallStatus === 'completed' && callRecord.assignmentData && callRecord.assignmentData.workerResponse === 'pending';
+      if ((['failed', 'no-answer', 'busy', 'canceled'].includes(CallStatus) || endedUnconfirmed) && callRecord.callType === 'assign') {
         callRecord.assignmentData.workerResponse = 'declined';
         // Update worker
         await Worker.findByIdAndUpdate(callRecord.receiverId, { call_status: 'no-answer' });
