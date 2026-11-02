@@ -10,9 +10,9 @@ No secret values are printed in this report.
 |---|---|---|
 | Hosting / DNS | `api.kamgar.de` → CNAME `kamgar-api.onrender.com` (Render, Singapore). Health 200, CORS correct. No Railway records left. | Same. Fixes deployed and re-tested live (H-7) |
 | Backend | All routes registered and protected. No "RESTRICTION REMOVED FOR TESTING" left. 0 npm vulnerabilities. Several real bugs (below). | Fixed, 75/75 + 160 regression tests pass |
-| Database | 7 collections, indexes match the models, schema matches code. Leftover QA test data. | Unchanged (deletion needs your OK) |
+| Database | 7 collections, indexes match the models, schema matches code. Leftover QA test data. | Unchanged: test-data deletion approved but not done (Atlas Data Explorer would not load in the browser; see D-2) |
 | Voice | Inbound webhook works with signature checks. Gemini step silently never worked on calls. Cold starts not prevented. | Gemini fixed; cold start needs your decision |
-| Website | All flows work. Theme header/footer/blog loop shown, 3 small JS bugs. | Fixes ready; waiting for your OK on the diff |
+| Website | All flows work. Theme header/footer/blog loop shown, 3 small JS bugs. | Fixed and live: theme wrappers removed, title set, 3 JS bugs fixed |
 
 ## Findings
 
@@ -22,8 +22,8 @@ Severity: Critical / High / Medium / Low. Status: FIXED (verified), READY (writt
 
 | ID | Sev | Finding | Root cause | Evidence | Change | Verified | Status |
 |---|---|---|---|---|---|---|---|
-| S-1 | Critical | **GitHub personal access token** (`ghp_…`, 40 chars) is in the PUBLIC repo's history | File `ssss` committed in `024c871` ("fix start script"); deleting it in `ea97936` did not remove it from history | `git show 024c871:ssss` → starts `ghp_`, 40 chars | none in repo (working tree is clean) | `git log --all` | MANUAL: revoke it at github.com/settings/tokens. Purging history needs a force-push (your OK) |
-| S-2 | High | **"phone recovory code"** (24-char account recovery code) in PUBLIC history | Committed in first commit `7988aa4`, removed in `839a0d0`, still in history | `git rev-list --all --objects` → `df47e87 phone recovory code` | none | as above | MANUAL: regenerate recovery codes on the account it belongs to |
+| S-1 | Critical | **GitHub personal access token** (`ghp_…`, 40 chars) is in the PUBLIC repo's history | File `ssss` committed in `024c871` ("fix start script"); deleting it in `ea97936` did not remove it from history | `git show 024c871:ssss` → starts `ghp_`, 40 chars | Removed from all history with `git filter-branch`, force-pushed (`9f713e9` → `8e3ffa0`, same code tree) | `git rev-list main --objects` has no `ssss`; local reflog/gc cleaned | PARTLY FIXED. GitHub still serves the old commit by SHA (`/commits/024c871` → 200) until its cache is purged. **You must revoke the token** at github.com/settings/tokens |
+| S-2 | High | **"phone recovory code"** (24-char account recovery code) in PUBLIC history | Committed in first commit `7988aa4`, removed in `839a0d0`, still in history | `git rev-list --all --objects` → `df47e87 phone recovory code` | Removed from history with S-1 | as S-1 (`/commits/7988aa4` still 200 on GitHub) | PARTLY FIXED. **Regenerate the recovery codes**; also delete the copy in `D:\kamgar connect\kamgarconnect-main\` |
 | S-3 | Info | No other secrets in tree or history | Scanned all commits for Twilio SIDs/keys, Google keys, ElevenLabs keys, Mongo URIs with passwords, JWT/admin secrets | regex scan of `git log --all -p` | none | | OK |
 | S-4 | High | Login = knowing a phone number (no OTP); worker phone numbers are visible to any logged-in employer | Design gap noted in `routes/auth.js:138` | code + earlier QA report C1 | none (needs a new feature) | | Recommended next |
 | S-5 | Info | "RESTRICTION REMOVED FOR TESTING" shortcuts | Already replaced by `auth` + `requireRole`/`requireSelf` + `adminAuth` in an earlier session | `grep` finds none; tests: go-live/hire/assign/timeline without login → 401, wrong role → 403 | none | test-security 114/114, test-audit 75/75 | OK |
@@ -58,7 +58,7 @@ Severity: Critical / High / Medium / Low. Status: FIXED (verified), READY (writt
 | ID | Sev | Finding | Evidence | Status |
 |---|---|---|---|---|
 | D-1 | Info | 7 collections: workers 19, employers 8, jobs 3 (all pending), calls 7, callsessions 1, reviews 2, timelines 0. Indexes match models (phone unique, location 2dsphere, googleId sparse, callSid unique). Field types match the schemas. All workers have hashed passwords, valid 10-digit phones, cities and skills from the fixed lists. 17/19 workers are demo numbers (`0…`). | read-only audit script | OK |
-| D-2 | Low | Leftover QA test data in production: worker `QA (Demo) <img src=x onerror=…>` (XSS probe; shown as text, not executed), 2 reviews "QA test review one/two", plus this audit's test data (call sessions `CAauditTEST…` and `CAauditTEST2`, worker "Audit Test Worker" 0000000901, employer "Audit Test Employer" 0000000902, 1 call record) | DB query; live page shows no XSS execution | Waiting for your OK to delete |
+| D-2 | Low | Leftover QA test data in production: worker `QA (Demo) <img src=x onerror=…>` (XSS probe; shown as text, not executed), 2 reviews "QA test review one/two", plus this audit's test data (call sessions `CAauditTEST…` and `CAauditTEST2`, worker "Audit Test Worker" 0000000901, employer "Audit Test Employer" 0000000902, 1 call record) | DB query; live page shows no XSS execution | Approved; NOT deleted yet: Atlas Data Explorer would not connect in the built-in browser and the MCP user is read-only. IDs: workers `6ae07df495399944dc290fcf`, `6ae8b38d8e1c8dca577c940b`; employers `6ae8b3a88e1c8dca577c940c`; reviews `6ae0bfb2e9a7fab1bd03f999`, `6ae0bfb4e9a7fab1bd03f99b`; callsessions `6ae8b2c48e1c8dca577c940a`, `6ae8b5b885120474d3290900`; calls `6ae8b3b58e1c8dca577c940d`. After deleting the reviews, reset `QA Worker Two (Demo)` (`6ae0bf24e9a7fab1bd03f995`) to rating 0 / totalRatings 0 |
 | D-3 | Info | Roadmap (timeline) collection is empty, so the TIME page was blank | count 0 | Empty-state text in F-3 |
 
 ### Voice system (Twilio + Gemini + ElevenLabs)
@@ -81,20 +81,26 @@ Tested live in the browser: worker form (empty → 5 field errors; valid → reg
 
 | ID | Sev | Finding | Root cause | Evidence | Change | Status |
 |---|---|---|---|---|---|---|
-| F-1 | Medium | WordPress theme header ("kamgar"), an empty blog-posts loop and the theme footer (Blog, About, Events, Shop… "Designed with WordPress") wrap the page | Template `twentytwentyfive//home` = header part + page HTML + `<main>` query loop + footer part | REST `GET /wp/v2/templates/twentytwentyfive//home` | Remove the 3 wrappers from the template | READY (your OK) |
-| F-2 | Low | Browser tab title is "kamgar" | WordPress site title | Settings API `title: "kamgar"` | Set site title to "Kamgar Connect" | READY (your OK) |
-| F-3 | Low | Secret page: after one unlock, reopening it shows the old content with no code box (needs a page reload); TIME page blank when empty | `unlockSecret` hides the code screen, `openSecretPage` never shows it again | live test: `inputVisibleOnReopen: false` | reset the code screen on open; "No roadmap entries yet." | READY (diff) |
-| F-4 | Low | Hire date picker allows yesterday between 00:00 and 05:30 IST (server then rejects it) | `min` used the UTC date | code `openHireModal` | local date | READY (diff) |
+| F-1 | Medium | WordPress theme header ("kamgar"), an empty blog-posts loop and the theme footer (Blog, About, Events, Shop… "Designed with WordPress") wrap the page | Template `twentytwentyfive//home` = header part + page HTML + `<main>` query loop + footer part | REST `GET /wp/v2/templates/twentytwentyfive//home` | Template now holds only the page HTML (old version: header part + page + query loop + footer part; recoverable from WP template revisions) | FIXED: live page has no theme header/footer, script parses, no `&#038;` |
+| F-2 | Low | Browser tab title is "kamgar" | WordPress site title | Settings API `title: "kamgar"` | Site title set to "Kamgar Connect" | FIXED: tab title "Kamgar Connect" |
+| F-3 | Low | Secret page: after one unlock, reopening it shows the old content with no code box (needs a page reload); TIME page blank when empty | `unlockSecret` hides the code screen, `openSecretPage` never shows it again | live test: `inputVisibleOnReopen: false` | reset the code screen on open; "No roadmap entries yet." | FIXED: live TIME → MIND without reload works; empty roadmap text shown |
+| F-4 | Low | Hire date picker allows yesterday between 00:00 and 05:30 IST (server then rejects it) | `min` used the UTC date | code `openHireModal` | local date | FIXED (commit `8e3ffa0`) |
 | F-5 | Info | US helpline +1 814 821 5946 shown 3 times | It is the only working number | page text | none | Recommended next (Indian number) |
 
 ## Still broken / needs manual action from you
 
-1. **Revoke the leaked GitHub token** (S-1) at github.com/settings/tokens, and regenerate the recovery codes from "phone recovory code" (S-2). Optional: I can purge both files from git history, but that needs a force-push to main.
-2. **Cold starts (H-2):** choose one: Render Starter (~$7/month, never sleeps), or accept that the first call after idle may fail (the second works).
-3. **Twilio trial (V-6):** upgrading the account (adding funds) removes the trial message and the verified-numbers limit. Needs your payment decision.
-4. **ElevenLabs (H-6):** only if you want ElevenLabs voices on the old site: add `ELEVENLABS_API_KEY` in Render → Environment.
-5. **Make one real test call** to the number to confirm the registration flow end to end (V-7).
-6. **QA/test data (D-2):** say OK and I'll delete the listed test records.
+1. **Revoke the leaked GitHub token** (S-1) at github.com/settings/tokens and **regenerate the recovery codes** (S-2). History is purged, but GitHub still serves the old commits by SHA; for full removal ask GitHub Support to purge cached views of `024c871` and `7988aa4`. Anyone with another clone made before 2 Nov must re-clone (history was rewritten).
+2. **Test data (D-2)** is not deleted yet. Either delete the listed IDs in Atlas Data Explorer in your normal Chrome, or let me temporarily give the `kamgar-mcp-ro` user write access and remove it again afterwards.
+3. **Cold starts (H-2):** choose Render Starter (~$7/month, never sleeps) or accept that the first call after idle may fail (the second works).
+4. **Twilio trial (V-6):** upgrading (adding funds) removes the trial message and the verified-numbers limit.
+5. **ElevenLabs (H-6), optional:** add `ELEVENLABS_API_KEY` in Render → Environment.
+6. **Make one real test call** to the number to confirm registration end to end (V-7).
+
+## Final regression (2 Nov 2026)
+
+- Local: test-audit 75/75, test-security 114/114, test-calls 34/34, test-google 12/12.
+- Live API: health 200 (`db: connected`), workers, stats, jobs/available, timeline 200 (all < 0.8 s, warm); unknown path JSON 404; signed voice webhook 200 / forged 403.
+- Live site: title "Kamgar Connect", no theme footer, worker sign-up/login, toggle, languages, employer sign-up, worker grid, hire, secret page (TIME/MIND, reopen) all work; no console errors except the expected login-probe 404.
 
 ## Recommended next (not built: new features or services)
 
