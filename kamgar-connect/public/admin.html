@@ -211,7 +211,7 @@
       if (btn) { btn.innerText = '⏳'; btn.disabled = true; }
 
       try {
-        const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/notify/${workerId}`, { method: 'POST' });
+        const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/notify/${workerId}`, { method: 'POST', headers: { 'Authorization': adminToken } });
         const data = await res.json();
         if (res.ok && data.success) {
           if (btn) { btn.innerText = '✅'; btn.style.background = '#22C55E'; }

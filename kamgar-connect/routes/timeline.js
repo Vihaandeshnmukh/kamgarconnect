@@ -44,7 +44,7 @@ router.get('/mindmap', async (req, res) => {
                 },
                 {
                     id: 'backend', name: 'Backend', color: '#10b981',
-                    nodes: ['Node.js Express', 'MongoDB Atlas', 'Railway Hosting', 'JWT Auth', 'Socket.IO']
+                    nodes: ['Node.js Express', 'MongoDB Atlas', 'Render Hosting', 'JWT Auth', 'Socket.IO']
                 },
                 {
                     id: 'calling', name: 'Calling System', color: '#a855f7',
