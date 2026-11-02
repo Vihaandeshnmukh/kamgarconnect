@@ -121,7 +121,8 @@ app.get('/:filename.mp4', (req, res) => {
 
 // Import API Routers
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/register', require('./routes/pitch'));
+// Old pitch sign-up forms: same limit as /api/auth so they can't be used to flood the database
+app.use('/api/register', require('./middleware/rateLimit')({ windowMs: 10 * 60 * 1000, maxRequests: 40, message: 'Too many attempts. Please try again in a few minutes.' }), require('./routes/pitch'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/workers', require('./routes/workers'));
 app.use('/api/jobs', require('./routes/jobs'));
@@ -132,9 +133,25 @@ app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/timeline', require('./routes/timeline'));
 
-// Health Check for split frontend
+// Health Check for split frontend. Reports the database too: when Atlas is
+// paused or unreachable this returns 503, so Render's health check and the
+// keep-alive workflow fail loudly instead of saying "ok".
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', time: new Date() });
+  const db = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.status(db === 'connected' ? 200 : 503).json({ status: db === 'connected' ? 'ok' : 'degraded', db, time: new Date() });
+});
+
+// Unknown API paths get a JSON 404 (not the HTML homepage from the catch-all below)
+app.use('/api', (req, res) => {
+  res.status(404).json({ msg: 'Not found' });
+});
+
+// Bad JSON bodies and other errors: JSON answer instead of Express's HTML page
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ msg: 'Invalid JSON' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ msg: 'Request too large' });
+  console.error('Unhandled error:', err.message);
+  res.status(err.status || 500).json({ msg: 'Server Error' });
 });
 
 // Explicit routes for pitch prototype pages
