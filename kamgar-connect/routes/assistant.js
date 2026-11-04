@@ -344,8 +344,9 @@ async function saveWorkerFromCall(session) {
 router.post('/voice', twilioWebhook, express.urlencoded({ extended: false }), async (req, res) => {
   const twiml = new twilio.twiml.VoiceResponse();
   try {
-    const { CallSid, From } = req.body;
-    const phone = localPhone(From);
+    const { CallSid, From, To, Direction } = req.body;
+    // A "Call me" call we placed: the person is the one we dialled
+    const phone = localPhone(Direction === 'outbound-api' ? To : From);
 
     // Already registered: greet by name and put them back on the work list for 24 hours
     const existing = phone ? await Worker.findOne({ phone }) : null;

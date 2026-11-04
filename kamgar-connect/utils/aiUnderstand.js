@@ -53,4 +53,21 @@ Extract ${spec.ask}. Reply with JSON only: {"value": ...}. Use null if the answe
   }
 }
 
-module.exports = { aiUnderstand };
+// The caller's name from a short recording ("after the beep, say your name"), or null
+async function transcribeName(audio, mimeType = 'audio/mpeg') {
+  const m = getModel();
+  if (!m || !audio || !audio.length) return null;
+  try {
+    const result = await m.generateContent([
+      { inlineData: { data: audio.toString('base64'), mimeType } },
+      { text: 'A daily wage worker in Maharashtra, India said their name in Hindi, Marathi or English in this phone recording. Reply with JSON only: {"value": "<the name only, in the script it was spoken in>"}, or {"value": null} if no name is heard.' }
+    ]);
+    const parsed = JSON.parse(result.response.text());
+    return FIELDS.name.check(parsed.value);
+  } catch (err) {
+    console.error('transcribeName failed:', err.message);
+    return null;
+  }
+}
+
+module.exports = { aiUnderstand, transcribeName };

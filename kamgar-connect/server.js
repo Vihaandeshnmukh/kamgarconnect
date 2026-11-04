@@ -128,6 +128,7 @@ app.use('/api/workers', require('./routes/workers'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/calls', require('./routes/calls'));
 app.use('/api/assistant', require('./routes/assistant'));
+app.use('/api/exotel', require('./routes/exotel'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));

@@ -20,6 +20,13 @@ const CallSessionSchema = new mongoose.Schema({
   silentTurns: { type: Number, default: 0 }, // consecutive answers with no speech
   retries: { type: Number, default: 0 }, // times the current question was asked again (answer not understood)
   workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker', default: null }, // profile created from this call
+  // Keypad call flow (Exotel): which step the caller is on and what to play next
+  provider: { type: String, default: 'twilio' },
+  step: { type: String, default: null },
+  turn: { type: Number, default: 0 },
+  promptKeys: { type: [String], default: [] },
+  notice: { type: [String], default: [] }, // short message played before the next question ("not valid", "no key pressed")
+  spokenName: { type: String, default: null }, // name heard in the recording (Gemini)
   updatedAt: { type: Date, default: Date.now }
 });
 
