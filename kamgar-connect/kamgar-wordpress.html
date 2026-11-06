@@ -377,7 +377,8 @@
       .app-nav-btn { flex-direction: column; gap: 3px; font-size: 0.72rem; min-height: 56px; }
       .app-nav-btn i { font-size: 1.15rem; }
       .app-nav-btn.active { background: var(--saffron-soft, #FFE3D3); color: var(--accent); }
-      body.app-mode .secret-trigger { bottom: 84px; width: 42px; height: 42px; font-size: 1rem; opacity: 0.85; }
+      /* The floating lock would cover app content: it moves into the Profile screen */
+      body.app-mode .secret-trigger { display: none; }
       .prof-row2 { grid-template-columns: 1fr; }
       .hbar-row { grid-template-columns: 90px 1fr 26px; }
       .hist-actions { width: 100%; }
@@ -776,7 +777,7 @@
        en: {
           search_phone: "SEARCH BY PHONE", search: "SEARCH", find_nearest: "FIND NEAREST WORKER", all_types: "ALL WORK TYPES",
           hide_me: "Hide me from search", refresh: "Refresh", start_looking: "START LOOKING", stop_looking: "STOP LOOKING",
-          workers_available: n => `${n} workers currently available`, no_workers: "No workers available right now. Please check again soon.",
+          workers_available: n => `${n} ${n === 1 ? "worker" : "workers"} currently available`, no_workers: "No workers available right now. Please check again soon.",
           no_worker_phone: "No available worker with this phone number.", login_employer: "Log in as an employer to search by phone.",
           enter_phone: "Enter a 10-digit phone number", search_error: "Error searching. Try again later.", load_error: "Could not load workers. Please try again.",
           hire_now: "HIRE NOW", full_profile: "FULL PROFILE", exp: "Experience", years: "years", city: "City", availability: "Availability",
@@ -1095,15 +1096,10 @@
        note.style.display = 'none'; note.innerHTML = '';
     }
 
-    async function handleRegistration(e) {
-       e.preventDefault();
-       resetErrors();
-       const name = document.getElementById('reg-name').value.trim();
-       const phone = document.getElementById('reg-phone').value.replace(/\D/g, '');
-       const city = document.getElementById('reg-city').value;
+    // New sign-up: the fields a new account needs (shows the errors; true when all fine)
+    function signupFieldsOk(name, city) {
        let valid = true;
        if (!name) { document.getElementById('err-name').style.display='block'; valid=false; }
-       if (!/^\d{10}$/.test(phone)) { document.getElementById('err-phone').style.display='block'; valid=false; }
        if (!city) {
           if (selectedType === 'Worker') { document.getElementById('err-city').style.display='block'; valid=false; }
           else if (!hasLocation()) {
@@ -1117,7 +1113,16 @@
           const avail = getAvail();
           if (avail.length === 0) { document.getElementById('err-avail').style.display='block'; valid=false; }
        }
-       if (!valid) return;
+       return valid;
+    }
+
+    async function handleRegistration(e) {
+       e.preventDefault();
+       resetErrors();
+       const name = document.getElementById('reg-name').value.trim();
+       const phone = document.getElementById('reg-phone').value.replace(/\D/g, '');
+       const city = document.getElementById('reg-city').value;
+       if (!/^\d{10}$/.test(phone)) { document.getElementById('err-phone').style.display='block'; return; }
        const btn = document.getElementById('reg-btn-text');
        const ldr = document.getElementById('reg-loader');
        const showError = (msg) => {
@@ -1140,6 +1145,7 @@
           if (loginRes.status === 400) { const d = await loginRes.json(); showError(d.msg || (d.errors ? d.errors[0].msg : '') || "Please check your phone number."); return; }
           if (loginRes.status === 429) { const d = await loginRes.json(); showError(d.error || "Too many attempts. Please wait a few minutes."); return; }
           if (loginRes.status !== 404) throw new Error("Could not reach server");
+          if (!signupFieldsOk(name, city)) return;
           const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
           const body = { name, phone };
           if (city) body.city = city;
@@ -1421,7 +1427,8 @@
           roleFields +
           `<p class="prof-hint" style="margin-bottom:18px;"><i class="fab fa-google"></i> ${esc(p.googleLinked ? t('google_linked', p.email || '') : t('google_not'))}</p>` +
           `<button type="submit" class="btn btn-primary" style="width:100%; padding:18px;" id="pf-save">${esc(t('save'))}</button>` +
-          `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>`;
+          `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>` +
+          `<button type="button" class="btn" style="width:100%; margin-top:8px; opacity:0.55; font-size:0.8rem;" onclick="openSecretPage()"><i class="fas fa-lock"></i> Backstage</button>`;
     }
     function profileGPS() {
        getGPS('pf-loc-status', (coords, city) => {
