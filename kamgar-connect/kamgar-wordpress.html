@@ -322,6 +322,10 @@
     body.app-mode .st-footer, body.app-mode .st-dock, body.app-mode .nav-team-btn { display: none !important; }
     body.app-mode #dashboard-tabs { margin: 24px auto 40px !important; }
     body.app-mode .tab-container { margin-top: 0; }
+    /* Job cards in "Available jobs" have no 3D flip wrapper: keep them in the list (they covered the whole page) */
+    #city-jobs-list .card-front { position: relative; inset: auto; }
+    .app-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .app-switch { min-height: 40px; padding: 6px 12px; font-size: 0.8rem; border-radius: 12px; white-space: nowrap; }
     .app-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
     .app-hello { font-size: 1.6rem; font-weight: 900; color: var(--text-primary); }
     .app-sub { color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
@@ -472,7 +476,10 @@
     <div class="tab-container">
       <div class="app-head">
          <div><div class="app-hello" id="app-hello"></div><div class="app-sub" id="app-sub"></div></div>
-         <span class="app-role" id="app-role"></span>
+         <div class="app-head-right">
+            <span class="app-role" id="app-role"></span>
+            <button class="btn btn-outline app-switch" id="app-switch" onclick="switchRole()"><i class="fas fa-right-left"></i> <span id="app-switch-text"></span></button>
+         </div>
       </div>
       <nav class="app-nav" id="app-nav">
          <button class="app-nav-btn" id="nav-home" onclick="switchTab('home')"><i class="fas fa-house"></i><span data-i18n="nav_home">Home</span></button>
@@ -796,6 +803,7 @@
           rate_title: "Rate the worker", rate_comment: "Comment (optional)", rate_submit: "SUBMIT RATING", rate_pick: "Please choose 1 to 5 stars.",
           rate_thanks: "Thank you! Your rating helps other employers.", rate_failed: "Could not save the rating.", rate_login: "Log in as the employer to rate this worker.",
           role_note: r => (r === 'Worker' ? "This number is already registered as a worker, so we opened that account." : "This number is already registered as an employer, so we opened that account."),
+          switch_to_emp: "Switch to employer", switch_to_wk: "Switch to worker", switched_emp: "You're now in your employer account.", switched_wk: "You're now in your worker account.", switch_signup: "Add your work details once to get a worker account.",
           nav_home: "Home", nav_history: "History", nav_stats: "Stats", nav_profile: "Profile", hello: n => `Hi, ${n}`, role_worker: "Worker", role_employer: "Employer",
           hist_title_emp: "Workers you hired", hist_title_wk: "Who hired you", hist_empty_emp: "No hires yet. Workers you hire will show up here.",
           hist_empty_wk: "No bookings yet. Stay live so employers can find you.", call: "Call", whatsapp: "WhatsApp", hire_again: "Hire again", rate: "Rate", rated: "Rated",
@@ -833,6 +841,7 @@
           rate_title: "कामगार को रेटिंग दें", rate_comment: "टिप्पणी (ज़रूरी नहीं)", rate_submit: "रेटिंग भेजें", rate_pick: "कृपया 1 से 5 स्टार चुनें।",
           rate_thanks: "धन्यवाद! आपकी रेटिंग दूसरों की मदद करती है।", rate_failed: "रेटिंग सेव नहीं हुई।", rate_login: "रेटिंग देने के लिए नियोक्ता के रूप में लॉगिन करें।",
           role_note: r => (r === 'Worker' ? "यह नंबर पहले से कामगार के रूप में रजिस्टर है, इसलिए वही खाता खोला गया।" : "यह नंबर पहले से काम देने वाले के रूप में रजिस्टर है, इसलिए वही खाता खोला गया।"),
+          switch_to_emp: "काम देने वाले खाते पर जाएं", switch_to_wk: "कामगार खाते पर जाएं", switched_emp: "अब आप अपने काम देने वाले खाते में हैं।", switched_wk: "अब आप अपने कामगार खाते में हैं।", switch_signup: "कामगार खाते के लिए एक बार अपने काम की जानकारी भरें।",
           nav_home: "होम", nav_history: "इतिहास", nav_stats: "आंकड़े", nav_profile: "प्रोफ़ाइल", hello: n => `नमस्ते, ${n}`, role_worker: "कामगार", role_employer: "काम देने वाले",
           hist_title_emp: "आपने किन्हें काम पर रखा", hist_title_wk: "किसने आपको काम पर रखा", hist_empty_emp: "अभी तक किसी को काम पर नहीं रखा। जिन्हें रखेंगे वे यहाँ दिखेंगे।",
           hist_empty_wk: "अभी तक कोई बुकिंग नहीं। लाइव रहें ताकि काम देने वाले आपको ढूंढ सकें।", call: "कॉल", whatsapp: "WhatsApp", hire_again: "फिर से काम पर रखें", rate: "रेटिंग दें", rated: "रेटिंग दी",
@@ -870,6 +879,7 @@
           rate_title: "कामगाराला रेटिंग द्या", rate_comment: "टिप्पणी (आवश्यक नाही)", rate_submit: "रेटिंग पाठवा", rate_pick: "कृपया 1 ते 5 स्टार निवडा.",
           rate_thanks: "धन्यवाद! तुमचे रेटिंग इतरांना मदत करते.", rate_failed: "रेटिंग सेव्ह झाले नाही.", rate_login: "रेटिंग देण्यासाठी एम्प्लॉयर म्हणून लॉगिन करा.",
           role_note: r => (r === 'Worker' ? "हा नंबर आधीच कामगार म्हणून नोंदलेला आहे, म्हणून तेच खाते उघडले." : "हा नंबर आधीच काम देणारे म्हणून नोंदलेला आहे, म्हणून तेच खाते उघडले."),
+          switch_to_emp: "काम देणाऱ्या खात्यावर जा", switch_to_wk: "कामगार खात्यावर जा", switched_emp: "आता तुम्ही तुमच्या काम देणाऱ्या खात्यात आहात.", switched_wk: "आता तुम्ही तुमच्या कामगार खात्यात आहात.", switch_signup: "कामगार खात्यासाठी एकदा तुमच्या कामाची माहिती भरा.",
           nav_home: "होम", nav_history: "इतिहास", nav_stats: "आकडे", nav_profile: "प्रोफाइल", hello: n => `नमस्कार, ${n}`, role_worker: "कामगार", role_employer: "काम देणारे",
           hist_title_emp: "तुम्ही कामावर घेतलेले कामगार", hist_title_wk: "तुम्हाला कोणी कामावर घेतले", hist_empty_emp: "अजून कोणालाही कामावर घेतले नाही. घेतलेले कामगार इथे दिसतील.",
           hist_empty_wk: "अजून बुकिंग नाही. लाइव्ह रहा म्हणजे काम देणारे तुम्हाला शोधू शकतील.", call: "कॉल", whatsapp: "WhatsApp", hire_again: "पुन्हा कामावर घ्या", rate: "रेटिंग द्या", rated: "रेटिंग दिले",
@@ -1131,8 +1141,12 @@
        };
        btn.style.display='none'; ldr.style.display='block';
        try {
-          // Existing user: log in with the phone number (404 means not registered yet)
-          const loginRes = await fetch(`${CONFIG.BACKEND_URL}/api/auth/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(pendingGoogleCredential ? { phone, googleCredential: pendingGoogleCredential } : { phone }) });
+          // Existing user: log in with the phone number (404 means not registered yet).
+          // The chosen side (worker/employer) opens first; when switching roles only that side counts.
+          const loginBody = { phone, role: selectedType.toLowerCase() };
+          if (pendingGoogleCredential) loginBody.googleCredential = pendingGoogleCredential;
+          if (pendingRoleSwitch) loginBody.strictRole = true;
+          const loginRes = await fetch(`${CONFIG.BACKEND_URL}/api/auth/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(loginBody) });
           if (loginRes.ok) {
              const loginData = await loginRes.json();
              resetGoogleSignup();
@@ -1185,7 +1199,35 @@
        return true;
     }
 
-    function loginUser(u, type, token) {
+    // Same phone, other account: worker <-> employer (an employer is created automatically; a worker fills the form once)
+    let pendingRoleSwitch = false;
+    async function switchRole() {
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/auth/switch`, { method: 'POST', headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          const data = await res.json();
+          if (res.ok) {
+             const role = data.user.role === 'employer' ? 'Employer' : 'Worker';
+             ['isLooking', 'availableUntil', 'liveStartTime', 'active_tab'].forEach(k => localStorage.removeItem(k));
+             loginUser(data.user, role, data.token, role === 'Employer' ? t('switched_emp') : t('switched_wk'));
+             return;
+          }
+          if (data.needsSignup) {
+             selectType('Worker');
+             const p = data.prefill || {};
+             document.getElementById('reg-name').value = p.name || '';
+             document.getElementById('reg-phone').value = p.phone || '';
+             document.getElementById('reg-city').value = p.city || '';
+             openModal();
+             pendingRoleSwitch = true;
+             showNotif(t('switch_signup'), 'green');
+             return;
+          }
+          showNotif(data.msg || t('update_failed'), 'red');
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+
+    function loginUser(u, type, token, message) {
        localStorage.setItem('auth_token', token);
        localStorage.setItem('user_id', u.id || u._id);
        localStorage.setItem('user_name', u.name);
@@ -1202,7 +1244,7 @@
        }
        closeModal();
        loadDashboard();
-       showNotif(type === 'Worker' ? t('welcome_worker') : t('welcome_employer'), "green");
+       showNotif(message || (type === 'Worker' ? t('welcome_worker') : t('welcome_employer')), "green");
        openReviewFromLink();
     }
 
@@ -1228,6 +1270,7 @@
        const skill = localStorage.getItem('user_skill');
        document.getElementById('app-sub').innerText = type === 'Worker' ? skillName(skill) + ' · ' + city : city;
        document.getElementById('app-role').innerText = type === 'Worker' ? t('role_worker') : t('role_employer');
+       document.getElementById('app-switch-text').innerText = type === 'Worker' ? t('switch_to_emp') : t('switch_to_wk');
     }
 
     function resetErrors() {
@@ -1427,6 +1470,7 @@
           roleFields +
           `<p class="prof-hint" style="margin-bottom:18px;"><i class="fab fa-google"></i> ${esc(p.googleLinked ? t('google_linked', p.email || '') : t('google_not'))}</p>` +
           `<button type="submit" class="btn btn-primary" style="width:100%; padding:18px;" id="pf-save">${esc(t('save'))}</button>` +
+          `<button type="button" class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="switchRole()"><i class="fas fa-right-left"></i> ${esc(isWorker ? t('switch_to_emp') : t('switch_to_wk'))}</button>` +
           `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>` +
           `<button type="button" class="btn" style="width:100%; margin-top:8px; opacity:0.55; font-size:0.8rem;" onclick="openSecretPage()"><i class="fas fa-lock"></i> Backstage</button>`;
     }
@@ -1767,7 +1811,7 @@
     }
 
     function openModal() { document.getElementById('reg-modal').style.display='flex'; updateCityVisibility(); }
-    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); pendingRoleSwitch = false; }
     function handleFindWorkClick() { selectType('Worker'); openModal(); }
     function handleHireClick() { selectType('Employer', true); openModal(); }
     function openSecretPage() {
