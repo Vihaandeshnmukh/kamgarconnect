@@ -426,6 +426,11 @@
     .theme-btn i { pointer-events: none; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
+    .voice-row { display: flex; gap: 8px; align-items: stretch; }
+    .voice-row .input-field { flex: 1; min-width: 0; }
+    .mic-btn { min-width: 52px; padding: 0 14px; }
+    .mic-btn.listening { background: var(--red) !important; color: #FFFFFF !important; border-color: var(--red) !important; }
+    .listen-btn { padding: 8px 14px; font-size: 0.85rem; margin-bottom: 14px; }
     .job-list { display: grid; gap: 12px; margin-bottom: 30px; }
     .job-meta { font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px; }
   </style>
@@ -540,6 +545,7 @@
       </nav>
 
       <div id="pane-worker" style="display:none;">
+         <button type="button" class="btn btn-outline listen-btn" onclick="listenHere('listen_home_wk')"><i class="fas fa-volume-high"></i> <span data-i18n="listen">Listen</span></button>
          <div id="wk-bookings"></div>
          <div style="text-align:center; padding:50px 0;">
             <button class="btn btn-primary" id="main-live-btn" onclick="handleTogglePress()" style="padding:25px 60px; font-size:1.5rem; border-radius:20px;">
@@ -565,6 +571,7 @@
       </div>
 
       <div id="pane-employer" style="display:none;">
+         <button type="button" class="btn btn-outline listen-btn" onclick="listenHere('listen_home_emp')"><i class="fas fa-volume-high"></i> <span data-i18n="listen">Listen</span></button>
          <div class="jobs-head">
             <h3 data-i18n="your_jobs">Your jobs</h3>
             <button class="btn btn-primary" onclick="openJobModal()"><i class="fas fa-plus"></i> <span data-i18n="post_job">Post a job</span></button>
@@ -644,7 +651,9 @@
   <div class="modal" id="reg-modal">
     <div class="modal-content">
        <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
-       <h2 style="margin-bottom:25px;" data-i18n="reg_title">Join the Marketplace</h2>
+       <h2 style="margin-bottom:12px;" data-i18n="reg_title">Join the Marketplace</h2>
+       <button type="button" class="btn btn-outline listen-btn" onclick="listenHere('listen_reg')"><i class="fas fa-volume-high"></i> <span data-i18n="listen">Listen</span></button>
+       <p id="help-reg-note" class="prof-hint" style="display:none; margin:0 0 16px; font-weight:700;"></p>
        
        <div id="google-signin-wrap" style="display:none; margin-bottom:20px; text-align:center;">
           <div id="google-signin-btn" style="display:inline-block;"></div>
@@ -928,7 +937,14 @@
           job_failed_post: "Could not post the job.", st_open: "Open", st_taken: "Taken", st_done: "Done", st_cancelled: "Cancelled",
           taken_by: n => `Taken by ${n}`, mark_done: "Mark done", cancel_job: "Cancel job", cancel_job_q: "Take this job down?", job_cancelled: "Job cancelled.",
           job_done: "Marked as done. You can rate the worker now.", jobs_you_took: "Jobs you took", give_back: "Give back", give_back_q: "Give this job back so someone else can take it?",
-          given_back: "Job given back.", posted_by: n => `Posted by ${n}`
+          given_back: "Job given back.", posted_by: n => `Posted by ${n}`,
+          listen: "Listen", voice_start: "Speak now...", voice_failed: "Couldn't hear that. Please try again or type it.",
+          share_app: "Share Kamgar Connect", share_text: "Find daily-wage work or workers near you on Kamgar Connect: https://kamgar.de",
+          help_register: "Register a worker for someone else", help_register_note: "You are registering someone else as a worker. Use THEIR name and phone number. You stay logged in as yourself.",
+          helped_ok: n => `${n} is registered. They can log in with their own phone number.`, already_registered: "This phone number is already registered as a worker.",
+          listen_reg: "To join, choose: I am a worker, or I need a worker. Type your name and your 10 digit phone number. Workers also choose their city, work type and the days they can work. Then press Join. If you joined before, just type your phone number and press Join.",
+          listen_home_wk: "Press Start looking to show employers you want work today. When an employer books you, it shows here with their phone number. Press Confirm to accept, or Decline if you cannot come. Below are open jobs in your city that you can take.",
+          listen_home_emp: "Post a job so workers in your city can see it, or look at the workers below and press Hire now to book one for a day. After booking you can call or WhatsApp the worker. Your bookings are in History."
        },
        hi: {
           search_phone: "फ़ोन नंबर से खोजें", search: "खोजें", find_nearest: "सबसे पास का कामगार", all_types: "सभी काम",
@@ -985,7 +1001,14 @@
           job_failed_post: "काम नहीं डाल सके।", st_open: "खुला", st_taken: "लिया गया", st_done: "पूरा", st_cancelled: "रद्द",
           taken_by: n => `${n} ने लिया`, mark_done: "पूरा हुआ", cancel_job: "काम रद्द करें", cancel_job_q: "यह काम हटाएं?", job_cancelled: "काम रद्द हो गया।",
           job_done: "पूरा मार्क किया। अब आप कामगार को रेटिंग दे सकते हैं।", jobs_you_took: "आपने लिए हुए काम", give_back: "वापस करें", give_back_q: "यह काम वापस करें ताकि कोई और ले सके?",
-          given_back: "काम वापस कर दिया।", posted_by: n => `${n} ने डाला`
+          given_back: "काम वापस कर दिया।", posted_by: n => `${n} ने डाला`,
+          listen: "सुनें", voice_start: "अब बोलें...", voice_failed: "सुनाई नहीं दिया। फिर से बोलें या लिखें।",
+          share_app: "Kamgar Connect शेयर करें", share_text: "Kamgar Connect पर अपने पास रोज़ का काम या कामगार ढूंढें: https://kamgar.de",
+          help_register: "किसी और को कामगार के रूप में जोड़ें", help_register_note: "आप किसी और को कामगार के रूप में जोड़ रहे हैं। उनका नाम और उनका फ़ोन नंबर डालें। आप अपने खाते में ही रहेंगे।",
+          helped_ok: n => `${n} जुड़ गए। वे अपने फ़ोन नंबर से लॉगिन कर सकते हैं।`, already_registered: "यह नंबर पहले से कामगार के रूप में जुड़ा है।",
+          listen_reg: "जुड़ने के लिए चुनें: मैं कामगार हूँ, या मुझे कामगार चाहिए। अपना नाम और 10 अंकों का फ़ोन नंबर लिखें। कामगार अपना शहर, काम और किन दिनों काम कर सकते हैं वह भी चुनें। फिर जुड़ें दबाएँ। अगर आप पहले से जुड़े हैं, तो बस फ़ोन नंबर लिखकर जुड़ें दबाएँ।",
+          listen_home_wk: "आज काम चाहिए तो काम ढूंढना शुरू करें दबाएँ। जब कोई काम देने वाला आपको बुक करेगा, तो यहाँ उसका नाम और फ़ोन नंबर दिखेगा। आना है तो पक्का करें दबाएँ, नहीं आ सकते तो मना करें। नीचे आपके शहर के खुले काम हैं, आप उनमें से काम ले सकते हैं।",
+          listen_home_emp: "काम डालें ताकि आपके शहर के कामगार देख सकें, या नीचे कामगार देखकर काम पर रखें दबाएँ और एक दिन के लिए बुक करें। बुकिंग के बाद आप कामगार को कॉल या WhatsApp कर सकते हैं। आपकी बुकिंग इतिहास में हैं।"
        },
        mr: {
           search_phone: "फोन नंबरने शोधा", search: "शोधा", find_nearest: "जवळचा कामगार शोधा", all_types: "सर्व कामे",
@@ -1042,7 +1065,14 @@
           job_failed_post: "काम टाकता आले नाही.", st_open: "उघडे", st_taken: "घेतले", st_done: "पूर्ण", st_cancelled: "रद्द",
           taken_by: n => `${n} यांनी घेतले`, mark_done: "पूर्ण झाले", cancel_job: "काम रद्द करा", cancel_job_q: "हे काम काढायचे?", job_cancelled: "काम रद्द झाले.",
           job_done: "पूर्ण केले. आता तुम्ही कामगाराला रेटिंग देऊ शकता.", jobs_you_took: "तुम्ही घेतलेली कामे", give_back: "परत करा", give_back_q: "हे काम परत करायचे म्हणजे दुसरे घेऊ शकतील?",
-          given_back: "काम परत केले.", posted_by: n => `${n} यांनी टाकले`
+          given_back: "काम परत केले.", posted_by: n => `${n} यांनी टाकले`,
+          listen: "ऐका", voice_start: "आता बोला...", voice_failed: "ऐकू आले नाही. पुन्हा बोला किंवा लिहा.",
+          share_app: "Kamgar Connect शेअर करा", share_text: "Kamgar Connect वर तुमच्या जवळ रोजचे काम किंवा कामगार शोधा: https://kamgar.de",
+          help_register: "दुसऱ्याला कामगार म्हणून जोडा", help_register_note: "तुम्ही दुसऱ्याला कामगार म्हणून जोडत आहात. त्यांचे नाव आणि त्यांचा फोन नंबर टाका. तुम्ही तुमच्याच खात्यात राहाल.",
+          helped_ok: n => `${n} जोडले गेले. ते त्यांच्या फोन नंबरने लॉगिन करू शकतात.`, already_registered: "हा नंबर आधीच कामगार म्हणून नोंदलेला आहे.",
+          listen_reg: "सामील होण्यासाठी निवडा: मी कामगार आहे, किंवा मला कामगार हवा. तुमचे नाव आणि 10 अंकी फोन नंबर लिहा. कामगारांनी आपले शहर, काम आणि कोणत्या दिवशी काम करू शकता ते निवडा. मग सामील व्हा दाबा. आधीच सामील असाल तर फक्त फोन नंबर लिहून सामील व्हा दाबा.",
+          listen_home_wk: "आज काम हवे असेल तर काम शोधणे सुरू करा दाबा. कोणी काम देणारा तुम्हाला बुक करेल तेव्हा इथे त्याचे नाव आणि फोन नंबर दिसेल. यायचे असेल तर पक्के करा दाबा, जमत नसेल तर नकार द्या. खाली तुमच्या शहरातील उघडी कामे आहेत, त्यातील काम घेऊ शकता.",
+          listen_home_emp: "काम टाका म्हणजे तुमच्या शहरातील कामगार पाहू शकतील, किंवा खाली कामगार पाहून कामावर घ्या दाबा आणि एका दिवसासाठी बुक करा. बुकिंगनंतर कामगाराला कॉल किंवा WhatsApp करू शकता. तुमच्या बुकिंग इतिहासमध्ये आहेत."
        }
     };
     const SKILL_NAMES = {
@@ -1110,6 +1140,7 @@
        setLang(currentLang);
        if (sessionStorage.getItem('bannerDismissed')) dismissBanner();
        initGoogleSignIn();
+       setupVoice();
        // Logins saved before tokens existed must sign in again
        if (localStorage.getItem('user_id')) {
           if (!localStorage.getItem('auth_token')) {
@@ -1322,6 +1353,7 @@
           document.getElementById('reg-backend-err').innerText = msg;
           document.getElementById('reg-backend-err').style.display = 'block';
        };
+       if (helpRegisterMode) { await helpRegister(name, phone, city, showError); return; }
        btn.style.display='none'; ldr.style.display='block';
        try {
           // Existing user: log in with the phone number (404 means not registered yet).
@@ -1368,6 +1400,105 @@
           btn.style.display='block'; ldr.style.display='none';
        }
     }
+
+    // ── Register a worker for someone else (the helper stays logged in as themself) ──
+    let helpRegisterMode = false;
+    function typePicker() { const w = document.querySelector('.select-type-worker'); return w ? w.parentElement : null; }
+    function openHelpRegister() {
+       selectType('Worker');
+       ['reg-name', 'reg-phone'].forEach(id => { document.getElementById(id).value = ''; });
+       document.getElementById('reg-city').value = CITY_LIST.includes(localStorage.getItem('user_city')) ? localStorage.getItem('user_city') : '';
+       resetErrors();
+       openModal();
+       helpRegisterMode = true;
+       const note = document.getElementById('help-reg-note');
+       note.innerText = t('help_register_note'); note.style.display = 'block';
+       const picker = typePicker(); if (picker) picker.style.display = 'none';
+       document.getElementById('city-grp').style.display = '';
+    }
+    function endHelpRegister() {
+       if (!helpRegisterMode) return;
+       helpRegisterMode = false;
+       const note = document.getElementById('help-reg-note'); if (note) note.style.display = 'none';
+       const picker = typePicker(); if (picker) picker.style.display = '';
+       ['reg-name', 'reg-phone'].forEach(id => { document.getElementById(id).value = ''; });
+    }
+    async function helpRegister(name, phone, city, showError) {
+       if (!signupFieldsOk(name, city)) return;
+       const btn = document.getElementById('reg-btn-text'), ldr = document.getElementById('reg-loader');
+       btn.style.display = 'none'; ldr.style.display = 'block';
+       try {
+          const chk = await fetch(`${CONFIG.BACKEND_URL}/api/workers/check/${phone}`);
+          if (chk.ok) { showError(t('already_registered')); return; }
+          // Their own details only: never the helper's location or Google account
+          const body = { name, phone, city, skill: document.getElementById('reg-skill').value, experience: document.getElementById('reg-exp').value,
+             salary: document.getElementById('reg-salary').value, availability: getAvail() };
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/auth/register-worker`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const data = await res.json();
+          if (!res.ok) { showError(data.msg || data.error || (data.errors ? data.errors[0].msg : '') || t('save_failed')); return; }
+          closeModal();
+          showNotif(t('helped_ok', data.user ? data.user.name : name), 'green');
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+       finally { btn.style.display = 'block'; ldr.style.display = 'none'; }
+    }
+
+    // ── Share the site ──
+    async function shareApp() {
+       const text = t('share_text');
+       try {
+          if (navigator.share) { await navigator.share({ title: 'Kamgar Connect', text, url: 'https://kamgar.de' }); return; }
+       } catch (e) { if (e.name === 'AbortError') return; }
+       window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    }
+
+    // ── Voice: speak into a field; hear the screen's instructions ──
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const VOICE_LANG = { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN' };
+    const VOICE_FIELDS = ['reg-name', 'hire-loc', 'hire-inst', 'job-place', 'job-note'];
+    function setupVoice() {
+       if (!window.speechSynthesis) document.querySelectorAll('.listen-btn').forEach(b => { b.style.display = 'none'; });
+       if (!SpeechRec) return;
+       VOICE_FIELDS.forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (el.dataset.voice) return;
+          el.dataset.voice = '1';
+          const row = document.createElement('div'); row.className = 'voice-row';
+          el.parentNode.insertBefore(row, el); row.appendChild(el);
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'btn btn-outline mic-btn'; b.innerHTML = '<i class="fas fa-microphone"></i>';
+          b.setAttribute('aria-label', 'Speak'); b.onclick = () => voiceInto(id, b);
+          row.appendChild(b);
+       });
+    }
+    let recog = null;
+    function voiceInto(id, btn) {
+       if (recog) { recog.stop(); return; }
+       const r = new SpeechRec(); recog = r;
+       r.lang = VOICE_LANG[currentLang] || 'hi-IN'; r.interimResults = false; r.maxAlternatives = 1;
+       btn.classList.add('listening');
+       showNotif(t('voice_start'), 'green');
+       r.onresult = (ev) => {
+          const text = ev.results[0][0].transcript;
+          const el = document.getElementById(id);
+          el.value = el.tagName === 'TEXTAREA' ? ((el.value ? el.value + ' ' : '') + text) : text;
+       };
+       r.onerror = () => showNotif(t('voice_failed'), 'red');
+       r.onend = () => { recog = null; btn.classList.remove('listening'); };
+       try { r.start(); } catch (e) { recog = null; btn.classList.remove('listening'); }
+    }
+    function speak(text) {
+       if (!window.speechSynthesis) return;
+       speechSynthesis.cancel();
+       const u = new SpeechSynthesisUtterance(text);
+       const want = VOICE_LANG[currentLang] || 'en-IN';
+       const voices = speechSynthesis.getVoices();
+       const v = voices.find(x => x.lang === want) || voices.find(x => x.lang.startsWith(want.slice(0, 2))) || (currentLang === 'mr' ? voices.find(x => x.lang.startsWith('hi')) : null);
+       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = want;
+       u.rate = 0.9;
+       speechSynthesis.speak(u);
+    }
+    function listenHere(key) { speak(t(key)); }
 
     // Headers for API calls that need the logged-in user's token
     function authHeaders(extra = {}) {
@@ -1471,6 +1602,7 @@
 
     // App screens: home (worker: go live + jobs, employer: find workers), history, stats, profile
     function switchTab(t) {
+       if (window.speechSynthesis) speechSynthesis.cancel();
        if (!['home', 'history', 'stats', 'profile'].includes(t)) t = 'home';
        localStorage.setItem('active_tab', t);
        const isWorker = localStorage.getItem('user_type') === 'Worker';
@@ -1751,6 +1883,8 @@
           `<p class="prof-hint" style="margin-bottom:18px;"><i class="fab fa-google"></i> ${esc(p.googleLinked ? t('google_linked', p.email || '') : t('google_not'))}</p>` +
           `<button type="submit" class="btn btn-primary" style="width:100%; padding:18px;" id="pf-save">${esc(t('save'))}</button>` +
           `<button type="button" class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="switchRole()"><i class="fas fa-right-left"></i> ${esc(isWorker ? t('switch_to_emp') : t('switch_to_wk'))}</button>` +
+          `<button type="button" class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="openHelpRegister()"><i class="fas fa-user-plus"></i> ${esc(t('help_register'))}</button>` +
+          `<button type="button" class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="shareApp()"><i class="fas fa-share-nodes"></i> ${esc(t('share_app'))}</button>` +
           `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>` +
           `<button type="button" class="btn" style="width:100%; margin-top:8px; opacity:0.55; font-size:0.8rem;" onclick="openSecretPage()"><i class="fas fa-lock"></i> Backstage</button>`;
     }
@@ -2246,7 +2380,7 @@
     }
 
     function openModal() { document.getElementById('reg-modal').style.display='flex'; updateCityVisibility(); }
-    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); pendingRoleSwitch = false; }
+    function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); pendingRoleSwitch = false; endHelpRegister(); }
     function handleFindWorkClick() { selectType('Worker'); openModal(); }
     function handleHireClick() { selectType('Employer', true); openModal(); }
     function openSecretPage() {
