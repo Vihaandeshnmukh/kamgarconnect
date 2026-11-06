@@ -41,7 +41,7 @@ const isPhone = (digits) => /^\d{10}$/.test(digits);
 // Removes keys starting with "$" or containing "." anywhere in an object
 // (stops MongoDB operator injection such as {"phone": {"$ne": null}})
 function stripOperators(obj) {
-  if (!obj || typeof obj !== 'object') return obj;
+  if (!obj || typeof obj !== 'object' || Buffer.isBuffer(obj)) return obj;
   for (const key of Object.keys(obj)) {
     if (key.startsWith('$') || key.includes('.')) delete obj[key];
     else stripOperators(obj[key]);

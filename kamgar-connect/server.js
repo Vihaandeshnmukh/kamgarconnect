@@ -28,6 +28,8 @@ app.use((req, res, next) => {
 const PORT = process.env.PORT || 3000;
 
 // Basic Middleware
+// The voice agent webhook is signed over its exact bytes: keep its body raw (and allow long transcripts)
+app.use('/api/voice-agent/webhook', express.raw({ type: '*/*', limit: '2mb' }));
 app.use(express.json({ limit: '50kb' }));
 app.use(express.urlencoded({ extended: true, limit: '50kb' }));
 // No MongoDB operators ($ne, $gt, ...) from users, in the body or the query string
@@ -129,6 +131,7 @@ app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/calls', require('./routes/calls'));
 app.use('/api/assistant', require('./routes/assistant'));
 app.use('/api/exotel', require('./routes/exotel'));
+app.use('/api/voice-agent', require('./routes/voiceAgent').router);
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));
