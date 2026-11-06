@@ -41,19 +41,26 @@ const config = {
       prompt: {
         prompt: PROMPT,
         llm: process.env.VOICE_AGENT_LLM || 'gemini-3.5-flash-lite',
-        temperature: 0.5
+        temperature: 0.5,
+        // Lets Mitra hang up politely once the registration (or the conversation) is done
+        built_in_tools: { end_call: { name: 'end_call', description: 'End the call after thanking the caller, when registration is finished or the caller wants to stop.', params: { system_tool_type: 'end_call' } } }
       }
     },
+    // Phone audio: 16-bit PCM at 8 kHz in and out, same as Exotel's stream (no resampling)
+    asr: { user_input_audio_format: 'pcm_8000' },
     language_presets: {
       mr: { overrides: { agent: { first_message: 'नमस्कार! मी मित्र बोलतोय, कामगार कनेक्टमधून. तुम्ही कसे आहात, आजचा दिवस कसा गेला?' } } },
       en: { overrides: { agent: { first_message: 'Hello! This is Mitra from Kamgar Connect. How are you, how was your day?' } } }
     },
     tts: {
       model_id: 'eleven_v3_conversational', // expressive, emotion-aware; the realtime model that speaks Marathi
-      voice_id: process.env.ELEVENLABS_VOICE_ID || 'XrExE9yKIg1WjnnlVkGX'
+      voice_id: process.env.ELEVENLABS_VOICE_ID || 'XrExE9yKIg1WjnnlVkGX',
+      agent_output_audio_format: 'pcm_8000'
     }
   },
   platform_settings: {
+    // Private: only our server (signed URLs) can start a conversation, so nobody else spends our minutes
+    auth: { enable_auth: true },
     // Also asked of ElevenLabs' own analysis (our Gemini extraction is the one we use to register)
     data_collection: {
       name: { type: 'string', description: "The caller's name" },

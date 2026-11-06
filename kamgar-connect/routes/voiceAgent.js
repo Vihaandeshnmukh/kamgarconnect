@@ -97,22 +97,25 @@ router.post('/webhook', async (req, res) => {
 
   const d = event.data;
   try {
-    // Retries resend the same call: process each conversation once
+    // Retries resend the same call: process each conversation once.
+    // A log already marked 'in-call' was opened by our phone bridge (it knows the caller's number).
     const already = await CallLog.findOne({ conversationId: d.conversation_id });
-    if (already) return res.json({ ok: true, duplicate: true });
-    const log = await new CallLog({
-      conversationId: String(d.conversation_id).slice(0, 100),
+    if (already && already.status !== 'in-call') return res.json({ ok: true, duplicate: true });
+    const log = already || new CallLog({ conversationId: String(d.conversation_id).slice(0, 100) });
+    Object.assign(log, {
       agentId: d.agent_id,
-      phone: callerPhone(d),
-      startedAt: d.metadata && d.metadata.start_time_unix_secs ? new Date(d.metadata.start_time_unix_secs * 1000) : new Date(),
+      phone: log.phone || callerPhone(d),
+      startedAt: d.metadata && d.metadata.start_time_unix_secs ? new Date(d.metadata.start_time_unix_secs * 1000) : (log.startedAt || new Date()),
       durationSecs: d.metadata ? d.metadata.call_duration_secs : undefined,
       transcript: (Array.isArray(d.transcript) ? d.transcript : []).slice(0, 400).map(t => ({
         role: t.role === 'agent' ? 'agent' : 'user',
         message: String(t.message || '').slice(0, 2000),
         timeInCallSecs: t.time_in_call_secs
       })),
-      summary: d.analysis && typeof d.analysis.transcript_summary === 'string' ? d.analysis.transcript_summary.slice(0, 2000) : undefined
-    }).save();
+      summary: d.analysis && typeof d.analysis.transcript_summary === 'string' ? d.analysis.transcript_summary.slice(0, 2000) : undefined,
+      status: 'received'
+    });
+    await log.save();
     res.json({ ok: true }); // answer ElevenLabs at once; Gemini runs after
     processCall(log);
   } catch (err) {

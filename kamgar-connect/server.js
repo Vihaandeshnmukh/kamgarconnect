@@ -187,3 +187,6 @@ io = new Server(server, {
   }
 });
 setupSockets(io);
+
+// Live AI phone calls: Exotel Voicebot <-> ElevenLabs agent audio bridge (WebSocket)
+require('./utils/voiceBridge').attach(server);
