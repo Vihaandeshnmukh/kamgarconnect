@@ -312,7 +312,6 @@
       <div class="logo" onclick="gsap.to(window, {scrollTo:0, duration:1})"><span style="color:inherit">Kamgar<span>Connect</span></span><small>औरंगाबाद • Aurangabad</small></div>
       <div style="display:flex; gap:20px; align-items:center;">
         <button class="btn" onclick="gsap.to(window, {scrollTo:'#team-section', duration:1})" data-i18n="nav_team">Our Team</button>
-        <a class="btn btn-primary st-call-nav" href="tel:+18148215946"><i class="fas fa-phone"></i> Call +1 814 821 5946</a>
         <div class="lang-switcher" style="display:flex; gap:8px;">
           <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('en')">EN</button>
           <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('hi')">हिं</button>
@@ -343,21 +342,8 @@
       </div>
       <div class="st-chips">
         <span><i class="fas fa-handshake"></i> Direct contact, no middlemen / थेट संपर्क</span>
-        <span><i class="fas fa-microphone"></i> Voice registration: Hindi / मराठी / English</span>
         <span><i class="fas fa-location-crosshairs"></i> GPS-based matching</span>
       </div>
-    </div>
-  </section>
-
-  <section class="container call-register">
-    <div class="call-card">
-      <div class="call-icon"><i class="fas fa-phone-volume"></i></div>
-      <div style="flex:1; min-width:240px;">
-        <h3>No smartphone? Register by phone call</h3>
-        <p>स्मार्टफोन नहीं है? फ़ोन करें और हिंदी, मराठी या English में 6 सवालों के जवाब दें, आपका प्रोफ़ाइल बन जाएगा।</p>
-        <div class="st-mini"><span><i class="fas fa-check"></i> 6 simple questions</span><span><i class="fas fa-check"></i> No typing, no app</span><span><i class="fas fa-check"></i> About 2 minutes</span></div>
-      </div>
-      <a class="btn btn-primary call-btn" href="tel:+18148215946"><i class="fas fa-phone"></i> +1 814 821 5946</a>
     </div>
   </section>
 
@@ -465,10 +451,9 @@
     <div class="container">
       <div><strong>Kamgar Connect • कामगार कनेक्ट</strong><em>Dignity, Not Chowks | सम्मान, चौक नहीं</em></div>
       <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> Serving Chhatrapati Sambhajinagar (Aurangabad), Maharashtra</div>
-      <a class="tel" href="tel:+18148215946"><i class="fas fa-phone-volume"></i> Helpline: +1 814 821 5946</a>
     </div>
   </footer>
-  <div class="st-dock"><a class="d1" href="tel:+18148215946"><i class="fas fa-phone"></i> Call Helpline</a><a class="d2" href="#" onclick="handleFindWorkClick(); return false;"><i class="fas fa-user-plus"></i> Register</a></div>
+  <div class="st-dock"><a class="d2" href="#" onclick="handleFindWorkClick(); return false;"><i class="fas fa-user-plus"></i> Register</a></div>
 
   <div id="secret-page">
      <button class="btn btn-outline" style="position:fixed; top:40px; right:40px;" onclick="closeSecretPage()">&times;</button>
@@ -710,7 +695,7 @@
           hidden_msg: "You are hidden from search. Tap START LOOKING to appear again.", update_failed: "Could not update. Check your connection.",
           hire_title: "Hire", job_location: "Job Location", work_date: "Date of Work", report_time: "Reporting Time", employer_name: "Employer Name",
           instructions: "Special Instructions (Optional)", confirm_hire: "CONFIRM HIRE", hire_failed: "Hiring failed. Please try again.",
-          calling: n => `Calling ${n} now with the job details.`, worker_phone: "Worker's phone", login_to_hire: "Log in as an employer to hire.",
+          calling: n => `${n} is booked for you.`, worker_phone: "Worker's phone", login_to_hire: "Log in as an employer to hire.",
           sel_worker: "I AM A WORKER", sel_employer: "I NEED A WORKER", label_skill: "Work type", select_skill: "SELECT WORK TYPE",
           label_exp: "Experience (Years)", label_salary: "Daily Wage (₹)", label_needed: "Worker Type Needed", select_type: "SELECT TYPE",
           label_count: "Number of Workers Needed", use_location: "USE MY CURRENT LOCATION", join: "JOIN PLATFORM",
@@ -732,7 +717,7 @@
           hidden_msg: "आप खोज से छिपे हैं। फिर से दिखने के लिए काम ढूंढना शुरू करें दबाएं।", update_failed: "बदलाव नहीं हुआ। इंटरनेट जांचें।",
           hire_title: "काम पर रखें:", job_location: "काम की जगह", work_date: "काम की तारीख", report_time: "पहुंचने का समय", employer_name: "नियोक्ता का नाम",
           instructions: "खास निर्देश (ज़रूरी नहीं)", confirm_hire: "पक्का करें", hire_failed: "काम पर रखना नहीं हुआ। फिर कोशिश करें।",
-          calling: n => `${n} को काम की जानकारी के साथ कॉल किया जा रहा है।`, worker_phone: "कामगार का फ़ोन", login_to_hire: "काम पर रखने के लिए नियोक्ता के रूप में लॉगिन करें।",
+          calling: n => `${n} आपके लिए बुक हो गए हैं।`, worker_phone: "कामगार का फ़ोन", login_to_hire: "काम पर रखने के लिए नियोक्ता के रूप में लॉगिन करें।",
           sel_worker: "मैं कामगार हूँ", sel_employer: "मुझे कामगार चाहिए", label_skill: "काम", select_skill: "काम चुनें",
           label_exp: "अनुभव (साल)", label_salary: "एक दिन की मज़दूरी (₹)", label_needed: "किस काम के लिए कामगार", select_type: "काम चुनें",
           label_count: "कितने कामगार चाहिए", use_location: "मेरी लोकेशन लें", join: "जुड़ें",
@@ -754,7 +739,7 @@
           hidden_msg: "तुम्ही शोधातून लपलेले आहात. पुन्हा दिसण्यासाठी काम शोधणे सुरू करा दाबा.", update_failed: "बदल झाला नाही. इंटरनेट तपासा.",
           hire_title: "कामावर घ्या:", job_location: "कामाची जागा", work_date: "कामाची तारीख", report_time: "पोहोचण्याची वेळ", employer_name: "एम्प्लॉयरचे नाव",
           instructions: "विशेष सूचना (आवश्यक नाही)", confirm_hire: "पक्के करा", hire_failed: "कामावर घेता आले नाही. पुन्हा प्रयत्न करा.",
-          calling: n => `${n} यांना कामाच्या माहितीसह कॉल केला जात आहे.`, worker_phone: "कामगाराचा फोन", login_to_hire: "कामावर घेण्यासाठी एम्प्लॉयर म्हणून लॉगिन करा.",
+          calling: n => `${n} तुमच्यासाठी बुक झाले आहेत.`, worker_phone: "कामगाराचा फोन", login_to_hire: "कामावर घेण्यासाठी एम्प्लॉयर म्हणून लॉगिन करा.",
           sel_worker: "मी कामगार आहे", sel_employer: "मला कामगार हवा", label_skill: "काम", select_skill: "काम निवडा",
           label_exp: "अनुभव (वर्षे)", label_salary: "एका दिवसाची मजुरी (₹)", label_needed: "कोणत्या कामासाठी कामगार", select_type: "काम निवडा",
           label_count: "किती कामगार हवे", use_location: "माझे लोकेशन वापरा", join: "सामील व्हा",
