@@ -424,6 +424,10 @@
     html[data-theme="dark"] .profile-dropdown { background: var(--bg-surface); }
     html[data-theme="dark"] .secret-input { color: var(--text-primary); }
     .theme-btn i { pointer-events: none; }
+    .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .jobs-head h3 { margin: 0; }
+    .job-list { display: grid; gap: 12px; margin-bottom: 30px; }
+    .job-meta { font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px; }
   </style>
   <script>
     (function () {
@@ -549,6 +553,10 @@
             </div>
          </div>
          <hr style="margin:40px 0; opacity:0.1;">
+         <div id="wk-jobs-wrap" style="display:none;">
+            <h3 style="margin-bottom:14px;" data-i18n="jobs_you_took">Jobs you took</h3>
+            <div id="wk-jobs" class="job-list"></div>
+         </div>
          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 data-i18n="available_jobs">Available Jobs in your City</h3>
             <button class="btn btn-outline" style="padding:4px 12px; font-size:0.8rem;" onclick="loadCityJobs()"><i class="fas fa-sync"></i> <span data-i18n="refresh">Refresh</span></button>
@@ -557,6 +565,11 @@
       </div>
 
       <div id="pane-employer" style="display:none;">
+         <div class="jobs-head">
+            <h3 data-i18n="your_jobs">Your jobs</h3>
+            <button class="btn btn-primary" onclick="openJobModal()"><i class="fas fa-plus"></i> <span data-i18n="post_job">Post a job</span></button>
+         </div>
+         <div id="emp-jobs" class="job-list"></div>
          <div style="background:var(--bg-elevated); padding:30px; border-radius:20px; border:1px solid var(--border); margin-bottom:40px;">
             <label style="display:block; margin-bottom:10px; font-weight:800; opacity:0.5; font-size:0.8rem;" data-i18n="search_phone">SEARCH BY PHONE</label>
             <div class="lookup-row">
@@ -761,6 +774,25 @@
      <button class="btn btn-outline" style="position:fixed; top:40px; right:40px;" onclick="closeRoots()">&times; CLOSE</button>
   </div>
 
+  <div class="modal" id="job-modal">
+     <div class="modal-content">
+        <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
+        <h2 style="margin-bottom:20px;" data-i18n="post_job">Post a job</h2>
+        <form id="job-form" onsubmit="postJob(event)">
+           <div class="input-grp"><label data-i18n="job_type">Work type</label><select id="job-type" class="input-field" required></select></div>
+           <div class="input-grp"><label data-i18n="job_city">City</label><select id="job-city" class="input-field" required></select></div>
+           <div class="prof-row2">
+              <div class="input-grp"><label data-i18n="job_workers">Workers needed</label><input type="number" id="job-count" class="input-field" min="1" max="500" value="1" required></div>
+              <div class="input-grp"><label data-i18n="job_wage">Daily wage (optional)</label><input type="number" id="job-wage" class="input-field" min="0" max="100000"></div>
+           </div>
+           <div class="input-grp"><label data-i18n="job_date">Work date (optional)</label><input type="date" id="job-date" class="input-field"></div>
+           <div class="input-grp"><label data-i18n="job_place">Where to report (optional)</label><input type="text" id="job-place" class="input-field" maxlength="120"></div>
+           <div class="input-grp"><label data-i18n="job_note">Note for workers (optional)</label><textarea id="job-note" class="input-field" rows="2" maxlength="300"></textarea></div>
+           <button type="submit" class="btn btn-primary" id="job-submit" style="width:100%; padding:18px;" data-i18n="publish_job">POST JOB</button>
+        </form>
+     </div>
+  </div>
+
   <div class="modal" id="booked-modal">
      <div class="modal-content">
         <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
@@ -889,7 +921,14 @@
           confirm: "Confirm", booking_confirmed: "Booking confirmed. The employer can see it.", confirmed_tag: "Confirmed",
           booked_box: "Booked!", tell_worker: n => `Let ${n} know the details:`, close: "Close",
           wa_book_msg: o => `Namaste ${o.name}, I have booked you on Kamgar Connect for ${o.when}${o.where ? ' at ' + o.where : ''}. - ${o.emp}`,
-          new_booking: o => `New booking: ${o.name}, ${o.when}`
+          new_booking: o => `New booking: ${o.name}, ${o.when}`,
+          post_job: "Post a job", your_jobs: "Your jobs", no_posted: "No jobs posted yet. Post one and workers in your city will see it.",
+          job_type: "Work type", job_city: "City", job_workers: "Workers needed", job_wage: "Daily wage (₹, optional)", job_date: "Work date (optional)",
+          job_place: "Where to report (optional)", job_note: "Note for workers (optional)", publish_job: "POST JOB", job_posted: "Job posted. Workers in that city can see it now.",
+          job_failed_post: "Could not post the job.", st_open: "Open", st_taken: "Taken", st_done: "Done", st_cancelled: "Cancelled",
+          taken_by: n => `Taken by ${n}`, mark_done: "Mark done", cancel_job: "Cancel job", cancel_job_q: "Take this job down?", job_cancelled: "Job cancelled.",
+          job_done: "Marked as done. You can rate the worker now.", jobs_you_took: "Jobs you took", give_back: "Give back", give_back_q: "Give this job back so someone else can take it?",
+          given_back: "Job given back.", posted_by: n => `Posted by ${n}`
        },
        hi: {
           search_phone: "फ़ोन नंबर से खोजें", search: "खोजें", find_nearest: "सबसे पास का कामगार", all_types: "सभी काम",
@@ -939,7 +978,14 @@
           confirm: "पक्का करें", booking_confirmed: "बुकिंग पक्की हो गई। काम देने वाले को दिखेगा।", confirmed_tag: "पक्का",
           booked_box: "बुक हो गया!", tell_worker: n => `${n} को जानकारी भेजें:`, close: "बंद करें",
           wa_book_msg: o => `नमस्ते ${o.name}, मैंने आपको Kamgar Connect पर ${o.when}${o.where ? ', ' + o.where : ''} के लिए बुक किया है। - ${o.emp}`,
-          new_booking: o => `नई बुकिंग: ${o.name}, ${o.when}`
+          new_booking: o => `नई बुकिंग: ${o.name}, ${o.when}`,
+          post_job: "काम डालें", your_jobs: "आपके काम", no_posted: "अभी कोई काम नहीं डाला। काम डालें, आपके शहर के कामगार देख सकेंगे।",
+          job_type: "काम का प्रकार", job_city: "शहर", job_workers: "कितने कामगार", job_wage: "एक दिन की मज़दूरी (₹, ज़रूरी नहीं)", job_date: "काम की तारीख (ज़रूरी नहीं)",
+          job_place: "कहाँ पहुँचना है (ज़रूरी नहीं)", job_note: "कामगारों के लिए नोट (ज़रूरी नहीं)", publish_job: "काम डालें", job_posted: "काम डाल दिया। उस शहर के कामगार अब देख सकते हैं।",
+          job_failed_post: "काम नहीं डाल सके।", st_open: "खुला", st_taken: "लिया गया", st_done: "पूरा", st_cancelled: "रद्द",
+          taken_by: n => `${n} ने लिया`, mark_done: "पूरा हुआ", cancel_job: "काम रद्द करें", cancel_job_q: "यह काम हटाएं?", job_cancelled: "काम रद्द हो गया।",
+          job_done: "पूरा मार्क किया। अब आप कामगार को रेटिंग दे सकते हैं।", jobs_you_took: "आपने लिए हुए काम", give_back: "वापस करें", give_back_q: "यह काम वापस करें ताकि कोई और ले सके?",
+          given_back: "काम वापस कर दिया।", posted_by: n => `${n} ने डाला`
        },
        mr: {
           search_phone: "फोन नंबरने शोधा", search: "शोधा", find_nearest: "जवळचा कामगार शोधा", all_types: "सर्व कामे",
@@ -989,7 +1035,14 @@
           confirm: "पक्के करा", booking_confirmed: "बुकिंग पक्की झाली. काम देणाऱ्याला दिसेल.", confirmed_tag: "पक्के",
           booked_box: "बुक झाले!", tell_worker: n => `${n} ला माहिती पाठवा:`, close: "बंद करा",
           wa_book_msg: o => `नमस्कार ${o.name}, मी तुम्हाला Kamgar Connect वर ${o.when}${o.where ? ', ' + o.where : ''} साठी बुक केले आहे. - ${o.emp}`,
-          new_booking: o => `नवीन बुकिंग: ${o.name}, ${o.when}`
+          new_booking: o => `नवीन बुकिंग: ${o.name}, ${o.when}`,
+          post_job: "काम टाका", your_jobs: "तुमची कामे", no_posted: "अजून काम टाकले नाही. काम टाका, तुमच्या शहरातील कामगार पाहू शकतील.",
+          job_type: "कामाचा प्रकार", job_city: "शहर", job_workers: "किती कामगार", job_wage: "एका दिवसाची मजुरी (₹, आवश्यक नाही)", job_date: "कामाची तारीख (आवश्यक नाही)",
+          job_place: "कुठे यायचे (आवश्यक नाही)", job_note: "कामगारांसाठी नोंद (आवश्यक नाही)", publish_job: "काम टाका", job_posted: "काम टाकले. त्या शहरातील कामगार आता पाहू शकतात.",
+          job_failed_post: "काम टाकता आले नाही.", st_open: "उघडे", st_taken: "घेतले", st_done: "पूर्ण", st_cancelled: "रद्द",
+          taken_by: n => `${n} यांनी घेतले`, mark_done: "पूर्ण झाले", cancel_job: "काम रद्द करा", cancel_job_q: "हे काम काढायचे?", job_cancelled: "काम रद्द झाले.",
+          job_done: "पूर्ण केले. आता तुम्ही कामगाराला रेटिंग देऊ शकता.", jobs_you_took: "तुम्ही घेतलेली कामे", give_back: "परत करा", give_back_q: "हे काम परत करायचे म्हणजे दुसरे घेऊ शकतील?",
+          given_back: "काम परत केले.", posted_by: n => `${n} यांनी टाकले`
        }
     };
     const SKILL_NAMES = {
@@ -1048,6 +1101,7 @@
           history.replaceState(null, '', location.pathname);
           showNotif(t('rate_thanks'), 'green');
           if (localStorage.getItem('active_tab') === 'history') loadHistory();
+          if (localStorage.getItem('active_tab') === 'home') loadMyJobs();
        } catch (e) { showNotif(t('rate_failed'), 'red'); }
     }
 
@@ -1425,7 +1479,7 @@
        document.getElementById('pane-worker').style.display = (home ? isWorker : false) ? 'block' : 'none';
        document.getElementById('pane-employer').style.display = (home ? !isWorker : false) ? 'block' : 'none';
        ['history', 'stats', 'profile'].forEach(p => { document.getElementById('pane-' + p).style.display = p === t ? 'block' : 'none'; });
-       if (home) { if (isWorker) { loadWorkerStatus(); loadCityJobs(); } else loadEmployerGrid(); }
+       if (home) { if (isWorker) { loadWorkerStatus(); loadCityJobs(); loadMyJobs(); } else { loadEmployerGrid(); loadMyJobs(); } }
        if (isWorker) startBookingPoll();
        if (t === 'history') loadHistory();
        if (t === 'stats') loadStats();
@@ -1760,6 +1814,7 @@
              <div class="card-front" style="height:auto;">
                 <h4 style="color:var(--accent);">${esc(skillName(j.jobType))}</h4>
                 <div style="font-size:0.8rem; margin:10px 0; opacity:0.6;"><i class="fas fa-map-marker-alt"></i> ${esc(j.city)} &middot; ${esc(Number(j.workerCount) || 1)} ${esc(t('workers_word', Number(j.workerCount) || 1))}</div>
+                ${jobDetails(j)}
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                    <span style="font-weight:900;">${j.amount ? '&#8377;' + esc(Number(j.amount)) : ''}</span>
                    <button class="btn btn-primary job-accept-btn" style="padding:6px 12px; font-size:0.75rem;" onclick="acceptJob('${safeId(j._id)}')">${esc(t('accept_job'))}</button>
@@ -1769,6 +1824,120 @@
        } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('jobs_error'))}</p>`; }
     }
 
+    // Date, place and note of a job (any of them may be missing)
+    function jobDetails(j) {
+       const bits = [];
+       if (j.date) bits.push(`<i class="fas fa-calendar-day"></i> ${esc(fmtDay(j.date))}`);
+       if (j.location) bits.push(`<i class="fas fa-location-dot"></i> ${esc(j.location)}`);
+       const note = j.description ? `<div class="job-meta"><i class="fas fa-note-sticky"></i> ${esc(j.description)}</div>` : '';
+       return (bits.length ? `<div class="job-meta">${bits.join(' &nbsp; ')}</div>` : '') + note;
+    }
+    function jobStatusTag(j) {
+       const map = { pending: ['st_open', ''], accepted: ['st_taken', 'ok'], completed: ['st_done', 'ok'], cancelled: ['st_cancelled', 'bad'] };
+       const m = map[j.status] || map.pending;
+       return `<span class="hist-tag ${m[1]}">${esc(t(m[0]))}</span>`;
+    }
+
+    // ── Your jobs (employer) / Jobs you took (worker) ──
+    async function loadMyJobs() {
+       const isWorker = localStorage.getItem('user_type') === 'Worker';
+       const list = document.getElementById(isWorker ? 'wk-jobs' : 'emp-jobs');
+       if (!list) return;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs`, { headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          if (!res.ok) throw new Error();
+          const jobs = await res.json();
+          if (isWorker) {
+             const mine = jobs.filter(j => j.status === 'accepted' || j.status === 'completed').slice(0, 10);
+             document.getElementById('wk-jobs-wrap').style.display = mine.length ? 'block' : 'none';
+             list.innerHTML = mine.map(j => {
+                const e = j.employer || {};
+                const company = e.companyName ? ' · ' + esc(e.companyName) : '';
+                const back = j.status === 'accepted' ? `<button class="btn btn-outline" onclick="leaveJob('${safeId(j._id)}')"><i class="fas fa-rotate-left"></i> ${esc(t('give_back'))}</button>` : '';
+                return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
+                   <div class="hist-meta">${esc(t('posted_by', e.name || ''))}${company} · ${esc(j.city)}${j.amount ? ' · &#8377;' + esc(Number(j.amount)) : ''}</div>${jobDetails(j)}</div>
+                   <div class="hist-actions">${contactButtons(e.phone)}${back}</div></div>`;
+             }).join('');
+             return;
+          }
+          const shown = jobs.filter(j => j.status !== 'cancelled').slice(0, 10);
+          if (!shown.length) { list.innerHTML = `<p style="opacity:0.6;">${esc(t('no_posted'))}</p>`; return; }
+          list.innerHTML = shown.map(j => {
+             const w = j.worker;
+             if (w) workerCache[safeId(w._id)] = w;
+             const who = w ? `<div class="hist-meta"><i class="fas fa-user"></i> ${esc(t('taken_by', w.name))}</div>` : '';
+             const contact = w ? (j.status === 'accepted' ? contactButtons(w.phone) : '') : '';
+             const done = j.status === 'accepted' ? `<button class="btn btn-primary" onclick="completeJob('${safeId(j._id)}')"><i class="fas fa-check"></i> ${esc(t('mark_done'))}</button>` : '';
+             const rate = (j.status === 'completed' ? (w ? !j.rated : false) : false) ? `<button class="btn btn-outline" onclick="openRateJob('${safeId(j._id)}', '${safeId(w._id)}')"><i class="fas fa-star"></i> ${esc(t('rate'))}</button>` : (j.rated ? `<span class="hist-tag">&#9733; ${esc(t('rated'))}</span>` : '');
+             const cancel = (j.status === 'pending' ? true : j.status === 'accepted') ? `<button class="btn btn-outline" onclick="cancelJob('${safeId(j._id)}')"><i class="fas fa-xmark"></i> ${esc(t('cancel_job'))}</button>` : '';
+             return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
+                <div class="hist-meta">${esc(j.city)} · ${esc(Number(j.workerCount) || 1)} ${esc(t('workers_word', Number(j.workerCount) || 1))}${j.amount ? ' · &#8377;' + esc(Number(j.amount)) : ''}</div>${jobDetails(j)}${who}</div>
+                <div class="hist-actions">${contact}${done}${rate}${cancel}</div></div>`;
+          }).join('');
+       } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
+    }
+    function openJobModal() {
+       const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+       const opts = (list, val, names) => list.map(x => `<option value="${esc(x)}"${x === val ? ' selected' : ''}>${esc(names ? skillName(x) : x)}</option>`).join('');
+       document.getElementById('job-type').innerHTML = opts(SKILL_LIST, localStorage.getItem('user_skill'), true);
+       document.getElementById('job-city').innerHTML = opts(CITY_LIST, localStorage.getItem('user_city'));
+       const d = document.getElementById('job-date');
+       d.min = today.toISOString().split('T')[0];
+       d.max = new Date(today.getTime() + 30 * 86400000).toISOString().split('T')[0];
+       ['job-date', 'job-place', 'job-note', 'job-wage'].forEach(f => { document.getElementById(f).value = ''; });
+       document.getElementById('job-count').value = '1';
+       document.getElementById('job-modal').style.display = 'flex';
+    }
+    let jobBusy = false;
+    async function postJob(e) {
+       e.preventDefault();
+       if (jobBusy) return;
+       const val = id => document.getElementById(id).value;
+       const body = { jobType: val('job-type'), city: val('job-city'), workerCount: Number(val('job-count')) || 1 };
+       if (val('job-wage') !== '') body.amount = Number(val('job-wage'));
+       if (val('job-date')) body.date = val('job-date');
+       if (val('job-place').trim()) body.location = val('job-place').trim();
+       if (val('job-note').trim()) body.description = val('job-note').trim();
+       const btn = document.getElementById('job-submit');
+       jobBusy = true; btn.disabled = true;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs`, { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body) });
+          if (sessionExpired(res)) return;
+          const data = await res.json();
+          if (!res.ok) { showNotif(data.msg || t('job_failed_post'), 'red'); return; }
+          closeModal();
+          showNotif(t('job_posted'), 'green');
+          loadMyJobs();
+       } catch (err) { showNotif(t('network_problem'), 'red'); }
+       finally { jobBusy = false; btn.disabled = false; }
+    }
+    async function jobAction(id, path, okText) {
+       if (!id) return;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/${path}`, { method: 'PUT', headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          const data = await res.json();
+          if (!res.ok) { showNotif(data.msg || t('update_failed'), 'red'); return; }
+          showNotif(okText, 'green');
+          loadMyJobs();
+          if (localStorage.getItem('user_type') === 'Worker') loadCityJobs();
+       } catch (err) { showNotif(t('network_problem'), 'red'); }
+    }
+    function cancelJob(id) { if (confirm(t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
+    function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
+    function leaveJob(id) { if (confirm(t('give_back_q'))) jobAction(id, 'leave', t('given_back')); }
+    function openRateJob(jobId, workerId) {
+       const w = workerCache[workerId];
+       if (!jobId) return;
+       if (!w) return;
+       reviewTarget = { jobId, workerId }; reviewRating = 0;
+       document.getElementById('review-worker-name').innerText = w.name + ' (' + skillName(w.skill) + ')';
+       document.getElementById('review-comment').value = '';
+       drawStars();
+       document.getElementById('review-modal').style.display = 'flex';
+    }
+
     async function acceptJob(id) {
        showNotif(t('job_processing'), "green");
        try {
@@ -1776,7 +1945,7 @@
           if (sessionExpired(res)) return;
           if (!res.ok) throw new Error("Failed to accept");
           showNotif(t('job_accepted'), "green");
-          loadCityJobs();
+          loadCityJobs(); loadMyJobs();
        } catch (e) { showNotif(t('job_failed'), "red"); }
     }
 
