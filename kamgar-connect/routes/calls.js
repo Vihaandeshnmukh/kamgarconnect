@@ -54,6 +54,8 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     }
 
     const employer = await Employer.findById(req.user.id);
+    // Same phone has both accounts: you can't hire yourself
+    if (employer) { if (employer.phone === worker.phone) return res.status(400).json({ success: false, msg: "You can't hire yourself" }); }
     const employerName = cleanName(req.body.employerName) || (employer ? employer.name : 'Employer');
 
     // The hire record (reviews for website hires refer to it)

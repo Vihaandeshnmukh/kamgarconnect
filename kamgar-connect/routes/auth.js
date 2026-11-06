@@ -154,14 +154,17 @@ router.post('/login', [
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const { phone } = req.body;
+  // One phone can have a worker AND an employer account: `role` says which to open first.
+  // strictRole: only that one (used when switching roles, so a missing account means "sign up").
+  const wanted = req.body.role === 'employer' ? 'employer' : 'worker';
+  const order = wanted === 'employer' ? [[Employer, 'employer'], [Worker, 'worker']] : [[Worker, 'worker'], [Employer, 'employer']];
+  if (req.body.strictRole === true) order.length = 1;
 
   try {
-    let user = await Worker.findOne({ phone }).select('+password +googleId');
-    let role = 'worker';
-
-    if (!user) {
-      user = await Employer.findOne({ phone }).select('+password +googleId');
-      role = 'employer';
+    let user = null, role = null;
+    for (const [M, r] of order) {
+      user = await M.findOne({ phone }).select('+password +googleId');
+      if (user) { role = r; break; }
     }
 
     if (!user) return res.status(404).json({ exists: false, msg: 'User not found' });
@@ -187,6 +190,33 @@ router.post('/login', [
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/auth/switch - logged-in user changes between their worker and employer account (same phone).
+// The other account exists -> its login. Employer missing -> created from this profile (name, city, location).
+// Worker missing -> 404 needsSignup (a worker must still pick their work type and days).
+const authMw = require('../middleware/auth');
+router.post('/switch', authMw, async (req, res) => {
+  try {
+    const fromWorker = req.user.role === 'worker';
+    const me = await (fromWorker ? Worker : Employer).findById(req.user.id);
+    if (!me) return res.status(404).json({ msg: 'Account not found' });
+    const Other = fromWorker ? Employer : Worker;
+    const role = fromWorker ? 'employer' : 'worker';
+    let other = await Other.findOne({ phone: me.phone });
+    if (!other) {
+      if (!fromWorker) return res.status(404).json({ needsSignup: true, prefill: { name: me.name, phone: me.phone, city: me.city } });
+      other = new Employer({ name: me.name, phone: me.phone, city: me.city });
+      if (me.location) other.location = me.location;
+      other.password = await bcrypt.hash(me.phone, await bcrypt.genSalt(10));
+      await other.save();
+    }
+    const token = await issueToken(other, role);
+    res.json({ token, user: publicUser(other, role) });
+  } catch (err) {
+    console.error('Switch error:', err.message);
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
