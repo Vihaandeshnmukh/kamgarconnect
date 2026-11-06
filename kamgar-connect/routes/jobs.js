@@ -4,7 +4,6 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const twilio = require('twilio');
 const Job = require('../models/Job');
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
@@ -30,30 +29,6 @@ function jobError({ jobType, city, workerCount, amount }) {
 
 // What workers browsing open jobs may see (no employer id)
 const OPEN_JOB_FIELDS = 'jobType city workerCount amount postedAt status';
-
-let twilioClient;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
-  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-}
-
-// Phones are stored as 10 local digits; Twilio needs +91XXXXXXXXXX.
-// Demo/test numbers (not 6-9 first digit) get no SMS, same rule as calls.js.
-function smsTo(phone) {
-  const digits = String(phone || '').replace(/\D/g, '').slice(-10);
-  return /^[6-9]\d{9}$/.test(digits) ? '+91' + digits : null;
-}
-
-// Sends one SMS if the number is a real Indian mobile; failures are only logged
-async function sendSms(phone, body) {
-  const to = smsTo(phone);
-  if (!twilioClient || !process.env.TWILIO_PHONE_NUMBER || !to) return;
-  try {
-    await twilioClient.messages.create({ body, from: process.env.TWILIO_PHONE_NUMBER, to });
-  } catch (smsErr) {
-    // Trial accounts can only text verified numbers
-    console.error('Twilio SMS error:', smsErr.message);
-  }
-}
 
 // POST /api/jobs - Employer posts a job
 router.post('/', auth, async (req, res) => {
@@ -138,9 +113,6 @@ router.put('/:id/accept', auth, async (req, res) => {
     // Socket Emit to Employer
     if (req.io) req.io.to(`user-${employer.id}`).emit('job-accepted', { job, worker: { _id: worker._id, name: worker.name, skill: worker.skill } });
 
-    // Twilio SMS
-    await sendSms(worker.phone, `नमस्ते ${worker.name}! You have a new job from ${employer.name} in ${job.city}. They will call you shortly. - Kamgar Connect`);
-    await sendSms(employer.phone, `Your worker ${worker.name} (${worker.skill}) has accepted your job. Login to call them now.`);
 
     // Log pending call session automatically
     const pendingCall = new Call({
@@ -182,16 +154,6 @@ router.put('/:id/complete', auth, async (req, res) => {
     job.status = 'completed';
     job.completedAt = Date.now();
     await job.save();
-
-    const worker = await Worker.findById(job.workerId);
-    const employer = await Employer.findById(job.employerId);
-
-    // Auto SMS to employer asking for a review
-    if (worker && employer) {
-      // The website opens a rating box for this job (employer must be logged in)
-      const reviewUrl = `https://kamgar.de/?review=${job.id}&worker=${worker.id}`;
-      await sendSms(employer.phone, `Kamgar Connect: Job complete! Please rate ${worker.name} at ${reviewUrl}`);
-    }
 
     res.json(job);
   } catch (err) {
