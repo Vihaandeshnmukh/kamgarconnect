@@ -1,9 +1,12 @@
 // Exotel phone line (Indian number). The flow is built in Exotel's App Bazaar:
 //
-//   Passthru  GET /api/exotel/start   200 = new caller -> Voicemail (record name) -> Passthru (async) GET /api/exotel/name
-//                                     302 = known worker ------------------------------------------------------------┐
-//   Programmable Gather  GET /api/exotel/gather   (we say what to play and how many keys to collect)  <-------------┘<-┐
-//   Passthru  GET /api/exotel/answer  302 = ask the next question (back to Gather), 200 = done -> Hangup             ──┘
+//   Passthru  GET /api/exotel/start   (both branches) ->
+//   Programmable Gather  GET /api/exotel/gather   (we say what to play and how many keys to collect)
+//   Passthru  GET /api/exotel/answer  200 = done -> Hangup, 302 = next Gather in the chain
+//   ... repeated FLOW_STEPS times (Exotel flows can't loop back to an earlier applet).
+//
+// /api/exotel/name transcribes a recorded name when a Voicemail applet is available
+// (start returns 200 for a new caller so a Voicemail can be put on that branch).
 //
 // Exotel does not sign its requests, so every URL carries ?key=EXOTEL_WEBHOOK_KEY.
 const express = require('express');
@@ -19,6 +22,9 @@ const { allKeys, textFor } = require('../utils/voice/phrases');
 const { transcribeName } = require('../utils/aiUnderstand');
 const { localPhone } = require('../utils/voiceParse');
 const telephony = require('../utils/telephony');
+
+// Exotel flows can't loop back, so the flow is a chain of this many Gather + Passthru pairs
+const FLOW_STEPS = Number(process.env.EXOTEL_FLOW_STEPS) || 16;
 
 const baseUrl = (req) => process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
 
@@ -94,6 +100,8 @@ router.get('/gather', exotelOnly, async (req, res) => {
   try {
     const session = await sessionFor(req);
     if (!session) throw new Error('no CallSid');
+    // Last Gather in the Exotel chain: the call must end after this one
+    if (session.turn >= FLOW_STEPS - 1) await registration.finishNow(session);
     const p = registration.prompt(session);
     session.turn += 1;
     session.promptKeys = p.keys;

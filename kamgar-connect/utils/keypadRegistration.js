@@ -161,4 +161,13 @@ async function answer(session, digits) {
   return 'continue';
 }
 
-module.exports = { begin, prompt, answer, END_STEPS };
+// The Exotel flow has a fixed number of question steps (flows can't loop): on the
+// last one, wrap up: save a confirmed-looking registration, otherwise say goodbye
+async function finishNow(session) {
+  if (END_STEPS.includes(session.step)) return;
+  session.notice = [];
+  if (session.step === 'confirm') { await saveWorker(session); session.step = 'saved'; }
+  else session.step = 'bye';
+}
+
+module.exports = { begin, prompt, answer, finishNow, END_STEPS };
