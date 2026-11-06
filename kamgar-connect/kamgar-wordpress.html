@@ -317,6 +317,71 @@
       .st-dock { padding-left: 72px; }
       .secret-trigger { bottom: 12px; left: 12px; right: auto; width: 50px; height: 50px; opacity: 1; z-index: 950; }
     }
+    /* ── App screens (logged in): Home / History / Stats / Profile ── */
+    body.app-mode .st-hero, body.app-mode .st-section, body.app-mode .mission-section, body.app-mode #team-section,
+    body.app-mode .st-footer, body.app-mode .st-dock, body.app-mode .nav-team-btn { display: none !important; }
+    body.app-mode #dashboard-tabs { margin: 24px auto 40px !important; }
+    body.app-mode .tab-container { margin-top: 0; }
+    .app-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .app-hello { font-size: 1.6rem; font-weight: 900; color: var(--text-primary); }
+    .app-sub { color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+    .app-role { background: var(--saffron-soft, #FFE3D3); color: var(--accent); font-weight: 800; font-size: 0.8rem; padding: 6px 12px; border-radius: 999px; white-space: nowrap; }
+    .app-nav { display: flex; gap: 6px; background: var(--bg-elevated); border-radius: 16px; padding: 6px; max-width: 640px; margin: 0 auto 32px; border: 1px solid var(--border); }
+    .app-nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border: 0; border-radius: 12px; background: transparent; color: var(--text-secondary); font-weight: 800; font-size: 0.95rem; cursor: pointer; font-family: inherit; }
+    .app-nav-btn.active { background: var(--accent); color: #FFFFFF; }
+    .pane-title { font-size: 1.3rem; font-weight: 900; margin-bottom: 18px; }
+    .hist-list { display: grid; gap: 14px; }
+    .hist-card { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px 18px; box-shadow: var(--shadow); }
+    .hist-main { min-width: 0; flex: 1 1 240px; }
+    .hist-name { font-weight: 900; font-size: 1.1rem; }
+    .hist-meta { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; line-height: 1.5; overflow-wrap: anywhere; }
+    .hist-tag { display: inline-block; background: var(--bg-elevated); border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 800; margin-left: 6px; }
+    .hist-tag.ok { background: #DCFCE7; color: #166534; }
+    .hist-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .hist-actions .btn, .hist-actions a { min-height: 42px; padding: 8px 14px; font-size: 0.85rem; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 800; text-decoration: none; }
+    .act-call { background: var(--accent); color: #FFFFFF; }
+    .act-wa { background: #25D366; color: #FFFFFF; }
+    .empty-state { text-align: center; padding: 40px 10px; color: var(--text-secondary); }
+    .empty-state i { font-size: 2.2rem; opacity: 0.4; margin-bottom: 12px; display: block; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 26px; }
+    .stat-tile { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+    .stat-tile .v { font-size: 1.7rem; font-weight: 900; color: var(--text-primary); }
+    .stat-tile .l { font-size: 0.85rem; color: var(--text-secondary); font-weight: 700; margin-top: 2px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; box-shadow: var(--shadow); margin-bottom: 18px; }
+    .stat-box h4 { font-weight: 900; margin-bottom: 14px; }
+    .bars { display: flex; align-items: flex-end; gap: 10px; height: 150px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 6px; min-width: 0; }
+    .bar { width: 100%; max-width: 46px; background: var(--accent); border-radius: 8px 8px 0 0; min-height: 3px; }
+    .bar-n { font-weight: 800; font-size: 0.8rem; }
+    .bar-m { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; }
+    .hbar-row { display: grid; grid-template-columns: 110px 1fr 30px; gap: 10px; align-items: center; margin-bottom: 8px; font-weight: 700; font-size: 0.9rem; }
+    .hbar { height: 12px; background: var(--accent); border-radius: 6px; }
+    .stat-note { color: var(--text-secondary); font-size: 0.8rem; }
+    .prof-card { max-width: 640px; }
+    .prof-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .prof-hint { color: var(--text-secondary); font-size: 0.85rem; margin-top: 6px; }
+    .loc-status { font-weight: 700; font-size: 0.9rem; margin-top: 8px; color: var(--text-secondary); }
+    .loc-status.ok { color: #15803D; }
+    .loc-status.bad { color: var(--red); }
+    .day-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .day-chip { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--border); border-radius: 999px; padding: 8px 14px; font-weight: 800; cursor: pointer; min-height: 42px; }
+    .day-chip input { accent-color: var(--accent); }
+    .input-field[readonly] { opacity: 0.7; }
+    .app-logout { color: var(--red) !important; width: 100%; margin-top: 12px; }
+    @media (max-width: 760px) {
+      body.app-mode { padding-bottom: 86px; }
+      body.app-mode .tab-container { padding: 18px 14px; border-radius: 20px; }
+      .app-hello { font-size: 1.3rem; }
+      /* Bottom tab bar like a phone app */
+      .app-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 940; margin: 0; max-width: none; border-radius: 0; background: #FFFFFF; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(0,0,0,0.10); border: 0; }
+      .app-nav-btn { flex-direction: column; gap: 3px; font-size: 0.72rem; min-height: 56px; }
+      .app-nav-btn i { font-size: 1.15rem; }
+      .app-nav-btn.active { background: var(--saffron-soft, #FFE3D3); color: var(--accent); }
+      body.app-mode .secret-trigger { bottom: 84px; width: 42px; height: 42px; font-size: 1rem; opacity: 0.85; }
+      .prof-row2 { grid-template-columns: 1fr; }
+      .hbar-row { grid-template-columns: 90px 1fr 26px; }
+      .hist-actions { width: 100%; }
+    }
   </style>
 </head>
 <body onload="initApp()">
@@ -327,7 +392,7 @@
     <div class="container nav-inner">
       <div class="logo" onclick="gsap.to(window, {scrollTo:0, duration:1})"><span style="color:inherit">Kamgar<span>Connect</span></span><small>औरंगाबाद • Aurangabad</small></div>
       <div style="display:flex; gap:20px; align-items:center;">
-        <button class="btn" onclick="gsap.to(window, {scrollTo:'#team-section', duration:1})" data-i18n="nav_team">Our Team</button>
+        <button class="btn nav-team-btn" onclick="gsap.to(window, {scrollTo:'#team-section', duration:1})" data-i18n="nav_team">Our Team</button>
         <div class="lang-switcher" style="display:flex; gap:8px;">
           <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('en')">EN</button>
           <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('hi')">हिं</button>
@@ -338,6 +403,7 @@
            <div id="profile-dropdown" class="profile-dropdown">
               <div id="prof-details"></div>
               <hr style="margin:15px 0; opacity:0.1;">
+              <button class="btn btn-outline" style="width:100%; margin-bottom:10px;" onclick="toggleDropdown(); switchTab('profile');" data-i18n="nav_profile">My profile</button>
               <button class="btn btn-outline" style="width:100%; color:var(--red);" onclick="logout()" data-i18n="logout">Logout</button>
            </div>
         </div>
@@ -403,10 +469,16 @@
 
   <section class="container" id="dashboard-tabs" style="display:none; margin:60px auto 100px;">
     <div class="tab-container">
-      <div class="tab-bar">
-         <button class="tab-btn active" id="tab-btn-worker" onclick="switchTab('worker')" data-i18n="tab_worker">Worker View</button>
-         <button class="tab-btn" id="tab-btn-employer" onclick="switchTab('employer')" data-i18n="tab_employer">Employer View</button>
+      <div class="app-head">
+         <div><div class="app-hello" id="app-hello"></div><div class="app-sub" id="app-sub"></div></div>
+         <span class="app-role" id="app-role"></span>
       </div>
+      <nav class="app-nav" id="app-nav">
+         <button class="app-nav-btn" id="nav-home" onclick="switchTab('home')"><i class="fas fa-house"></i><span data-i18n="nav_home">Home</span></button>
+         <button class="app-nav-btn" id="nav-history" onclick="switchTab('history')"><i class="fas fa-clock-rotate-left"></i><span data-i18n="nav_history">History</span></button>
+         <button class="app-nav-btn" id="nav-stats" onclick="switchTab('stats')"><i class="fas fa-chart-simple"></i><span data-i18n="nav_stats">Stats</span></button>
+         <button class="app-nav-btn" id="nav-profile" onclick="switchTab('profile')"><i class="fas fa-user-pen"></i><span data-i18n="nav_profile">Profile</span></button>
+      </nav>
 
       <div id="pane-worker" style="display:none;">
          <div style="text-align:center; padding:50px 0;">
@@ -449,6 +521,19 @@
 
          <div id="employer-stats" style="margin-bottom:20px; font-weight:800; color:var(--accent-blue); font-size:0.9rem;"></div>
          <div id="worker-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:25px;"></div>
+      </div>
+
+      <div id="pane-history" style="display:none;">
+         <h3 class="pane-title" id="history-title"></h3>
+         <div id="history-list" class="hist-list"></div>
+      </div>
+      <div id="pane-stats" style="display:none;">
+         <h3 class="pane-title" data-i18n="stats_title">Your numbers</h3>
+         <div id="stats-body"></div>
+      </div>
+      <div id="pane-profile" style="display:none;">
+         <h3 class="pane-title" data-i18n="profile_title">My profile</h3>
+         <form id="profile-form" class="prof-card" onsubmit="saveProfile(event)"><div id="profile-body"></div></form>
       </div>
     </div>
   </section>
@@ -494,7 +579,7 @@
        </div>
        <div class="selector-grid">
           <div class="select-type select-type-worker active" onclick="selectType('Worker')" data-i18n="sel_worker">I AM A WORKER</div>
-          <div class="select-type select-type-employer" onclick="selectType('Employer')" data-i18n="sel_employer">I NEED A WORKER</div>
+          <div class="select-type select-type-employer" onclick="selectType('Employer', true)" data-i18n="sel_employer">I NEED A WORKER</div>
        </div>
 
        <form id="reg-form" onsubmit="handleRegistration(event)">
@@ -508,7 +593,15 @@
              <input type="tel" id="reg-phone" class="input-field" placeholder="9876543210" maxlength="10">
              <div class="err-msg" id="err-phone">Please enter 10 digit phone number</div>
           </div>
-          <div class="input-grp">
+          <div class="input-grp" id="loc-grp">
+             <label data-i18n="loc_label">Location</label>
+             <button type="button" class="btn btn-outline" style="width:100%;" onclick="getGPS()">
+                <i class="fas fa-crosshairs"></i> <span data-i18n="use_location">USE MY CURRENT LOCATION</span>
+             </button>
+             <div class="loc-status" id="loc-status"></div>
+             <div class="err-msg" id="err-loc"></div>
+          </div>
+          <div class="input-grp" id="city-grp">
              <label data-i18n="label_city">City</label>
              <select id="reg-city" class="input-field">
                 <option value="">SELECT CITY</option>
@@ -551,24 +644,6 @@
                 <div class="avail-item" onclick="toggleAvail('Sun')"><input type="checkbox" id="av-Sun"> Sun</div>
              </div>
              <div class="err-msg" id="err-avail">Please select at least one day</div>
-          </div>
-
-          <div id="extra-employer" style="display:none;">
-             <div class="input-grp">
-                <label data-i18n="label_needed">Worker Type Needed</label>
-                <select id="reg-needed" class="input-field">
-                   <option value="" data-i18n="select_type">SELECT TYPE</option>
-                   <option value="Mason" data-skill>Mason</option><option value="Electrician" data-skill>Electrician</option><option value="Plumber" data-skill>Plumber</option><option value="Domestic Help" data-skill>Domestic Help</option>
-                   <option value="Factory Worker" data-skill>Factory Worker</option><option value="Carpenter" data-skill>Carpenter</option><option value="Painter" data-skill>Painter</option><option value="Driver" data-skill>Driver</option>
-                </select>
-             </div>
-             <div class="input-grp">
-                <label data-i18n="label_count">Number of Workers Needed</label>
-                <input type="number" id="reg-count" class="input-field" value="1" min="1" max="500">
-             </div>
-             <button type="button" class="btn btn-outline" style="width:100%; margin-bottom:20px;" onclick="getGPS()">
-                <i class="fas fa-crosshairs"></i> <span data-i18n="use_location">USE MY CURRENT LOCATION</span>
-             </button>
           </div>
 
           <div id="reg-backend-err" style="color:var(--red); margin-bottom:15px; font-weight:800; display:none;"></div>
@@ -718,7 +793,22 @@
           welcome_worker: "You are registered! Employers can see you for the next 24 hours.", welcome_employer: "Welcome! Find the right worker below.",
           network_problem: "Network problem: please check your connection and try again.",
           rate_title: "Rate the worker", rate_comment: "Comment (optional)", rate_submit: "SUBMIT RATING", rate_pick: "Please choose 1 to 5 stars.",
-          rate_thanks: "Thank you! Your rating helps other employers.", rate_failed: "Could not save the rating.", rate_login: "Log in as the employer to rate this worker."
+          rate_thanks: "Thank you! Your rating helps other employers.", rate_failed: "Could not save the rating.", rate_login: "Log in as the employer to rate this worker.",
+          role_note: r => (r === 'Worker' ? "This number is already registered as a worker, so we opened that account." : "This number is already registered as an employer, so we opened that account."),
+          nav_home: "Home", nav_history: "History", nav_stats: "Stats", nav_profile: "Profile", hello: n => `Hi, ${n}`, role_worker: "Worker", role_employer: "Employer",
+          hist_title_emp: "Workers you hired", hist_title_wk: "Who hired you", hist_empty_emp: "No hires yet. Workers you hire will show up here.",
+          hist_empty_wk: "No bookings yet. Stay live so employers can find you.", call: "Call", whatsapp: "WhatsApp", hire_again: "Hire again", rate: "Rate", rated: "Rated",
+          booked_now: "Booked by you", deleted_account: "Account removed", load_error_generic: "Could not load. Please try again.",
+          stats_title: "Your numbers", st_total_hires: "Total hires", st_unique_workers: "Different workers", st_this_month: "This month", st_booked_now: "Booked now",
+          st_spend: "Est. spend", st_ratings_given: "Ratings given", st_times_hired: "Times hired", st_employers: "Employers", st_rating: "Your rating",
+          st_earnings: "Est. earnings", st_status: "Status", status_live: "Live", status_booked: "Booked", status_offline: "Offline",
+          st_last6: "Hires in the last 6 months", st_by_skill: "Hires by work type", st_est_note: "Estimates use the daily wage.",
+          profile_title: "My profile", phone_locked: "Your phone number is your login, so it can't be changed here.", loc_label: "Location",
+          loc_saved: "Location saved", loc_none: "No location yet", loc_update: "UPDATE MY LOCATION", loc_getting: "Getting your location...",
+          loc_ok: c => `Location added (${c})`, loc_failed: "Couldn't get your location. Please choose your city.", loc_need: "Please share your location (or choose your city).",
+          loc_hint_emp: "So we can show you workers nearby.", loc_hint_wk: "Optional: helps employers near you find you.",
+          company: "Company name (optional)", usual_type: "Usual worker type (optional)", usual_count: "Usual number of workers",
+          google_linked: e => `Google account linked (${e})`, google_not: "Google not linked", save: "SAVE CHANGES", saved: "Profile saved.", save_failed: "Could not save. Please try again."
        },
        hi: {
           search_phone: "फ़ोन नंबर से खोजें", search: "खोजें", find_nearest: "सबसे पास का कामगार", all_types: "सभी काम",
@@ -740,7 +830,22 @@
           welcome_worker: "आपका रजिस्ट्रेशन हो गया! अगले 24 घंटे आप काम देने वालों को दिखेंगे।", welcome_employer: "स्वागत है! नीचे सही कामगार चुनें।",
           network_problem: "इंटरनेट की समस्या: कनेक्शन जांचें और फिर कोशिश करें।",
           rate_title: "कामगार को रेटिंग दें", rate_comment: "टिप्पणी (ज़रूरी नहीं)", rate_submit: "रेटिंग भेजें", rate_pick: "कृपया 1 से 5 स्टार चुनें।",
-          rate_thanks: "धन्यवाद! आपकी रेटिंग दूसरों की मदद करती है।", rate_failed: "रेटिंग सेव नहीं हुई।", rate_login: "रेटिंग देने के लिए नियोक्ता के रूप में लॉगिन करें।"
+          rate_thanks: "धन्यवाद! आपकी रेटिंग दूसरों की मदद करती है।", rate_failed: "रेटिंग सेव नहीं हुई।", rate_login: "रेटिंग देने के लिए नियोक्ता के रूप में लॉगिन करें।",
+          role_note: r => (r === 'Worker' ? "यह नंबर पहले से कामगार के रूप में रजिस्टर है, इसलिए वही खाता खोला गया।" : "यह नंबर पहले से काम देने वाले के रूप में रजिस्टर है, इसलिए वही खाता खोला गया।"),
+          nav_home: "होम", nav_history: "इतिहास", nav_stats: "आंकड़े", nav_profile: "प्रोफ़ाइल", hello: n => `नमस्ते, ${n}`, role_worker: "कामगार", role_employer: "काम देने वाले",
+          hist_title_emp: "आपने किन्हें काम पर रखा", hist_title_wk: "किसने आपको काम पर रखा", hist_empty_emp: "अभी तक किसी को काम पर नहीं रखा। जिन्हें रखेंगे वे यहाँ दिखेंगे।",
+          hist_empty_wk: "अभी तक कोई बुकिंग नहीं। लाइव रहें ताकि काम देने वाले आपको ढूंढ सकें।", call: "कॉल", whatsapp: "WhatsApp", hire_again: "फिर से काम पर रखें", rate: "रेटिंग दें", rated: "रेटिंग दी",
+          booked_now: "आपने बुक किया है", deleted_account: "खाता हटाया गया", load_error_generic: "लोड नहीं हुआ। फिर कोशिश करें।",
+          stats_title: "आपके आंकड़े", st_total_hires: "कुल बुकिंग", st_unique_workers: "अलग-अलग कामगार", st_this_month: "इस महीने", st_booked_now: "अभी बुक",
+          st_spend: "अनुमानित खर्च", st_ratings_given: "दी गई रेटिंग", st_times_hired: "कितनी बार काम मिला", st_employers: "काम देने वाले", st_rating: "आपकी रेटिंग",
+          st_earnings: "अनुमानित कमाई", st_status: "स्थिति", status_live: "लाइव", status_booked: "बुक", status_offline: "ऑफ़लाइन",
+          st_last6: "पिछले 6 महीने की बुकिंग", st_by_skill: "काम के हिसाब से बुकिंग", st_est_note: "अनुमान एक दिन की मज़दूरी से लगाया गया है।",
+          profile_title: "मेरी प्रोफ़ाइल", phone_locked: "फ़ोन नंबर ही आपका लॉगिन है, इसलिए यहाँ नहीं बदल सकते।", loc_label: "लोकेशन",
+          loc_saved: "लोकेशन सेव है", loc_none: "अभी कोई लोकेशन नहीं", loc_update: "मेरी लोकेशन अपडेट करें", loc_getting: "लोकेशन ली जा रही है...",
+          loc_ok: c => `लोकेशन मिल गई (${c})`, loc_failed: "लोकेशन नहीं मिली। कृपया अपना शहर चुनें।", loc_need: "कृपया अपनी लोकेशन दें (या शहर चुनें)।",
+          loc_hint_emp: "ताकि हम आपको पास के कामगार दिखा सकें।", loc_hint_wk: "ज़रूरी नहीं: पास के काम देने वाले आपको ढूंढ सकेंगे।",
+          company: "कंपनी का नाम (ज़रूरी नहीं)", usual_type: "आम तौर पर किस काम के कामगार (ज़रूरी नहीं)", usual_count: "आम तौर पर कितने कामगार",
+          google_linked: e => `Google खाता जुड़ा है (${e})`, google_not: "Google नहीं जुड़ा", save: "बदलाव सेव करें", saved: "प्रोफ़ाइल सेव हो गई।", save_failed: "सेव नहीं हुआ। फिर कोशिश करें।"
        },
        mr: {
           search_phone: "फोन नंबरने शोधा", search: "शोधा", find_nearest: "जवळचा कामगार शोधा", all_types: "सर्व कामे",
@@ -762,7 +867,22 @@
           welcome_worker: "तुमची नोंदणी झाली! पुढचे 24 तास तुम्ही काम देणाऱ्यांना दिसाल.", welcome_employer: "स्वागत आहे! खाली योग्य कामगार निवडा.",
           network_problem: "इंटरनेट अडचण: कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.",
           rate_title: "कामगाराला रेटिंग द्या", rate_comment: "टिप्पणी (आवश्यक नाही)", rate_submit: "रेटिंग पाठवा", rate_pick: "कृपया 1 ते 5 स्टार निवडा.",
-          rate_thanks: "धन्यवाद! तुमचे रेटिंग इतरांना मदत करते.", rate_failed: "रेटिंग सेव्ह झाले नाही.", rate_login: "रेटिंग देण्यासाठी एम्प्लॉयर म्हणून लॉगिन करा."
+          rate_thanks: "धन्यवाद! तुमचे रेटिंग इतरांना मदत करते.", rate_failed: "रेटिंग सेव्ह झाले नाही.", rate_login: "रेटिंग देण्यासाठी एम्प्लॉयर म्हणून लॉगिन करा.",
+          role_note: r => (r === 'Worker' ? "हा नंबर आधीच कामगार म्हणून नोंदलेला आहे, म्हणून तेच खाते उघडले." : "हा नंबर आधीच काम देणारे म्हणून नोंदलेला आहे, म्हणून तेच खाते उघडले."),
+          nav_home: "होम", nav_history: "इतिहास", nav_stats: "आकडे", nav_profile: "प्रोफाइल", hello: n => `नमस्कार, ${n}`, role_worker: "कामगार", role_employer: "काम देणारे",
+          hist_title_emp: "तुम्ही कामावर घेतलेले कामगार", hist_title_wk: "तुम्हाला कोणी कामावर घेतले", hist_empty_emp: "अजून कोणालाही कामावर घेतले नाही. घेतलेले कामगार इथे दिसतील.",
+          hist_empty_wk: "अजून बुकिंग नाही. लाइव्ह रहा म्हणजे काम देणारे तुम्हाला शोधू शकतील.", call: "कॉल", whatsapp: "WhatsApp", hire_again: "पुन्हा कामावर घ्या", rate: "रेटिंग द्या", rated: "रेटिंग दिले",
+          booked_now: "तुम्ही बुक केले आहे", deleted_account: "खाते काढले", load_error_generic: "लोड झाले नाही. पुन्हा प्रयत्न करा.",
+          stats_title: "तुमचे आकडे", st_total_hires: "एकूण बुकिंग", st_unique_workers: "वेगवेगळे कामगार", st_this_month: "या महिन्यात", st_booked_now: "आता बुक",
+          st_spend: "अंदाजे खर्च", st_ratings_given: "दिलेली रेटिंग", st_times_hired: "किती वेळा काम मिळाले", st_employers: "काम देणारे", st_rating: "तुमचे रेटिंग",
+          st_earnings: "अंदाजे कमाई", st_status: "स्थिती", status_live: "लाइव्ह", status_booked: "बुक", status_offline: "ऑफलाइन",
+          st_last6: "मागील 6 महिन्यांतील बुकिंग", st_by_skill: "कामानुसार बुकिंग", st_est_note: "अंदाज एका दिवसाच्या मजुरीवरून काढला आहे.",
+          profile_title: "माझी प्रोफाइल", phone_locked: "फोन नंबर हेच तुमचे लॉगिन आहे, म्हणून इथे बदलता येत नाही.", loc_label: "लोकेशन",
+          loc_saved: "लोकेशन सेव्ह आहे", loc_none: "अजून लोकेशन नाही", loc_update: "माझे लोकेशन अपडेट करा", loc_getting: "लोकेशन घेत आहे...",
+          loc_ok: c => `लोकेशन मिळाले (${c})`, loc_failed: "लोकेशन मिळाले नाही. कृपया तुमचे शहर निवडा.", loc_need: "कृपया तुमचे लोकेशन द्या (किंवा शहर निवडा).",
+          loc_hint_emp: "म्हणजे आम्ही तुम्हाला जवळचे कामगार दाखवू शकू.", loc_hint_wk: "आवश्यक नाही: जवळचे काम देणारे तुम्हाला शोधू शकतील.",
+          company: "कंपनीचे नाव (आवश्यक नाही)", usual_type: "सहसा कोणत्या कामाचे कामगार (आवश्यक नाही)", usual_count: "सहसा किती कामगार",
+          google_linked: e => `Google खाते जोडले आहे (${e})`, google_not: "Google जोडलेले नाही", save: "बदल सेव्ह करा", saved: "प्रोफाइल सेव्ह झाली.", save_failed: "सेव्ह झाले नाही. पुन्हा प्रयत्न करा."
        }
     };
     const SKILL_NAMES = {
@@ -805,13 +925,14 @@
        if (!reviewRating) { showNotif(t('rate_pick'), 'red'); return; }
        try {
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/reviews`, { method: 'POST', headers: authHeaders({'Content-Type':'application/json'}),
-             body: JSON.stringify({ workerId: reviewTarget.workerId, jobId: reviewTarget.jobId, rating: reviewRating, comment: document.getElementById('review-comment').value }) });
+             body: JSON.stringify({ workerId: reviewTarget.workerId, jobId: reviewTarget.jobId, hireId: reviewTarget.hireId, rating: reviewRating, comment: document.getElementById('review-comment').value }) });
           if (sessionExpired(res)) return;
           const data = await res.json();
           if (!res.ok) { showNotif(data.msg || t('rate_failed'), 'red'); return; }
           closeModal();
           history.replaceState(null, '', location.pathname);
           showNotif(t('rate_thanks'), 'green');
+          if (localStorage.getItem('active_tab') === 'history') loadHistory();
        } catch (e) { showNotif(t('rate_failed'), 'red'); }
     }
 
@@ -830,7 +951,8 @@
           document.getElementById('dashboard-tabs').style.display = 'block';
           updateProfileUI();
           updateAvailabilityUI();
-          switchTab(localStorage.getItem('user_type').toLowerCase());
+          enterAppMode();
+          switchTab(localStorage.getItem('active_tab') || 'home');
        }
        appReady = true;
        openReviewFromLink();
@@ -857,7 +979,8 @@
        if (appReady) {
           if (localStorage.getItem('user_id')) {
              updateAvailabilityUI();
-             switchTab(localStorage.getItem('active_tab') || localStorage.getItem('user_type').toLowerCase());
+             updateAppHeader();
+             switchTab(localStorage.getItem('active_tab') || 'home');
           }
        }
     }
@@ -879,12 +1002,37 @@
        animate();
     }
 
-    function selectType(t) {
+    // askLocation: an employer picked by a tap gets the location prompt straight away
+    function selectType(t, askLocation) {
        selectedType = t;
        document.querySelectorAll('.select-type').forEach(el => el.classList.remove('active'));
        document.querySelector(`.select-type-${t.toLowerCase()}`).classList.add('active');
        document.getElementById('extra-worker').style.display = t === 'Worker' ? 'block' : 'none';
-       document.getElementById('extra-employer').style.display = t === 'Employer' ? 'block' : 'none';
+       updateCityVisibility();
+       if (askLocation) { if (!hasLocation()) getGPS(); }
+    }
+
+    // ── Location: employers share it instead of picking a city (the city is worked out from it) ──
+    let locationFailed = false;
+    const CITY_CENTERS = { Aurangabad: [19.8762, 75.3433], Nagpur: [21.1458, 79.0882], Pune: [18.5204, 73.8567], Nashik: [19.9975, 73.7898], Mumbai: [19.0760, 72.8777] };
+    const CITY_LIST = Object.keys(CITY_CENTERS);
+    const SKILL_LIST = ['Mason', 'Electrician', 'Plumber', 'Domestic Help', 'Factory Worker', 'Carpenter', 'Painter', 'Driver'];
+    function hasLocation() { return gpsCoords.lat !== 0; }
+    function nearestCity(lat, lng) {
+       let best = CITY_LIST[0], bestDist = Infinity;
+       CITY_LIST.forEach(c => {
+          const dLat = lat - CITY_CENTERS[c][0], dLng = (lng - CITY_CENTERS[c][1]) * Math.cos(CITY_CENTERS[c][0] * Math.PI / 180);
+          const d = dLat * dLat + dLng * dLng;
+          if (d < bestDist) { bestDist = d; best = c; }
+       });
+       return best;
+    }
+    // Workers always pick a city; employers only when the location could not be read
+    function updateCityVisibility() {
+       const show = selectedType === 'Worker' ? true : locationFailed;
+       document.getElementById('city-grp').style.display = show ? '' : 'none';
+       const status = document.getElementById('loc-status');
+       if (!hasLocation()) { if (!status.classList.contains('bad')) status.innerText = selectedType === 'Worker' ? t('loc_hint_wk') : t('loc_hint_emp'); }
     }
 
     function toggleAvail(d) {
@@ -956,7 +1104,14 @@
        let valid = true;
        if (!name) { document.getElementById('err-name').style.display='block'; valid=false; }
        if (!/^\d{10}$/.test(phone)) { document.getElementById('err-phone').style.display='block'; valid=false; }
-       if (!city) { document.getElementById('err-city').style.display='block'; valid=false; }
+       if (!city) {
+          if (selectedType === 'Worker') { document.getElementById('err-city').style.display='block'; valid=false; }
+          else if (!hasLocation()) {
+             // No location and no city: ask for either (show the city list as the fallback)
+             const err = document.getElementById('err-loc'); err.innerText = t('loc_need'); err.style.display = 'block';
+             locationFailed = true; updateCityVisibility(); valid = false;
+          }
+       }
        if (selectedType === 'Worker') {
           if (!document.getElementById('reg-skill').value) { document.getElementById('err-skill').style.display='block'; valid=false; }
           const avail = getAvail();
@@ -976,24 +1131,25 @@
           if (loginRes.ok) {
              const loginData = await loginRes.json();
              resetGoogleSignup();
-             loginUser(loginData.user, loginData.user.role === 'employer' ? 'Employer' : 'Worker', loginData.token);
+             const role = loginData.user.role === 'employer' ? 'Employer' : 'Worker';
+             loginUser(loginData.user, role, loginData.token);
+             // Picked "I need a worker" but this phone is a worker account (or the other way round)
+             if (role !== selectedType) setTimeout(() => showNotif(t('role_note', role), 'red'), 600);
              return;
           }
           if (loginRes.status === 400) { const d = await loginRes.json(); showError(d.msg || (d.errors ? d.errors[0].msg : '') || "Please check your phone number."); return; }
           if (loginRes.status === 429) { const d = await loginRes.json(); showError(d.error || "Too many attempts. Please wait a few minutes."); return; }
           if (loginRes.status !== 404) throw new Error("Could not reach server");
           const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
-          const body = { name, phone, city };
+          const body = { name, phone };
+          if (city) body.city = city;
+          if (hasLocation()) body.location = gpsCoords;
           if (pendingGoogleCredential) body.googleCredential = pendingGoogleCredential;
           if (selectedType === 'Worker') {
              body.skill = document.getElementById('reg-skill').value;
              body.experience = document.getElementById('reg-exp').value;
              body.salary = document.getElementById('reg-salary').value;
              body.availability = getAvail();
-          } else {
-             body.workerTypeNeeded = document.getElementById('reg-needed').value;
-             body.workerCountNeeded = document.getElementById('reg-count').value;
-             body.location = gpsCoords;
           }
           const regRes = await fetch(regUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
           const regData = await regRes.json();
@@ -1048,8 +1204,24 @@
        document.getElementById('dashboard-tabs').style.display='block';
        updateProfileUI();
        updateAvailabilityUI();
-       switchTab(localStorage.getItem('user_type').toLowerCase());
-       gsap.to(window, {scrollTo: "#dashboard-tabs", duration: 1});
+       enterAppMode();
+       switchTab('home');
+       window.scrollTo(0, 0);
+    }
+
+    // Logged in: the page becomes the app (marketing sections hidden)
+    function enterAppMode() {
+       document.body.classList.add('app-mode');
+       updateAppHeader();
+    }
+    function updateAppHeader() {
+       const type = localStorage.getItem('user_type');
+       const name = (localStorage.getItem('user_name') || '').split(' ')[0];
+       document.getElementById('app-hello').innerText = t('hello', name);
+       const city = localStorage.getItem('user_city') || '';
+       const skill = localStorage.getItem('user_skill');
+       document.getElementById('app-sub').innerText = type === 'Worker' ? skillName(skill) + ' · ' + city : city;
+       document.getElementById('app-role').innerText = type === 'Worker' ? t('role_worker') : t('role_employer');
     }
 
     function resetErrors() {
@@ -1065,14 +1237,236 @@
        return d;
     }
 
+    // App screens: home (worker: go live + jobs, employer: find workers), history, stats, profile
     function switchTab(t) {
+       if (!['home', 'history', 'stats', 'profile'].includes(t)) t = 'home';
        localStorage.setItem('active_tab', t);
-       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-       document.getElementById(`tab-btn-${t}`).classList.add('active');
-       document.getElementById('pane-worker').style.display = t === 'worker' ? 'block' : 'none';
-       document.getElementById('pane-employer').style.display = t === 'employer' ? 'block' : 'none';
-       if (t === 'worker') loadCityJobs();
-       else loadEmployerGrid();
+       const isWorker = localStorage.getItem('user_type') === 'Worker';
+       document.querySelectorAll('.app-nav-btn').forEach(b => b.classList.toggle('active', b.id === 'nav-' + t));
+       const home = t === 'home';
+       document.getElementById('pane-worker').style.display = (home ? isWorker : false) ? 'block' : 'none';
+       document.getElementById('pane-employer').style.display = (home ? !isWorker : false) ? 'block' : 'none';
+       ['history', 'stats', 'profile'].forEach(p => { document.getElementById('pane-' + p).style.display = p === t ? 'block' : 'none'; });
+       if (home) { if (isWorker) loadCityJobs(); else loadEmployerGrid(); }
+       if (t === 'history') loadHistory();
+       if (t === 'stats') loadStats();
+       if (t === 'profile') loadProfile();
+    }
+
+    const LOCALES = { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN' };
+    function fmtDay(dateStr, fallback) {
+       const d = /^\d{4}-\d{2}-\d{2}$/.test(String(dateStr)) ? new Date(dateStr + 'T00:00:00') : new Date(fallback);
+       if (isNaN(d.getTime())) return '';
+       return d.toLocaleDateString(LOCALES[currentLang] || 'en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    // Call + WhatsApp buttons for a 10-digit Indian number
+    function contactButtons(phone) {
+       if (!/^\d{10}$/.test(String(phone))) return '';
+       return `<a class="act-call" href="tel:+91${phone}"><i class="fas fa-phone"></i> ${esc(t('call'))}</a>` +
+              `<a class="act-wa" href="https://wa.me/91${phone}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> ${esc(t('whatsapp'))}</a>`;
+    }
+
+    // ── History: workers I hired / employers who hired me ──
+    async function loadHistory() {
+       const list = document.getElementById('history-list');
+       const isEmp = localStorage.getItem('user_type') === 'Employer';
+       document.getElementById('history-title').innerText = isEmp ? t('hist_title_emp') : t('hist_title_wk');
+       list.innerHTML = LOADER;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/history`, { headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          if (!res.ok) throw new Error();
+          const items = await res.json();
+          if (!items.length) {
+             list.innerHTML = `<div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>${esc(isEmp ? t('hist_empty_emp') : t('hist_empty_wk'))}</p></div>`;
+             return;
+          }
+          list.innerHTML = items.map(h => isEmp ? histWorkerCard(h) : histEmployerCard(h)).join('');
+       } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
+    }
+    function histWhen(h) {
+       return `<i class="fas fa-calendar-day"></i> ${esc(fmtDay(h.date, h.bookedAt))}${h.time ? ' · ' + esc(h.time) : ''}` +
+              (h.location ? `<br><i class="fas fa-location-dot"></i> ${esc(h.location)}` : '');
+    }
+    function histWorkerCard(h) {
+       const w = h.worker;
+       if (!w) return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(t('deleted_account'))}</div><div class="hist-meta">${histWhen(h)}</div></div></div>`;
+       const id = safeId(w._id);
+       workerCache[id] = w;
+       const rating = w.totalRatings > 0 ? ' · ' + esc(Number(w.rating).toFixed(1)) + ' &#9733;' : '';
+       const tag = w.bookedByYouNow ? `<span class="hist-tag ok">${esc(t('booked_now'))}</span>` : '';
+       const again = w.availableNow ? `<button class="btn btn-outline" onclick="openHireModal('${id}', event)"><i class="fas fa-rotate-right"></i> ${esc(t('hire_again'))}</button>` : '';
+       const rate = h.rated ? `<span class="hist-tag">&#9733; ${esc(t('rated'))}</span>`
+          : `<button class="btn btn-outline" onclick="openRateHire('${safeId(h.hireId)}', '${id}')"><i class="fas fa-star"></i> ${esc(t('rate'))}</button>`;
+       return `<div class="hist-card">
+          <div class="hist-main">
+             <div class="hist-name">${esc(w.name)}${tag}</div>
+             <div class="hist-meta">${esc(skillName(w.skill))}${rating}<br>${histWhen(h)}</div>
+          </div>
+          <div class="hist-actions">${contactButtons(w.phone)}${again}${rate}</div>
+       </div>`;
+    }
+    function histEmployerCard(h) {
+       const e = h.employer;
+       if (!e) return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(t('deleted_account'))}</div><div class="hist-meta">${histWhen(h)}</div></div></div>`;
+       const company = e.companyName ? ' · ' + esc(e.companyName) : '';
+       const note = h.instructions ? `<br><i class="fas fa-note-sticky"></i> ${esc(h.instructions)}` : '';
+       return `<div class="hist-card">
+          <div class="hist-main">
+             <div class="hist-name">${esc(e.name)}${company}</div>
+             <div class="hist-meta">${histWhen(h)}${note}</div>
+          </div>
+          <div class="hist-actions">${contactButtons(e.phone)}</div>
+       </div>`;
+    }
+    // Rate a worker from History (website hire record)
+    function openRateHire(hireId, workerId) {
+       const w = workerCache[workerId];
+       if (!hireId) return;
+       if (!w) return;
+       reviewTarget = { hireId, workerId }; reviewRating = 0;
+       document.getElementById('review-worker-name').innerText = w.name + ' (' + skillName(w.skill) + ')';
+       document.getElementById('review-comment').value = '';
+       drawStars();
+       document.getElementById('review-modal').style.display = 'flex';
+    }
+
+    // ── Stats ──
+    async function loadStats() {
+       const box = document.getElementById('stats-body');
+       box.innerHTML = LOADER;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/stats`, { headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          if (!res.ok) throw new Error();
+          const st = await res.json();
+          const rupees = n => '&#8377;' + esc(Number(n || 0).toLocaleString('en-IN'));
+          const tile = (v, l) => `<div class="stat-tile"><div class="v">${v}</div><div class="l">${esc(l)}</div></div>`;
+          let tiles;
+          if (st.role === 'employer') {
+             tiles = [tile(esc(st.totalHires), t('st_total_hires')), tile(esc(st.uniqueWorkers), t('st_unique_workers')), tile(esc(st.hiresThisMonth), t('st_this_month')),
+                      tile(esc(st.bookedNow), t('st_booked_now')), tile(rupees(st.estimatedSpend), t('st_spend')), tile(esc(st.ratingsGiven), t('st_ratings_given'))];
+          } else {
+             const status = st.bookedNow ? t('status_booked') : (st.isLive ? t('status_live') : t('status_offline'));
+             const rating = st.totalRatings > 0 ? esc(Number(st.rating).toFixed(1)) + ' &#9733; <small style="font-size:0.9rem;">(' + esc(st.totalRatings) + ')</small>' : '&ndash;';
+             tiles = [tile(esc(st.totalHires), t('st_times_hired')), tile(esc(st.uniqueEmployers), t('st_employers')), tile(esc(st.hiresThisMonth), t('st_this_month')),
+                      tile(rating, t('st_rating')), tile(rupees(st.estimatedEarnings), t('st_earnings')), tile(esc(status), t('st_status'))];
+          }
+          const max = Math.max(1, ...st.monthly.map(m => m.count));
+          const bars = st.monthly.map(m => {
+             const label = new Date(m.month + '-01T00:00:00').toLocaleDateString(LOCALES[currentLang] || 'en-IN', { month: 'short' });
+             return `<div class="bar-col"><div class="bar-n">${esc(m.count)}</div><div class="bar" style="height:${Math.round(m.count / max * 100)}%"></div><div class="bar-m">${esc(label)}</div></div>`;
+          }).join('');
+          let bySkill = '';
+          if (st.role === 'employer') {
+             if (st.bySkill.length) {
+                const top = st.bySkill[0].count;
+                bySkill = `<div class="stat-box"><h4>${esc(t('st_by_skill'))}</h4>` + st.bySkill.map(b =>
+                   `<div class="hbar-row"><span>${esc(skillName(b.skill))}</span><div class="hbar" style="width:${Math.round(b.count / top * 100)}%"></div><span>${esc(b.count)}</span></div>`).join('') + '</div>';
+             }
+          }
+          box.innerHTML = `<div class="stat-grid">${tiles.join('')}</div>
+             <div class="stat-box"><h4>${esc(t('st_last6'))}</h4><div class="bars">${bars}</div></div>
+             ${bySkill}<p class="stat-note">${esc(t('st_est_note'))}</p>`;
+       } catch (e) { box.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
+    }
+
+    // ── Profile (view + edit) ──
+    let profileData = null, profileLoc = undefined;
+    const tr = k => TRANSLATIONS[currentLang][k] || TRANSLATIONS.en[k] || t(k);
+    async function loadProfile() {
+       const body = document.getElementById('profile-body');
+       body.innerHTML = LOADER;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me`, { headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          if (!res.ok) throw new Error();
+          profileData = await res.json();
+          profileLoc = undefined;
+          if (profileData.location) gpsCoords = profileData.location;
+          renderProfile();
+       } catch (e) { body.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
+    }
+    function renderProfile() {
+       const p = profileData;
+       const isWorker = p.role === 'worker';
+       const opts = (list, val, names, blank) => (blank ? `<option value="">${esc(blank)}</option>` : '') +
+          list.map(x => `<option value="${esc(x)}"${x === val ? ' selected' : ''}>${esc(names ? skillName(x) : x)}</option>`).join('');
+       const grp = (label, inner, hint) => `<div class="input-grp"><label>${esc(label)}</label>${inner}${hint ? '<div class="prof-hint">' + esc(hint) + '</div>' : ''}</div>`;
+       const days = ['24/7', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+       const have = p.availability || [];
+       let roleFields;
+       if (isWorker) {
+          roleFields = grp(t('label_skill'), `<select id="pf-skill" class="input-field">${opts(SKILL_LIST, p.skill, true)}</select>`) +
+             `<div class="prof-row2">` +
+             grp(t('label_exp'), `<input type="number" id="pf-exp" class="input-field" min="0" max="60" value="${esc(p.experience || 0)}">`) +
+             grp(t('label_salary'), `<input type="number" id="pf-salary" class="input-field" min="100" max="5000" value="${esc(p.expectedSalary || 600)}">`) +
+             `</div>` +
+             grp(t('availability'), `<div class="day-chips">` + days.map(d =>
+                `<label class="day-chip"><input type="checkbox" name="pf-day" value="${d}" onchange="profDayChange(this)"${have.includes(d) ? ' checked' : ''}> ${d}</label>`).join('') + `</div>`);
+       } else {
+          roleFields = grp(t('company'), `<input type="text" id="pf-company" class="input-field" maxlength="80" value="${esc(p.companyName)}">`) +
+             `<div class="prof-row2">` +
+             grp(t('usual_type'), `<select id="pf-type" class="input-field">${opts(SKILL_LIST, p.workerType, true, t('select_type'))}</select>`) +
+             grp(t('usual_count'), `<input type="number" id="pf-count" class="input-field" min="1" max="500" value="${esc(p.workerCount || '')}">`) +
+             `</div>`;
+       }
+       const locText = p.location ? '&#10003; ' + esc(t('loc_saved')) : esc(t('loc_none'));
+       document.getElementById('profile-body').innerHTML =
+          grp(tr('label_name'), `<input type="text" id="pf-name" class="input-field" maxlength="60" value="${esc(p.name)}">`) +
+          grp(tr('label_phone'), `<input type="tel" class="input-field" value="${esc(p.phone)}" readonly>`, t('phone_locked')) +
+          grp(t('loc_label'), `<button type="button" class="btn btn-outline" style="width:100%;" onclick="profileGPS()"><i class="fas fa-crosshairs"></i> ${esc(t('loc_update'))}</button>
+             <div class="loc-status${p.location ? ' ok' : ''}" id="pf-loc-status">${locText}</div>`, isWorker ? t('loc_hint_wk') : t('loc_hint_emp')) +
+          grp(tr('label_city'), `<select id="pf-city" class="input-field">${opts(CITY_LIST, p.city)}</select>`) +
+          roleFields +
+          `<p class="prof-hint" style="margin-bottom:18px;"><i class="fab fa-google"></i> ${esc(p.googleLinked ? t('google_linked', p.email || '') : t('google_not'))}</p>` +
+          `<button type="submit" class="btn btn-primary" style="width:100%; padding:18px;" id="pf-save">${esc(t('save'))}</button>` +
+          `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>`;
+    }
+    function profileGPS() {
+       getGPS('pf-loc-status', (coords, city) => {
+          profileLoc = coords;
+          document.getElementById('pf-city').value = city;
+       });
+    }
+    // "24/7" and single days exclude each other
+    function profDayChange(el) {
+       document.querySelectorAll('input[name="pf-day"]').forEach(c => {
+          if (el.checked) { if (el.value === '24/7' ? c !== el : c.value === '24/7') c.checked = false; }
+       });
+    }
+    async function saveProfile(e) {
+       e.preventDefault();
+       const isWorker = profileData.role === 'worker';
+       const body = { name: document.getElementById('pf-name').value.trim(), city: document.getElementById('pf-city').value };
+       if (profileLoc) body.location = profileLoc;
+       if (isWorker) {
+          body.skill = document.getElementById('pf-skill').value;
+          body.experience = Number(document.getElementById('pf-exp').value);
+          body.expectedSalary = Number(document.getElementById('pf-salary').value);
+          body.availability = [...document.querySelectorAll('input[name="pf-day"]:checked')].map(c => c.value);
+       } else {
+          body.companyName = document.getElementById('pf-company').value;
+          body.workerType = document.getElementById('pf-type').value;
+          const count = document.getElementById('pf-count').value;
+          body.workerCount = count ? Number(count) : '';
+       }
+       const btn = document.getElementById('pf-save');
+       btn.disabled = true;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me`, { method: 'PUT', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body) });
+          if (sessionExpired(res)) return;
+          const data = await res.json();
+          if (!res.ok) { showNotif(data.msg || t('save_failed'), 'red'); return; }
+          profileData = data; profileLoc = undefined;
+          if (data.location) gpsCoords = data.location;
+          localStorage.setItem('user_name', data.name);
+          localStorage.setItem('user_city', data.city);
+          localStorage.setItem('user_skill', isWorker ? data.skill : (data.workerType || ''));
+          updateProfileUI(); updateAppHeader(); renderProfile();
+          showNotif(t('saved'), 'green');
+       } catch (err) { showNotif(t('save_failed'), 'red'); }
+       finally { btn.disabled = false; }
     }
 
     async function loadCityJobs() {
@@ -1195,10 +1589,13 @@
           closeModal();
           const who = currentWorkerToHire.name;
           const phoneNote = data.phone ? ' ' + t('worker_phone') + ': ' + data.phone : '';
-          gsap.to(`#scene-${currentWorkerToHire.id}`, {y: -1000, opacity:0, rotate:15, duration:1.5, ease:'power2.in', onComplete: () => {
+          const done = () => {
              showNotif(t('calling', who) + phoneNote, "green");
-             loadEmployerGrid();
-          }});
+             if (localStorage.getItem('active_tab') === 'history') loadHistory(); else loadEmployerGrid();
+          };
+          if (document.getElementById(`scene-${currentWorkerToHire.id}`)) {
+             gsap.to(`#scene-${currentWorkerToHire.id}`, {y: -1000, opacity:0, rotate:15, duration:1.5, ease:'power2.in', onComplete: done});
+          } else done();
        } catch (e) { showNotif(t('hire_failed'), "red"); }
        finally { ldr.style.display='none'; }
     }
@@ -1253,12 +1650,11 @@
              if (sessionExpired(res)) return;
              if (!res.ok) throw new Error("Failed to go offline");
              localStorage.setItem('isLooking', 'false');
-             gsap.to(window, {scrollTo: 0, duration: 1});
           } else {
              const until = new Date(); until.setHours(until.getHours() + 4);
              const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${uid}/go-live`, {
                 method:'PUT', headers: authHeaders({'Content-Type':'application/json'}),
-                body: JSON.stringify({ availableUntil: until.toISOString() })
+                body: JSON.stringify(hasLocation() ? { availableUntil: until.toISOString(), location: gpsCoords } : { availableUntil: until.toISOString() })
              });
              if (sessionExpired(res)) return;
              if (!res.ok) throw new Error("Failed to go live");
@@ -1363,10 +1759,10 @@
        setTimeout(() => { d.classList.remove('active'); setTimeout(() => d.remove(), 600); }, 5000);
     }
 
-    function openModal() { document.getElementById('reg-modal').style.display='flex'; }
+    function openModal() { document.getElementById('reg-modal').style.display='flex'; updateCityVisibility(); }
     function closeModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     function handleFindWorkClick() { selectType('Worker'); openModal(); }
-    function handleHireClick() { selectType('Employer'); openModal(); }
+    function handleHireClick() { selectType('Employer', true); openModal(); }
     function openSecretPage() {
        const page = document.getElementById('secret-page');
        // An earlier unlock hid the code screen: show it again so another code can be entered
@@ -1503,11 +1899,26 @@
        } catch (e) { result.innerHTML = message('search_error'); }
     }
 
-    function getGPS() {
+    // Reads the device location. statusId: where to show progress; onDone(coords, city) for the profile screen
+    function getGPS(statusId, onDone) {
+       const status = document.getElementById(statusId || 'loc-status');
+       const failed = () => {
+          status.innerText = t('loc_failed'); status.className = 'loc-status bad';
+          if (!statusId) { locationFailed = true; updateCityVisibility(); }
+       };
+       if (!navigator.geolocation) { failed(); return; }
+       status.innerText = t('loc_getting'); status.className = 'loc-status';
        navigator.geolocation.getCurrentPosition(p => {
-          gpsCoords = { lat: p.coords.latitude, lng: p.coords.longitude };
-          showNotif("Location Secured!", "green");
-       });
+          const coords = { lat: p.coords.latitude, lng: p.coords.longitude };
+          const city = nearestCity(coords.lat, coords.lng);
+          status.innerHTML = '&#10003; ' + esc(t('loc_ok', city)); status.className = 'loc-status ok';
+          if (onDone) { onDone(coords, city); return; }
+          gpsCoords = coords;
+          locationFailed = false;
+          document.getElementById('reg-city').value = city;
+          document.getElementById('err-loc').style.display = 'none';
+          updateCityVisibility();
+       }, failed, { timeout: 15000, maximumAge: 600000 });
     }
 
     async function findNearbyWorkers() {
