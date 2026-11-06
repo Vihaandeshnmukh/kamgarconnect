@@ -761,6 +761,14 @@
      <button class="btn btn-outline" style="position:fixed; top:40px; right:40px;" onclick="closeRoots()">&times; CLOSE</button>
   </div>
 
+  <div class="modal" id="booked-modal">
+     <div class="modal-content">
+        <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
+        <h2 style="margin-bottom:12px;"><i class="fas fa-circle-check" style="color:var(--green);"></i> <span id="booked-title"></span></h2>
+        <div id="booked-body"></div>
+     </div>
+  </div>
+
   <div class="modal" id="review-modal">
      <div class="modal-content">
         <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
@@ -877,7 +885,11 @@
           loc_denied: "Could not get your location. Please allow location and try again.", session_expired: "Session expired. Please log in again.",
           roots_loading: "Loading previous jobs...", roots_empty: "No previous jobs yet", server_problem: "The server had a problem. Please try again in a minute.",
           waking: "Server is waking up, please wait up to a minute...",
-          google_note: n => `Signed in with Google as ${n}. Just add your phone number and work details below.`, google_other: "Use another account", welcome_back: "Welcome back!", theme_dark: "Dark mode", theme_light: "Light mode"
+          google_note: n => `Signed in with Google as ${n}. Just add your phone number and work details below.`, google_other: "Use another account", welcome_back: "Welcome back!", theme_dark: "Dark mode", theme_light: "Light mode",
+          confirm: "Confirm", booking_confirmed: "Booking confirmed. The employer can see it.", confirmed_tag: "Confirmed",
+          booked_box: "Booked!", tell_worker: n => `Let ${n} know the details:`, close: "Close",
+          wa_book_msg: o => `Namaste ${o.name}, I have booked you on Kamgar Connect for ${o.when}${o.where ? ' at ' + o.where : ''}. - ${o.emp}`,
+          new_booking: o => `New booking: ${o.name}, ${o.when}`
        },
        hi: {
           search_phone: "फ़ोन नंबर से खोजें", search: "खोजें", find_nearest: "सबसे पास का कामगार", all_types: "सभी काम",
@@ -923,7 +935,11 @@
           loc_denied: "लोकेशन नहीं मिली। लोकेशन की अनुमति दें और फिर कोशिश करें।", session_expired: "लॉगिन का समय खत्म हो गया। कृपया फिर से लॉगिन करें।",
           roots_loading: "पिछले काम लोड हो रहे हैं...", roots_empty: "अभी तक कोई पिछला काम नहीं", server_problem: "सर्वर में समस्या है। एक मिनट बाद फिर कोशिश करें।",
           waking: "सर्वर चालू हो रहा है, कृपया एक मिनट रुकें...",
-          google_note: n => `Google से ${n} के रूप में साइन इन किया। नीचे बस अपना फ़ोन नंबर और काम की जानकारी भरें।`, google_other: "दूसरा खाता", welcome_back: "फिर से स्वागत है!", theme_dark: "डार्क मोड", theme_light: "लाइट मोड"
+          google_note: n => `Google से ${n} के रूप में साइन इन किया। नीचे बस अपना फ़ोन नंबर और काम की जानकारी भरें।`, google_other: "दूसरा खाता", welcome_back: "फिर से स्वागत है!", theme_dark: "डार्क मोड", theme_light: "लाइट मोड",
+          confirm: "पक्का करें", booking_confirmed: "बुकिंग पक्की हो गई। काम देने वाले को दिखेगा।", confirmed_tag: "पक्का",
+          booked_box: "बुक हो गया!", tell_worker: n => `${n} को जानकारी भेजें:`, close: "बंद करें",
+          wa_book_msg: o => `नमस्ते ${o.name}, मैंने आपको Kamgar Connect पर ${o.when}${o.where ? ', ' + o.where : ''} के लिए बुक किया है। - ${o.emp}`,
+          new_booking: o => `नई बुकिंग: ${o.name}, ${o.when}`
        },
        mr: {
           search_phone: "फोन नंबरने शोधा", search: "शोधा", find_nearest: "जवळचा कामगार शोधा", all_types: "सर्व कामे",
@@ -969,7 +985,11 @@
           loc_denied: "लोकेशन मिळाले नाही. लोकेशनची परवानगी द्या आणि पुन्हा प्रयत्न करा.", session_expired: "लॉगिनची वेळ संपली. कृपया पुन्हा लॉगिन करा.",
           roots_loading: "मागील कामे लोड होत आहेत...", roots_empty: "अजून मागील काम नाही", server_problem: "सर्व्हरमध्ये अडचण आहे. एका मिनिटाने पुन्हा प्रयत्न करा.",
           waking: "सर्व्हर सुरू होत आहे, कृपया एक मिनिट थांबा...",
-          google_note: n => `Google ने ${n} म्हणून साइन इन केले. खाली फक्त तुमचा फोन नंबर आणि कामाची माहिती भरा.`, google_other: "दुसरे खाते", welcome_back: "पुन्हा स्वागत आहे!", theme_dark: "डार्क मोड", theme_light: "लाइट मोड"
+          google_note: n => `Google ने ${n} म्हणून साइन इन केले. खाली फक्त तुमचा फोन नंबर आणि कामाची माहिती भरा.`, google_other: "दुसरे खाते", welcome_back: "पुन्हा स्वागत आहे!", theme_dark: "डार्क मोड", theme_light: "लाइट मोड",
+          confirm: "पक्के करा", booking_confirmed: "बुकिंग पक्की झाली. काम देणाऱ्याला दिसेल.", confirmed_tag: "पक्के",
+          booked_box: "बुक झाले!", tell_worker: n => `${n} ला माहिती पाठवा:`, close: "बंद करा",
+          wa_book_msg: o => `नमस्कार ${o.name}, मी तुम्हाला Kamgar Connect वर ${o.when}${o.where ? ', ' + o.where : ''} साठी बुक केले आहे. - ${o.emp}`,
+          new_booking: o => `नवीन बुकिंग: ${o.name}, ${o.when}`
        }
     };
     const SKILL_NAMES = {
@@ -1406,6 +1426,7 @@
        document.getElementById('pane-employer').style.display = (home ? !isWorker : false) ? 'block' : 'none';
        ['history', 'stats', 'profile'].forEach(p => { document.getElementById('pane-' + p).style.display = p === t ? 'block' : 'none'; });
        if (home) { if (isWorker) { loadWorkerStatus(); loadCityJobs(); } else loadEmployerGrid(); }
+       if (isWorker) startBookingPoll();
        if (t === 'history') loadHistory();
        if (t === 'stats') loadStats();
        if (t === 'profile') loadProfile();
@@ -1418,10 +1439,17 @@
        return d.toLocaleDateString(LOCALES[currentLang] || 'en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     }
     // Call + WhatsApp buttons for a 10-digit Indian number
-    function contactButtons(phone) {
+    function contactButtons(phone, message) {
        if (!/^\d{10}$/.test(String(phone))) return '';
+       const text = message ? '?text=' + encodeURIComponent(message) : '';
        return `<a class="act-call" href="tel:+91${phone}"><i class="fas fa-phone"></i> ${esc(t('call'))}</a>` +
-              `<a class="act-wa" href="https://wa.me/91${phone}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> ${esc(t('whatsapp'))}</a>`;
+              `<a class="act-wa" href="https://wa.me/91${phone}${esc(text)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> ${esc(t('whatsapp'))}</a>`;
+    }
+    // "8 Nov 2026 · 09:00"
+    function whenText(date, time, fallback) { return fmtDay(date, fallback) + (time ? ' · ' + time : ''); }
+    // The WhatsApp message an employer sends a worker they booked
+    function bookingMessage(workerName, date, time, where) {
+       return t('wa_book_msg', { name: String(workerName || '').split(' ')[0], when: whenText(date, time), where: where || '', emp: localStorage.getItem('user_name') || '' });
     }
 
     // ── History: workers I hired / employers who hired me ──
@@ -1462,7 +1490,7 @@
              <div class="hist-name">${esc(w.name)}${tag}${statusTag(h)}</div>
              <div class="hist-meta">${esc(skillName(w.skill))}${rating}<br>${histWhen(h)}</div>
           </div>
-          <div class="hist-actions">${contactButtons(w.phone)}${again}${rate}${cancel}</div>
+          <div class="hist-actions">${contactButtons(w.phone, h.canCancel ? bookingMessage(w.name, h.date, h.time, h.location) : '')}${again}${rate}${cancel}</div>
        </div>`;
     }
     function histEmployerCard(h) {
@@ -1479,25 +1507,61 @@
        </div>`;
     }
     function statusTag(h) {
+       if (h.status === 'confirmed') return `<span class="hist-tag ok">${esc(t('confirmed_tag'))}</span>`;
        if (h.status === 'declined') return `<span class="hist-tag bad">${esc(t('declined_tag'))}</span>`;
        if (h.status === 'cancelled') return `<span class="hist-tag bad">${esc(t('cancelled_tag'))}</span>`;
        return '';
     }
     function declineButton(h) {
-       return h.canDecline ? `<button class="btn btn-outline" onclick="endBooking('${safeId(h.hireId)}', 'decline')"><i class="fas fa-xmark"></i> ${esc(t('decline'))}</button>` : '';
+       const confirmBtn = h.canConfirm ? `<button class="btn btn-primary" onclick="endBooking('${safeId(h.hireId)}', 'confirm')"><i class="fas fa-check"></i> ${esc(t('confirm'))}</button>` : '';
+       return confirmBtn + (h.canDecline ? `<button class="btn btn-outline" onclick="endBooking('${safeId(h.hireId)}', 'decline')"><i class="fas fa-xmark"></i> ${esc(t('decline'))}</button>` : '');
     }
     // Worker turns down / employer cancels a booking (today or later)
     async function endBooking(hireId, kind) {
        if (!hireId) return;
-       if (!confirm(kind === 'decline' ? t('decline_confirm') : t('cancel_confirm'))) return;
+       if (kind !== 'confirm') { if (!confirm(kind === 'decline' ? t('decline_confirm') : t('cancel_confirm'))) return; }
        try {
-          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/bookings/${hireId}/${kind === 'decline' ? 'decline' : 'cancel'}`, { method: 'POST', headers: authHeaders() });
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/bookings/${hireId}/${kind === 'decline' ? 'decline' : (kind === 'confirm' ? 'confirm' : 'cancel')}`, { method: 'POST', headers: authHeaders() });
           if (sessionExpired(res)) return;
           const data = await res.json();
           if (!res.ok) { showNotif(data.msg || t('update_failed'), 'red'); return; }
-          showNotif(kind === 'decline' ? t('booking_declined') : t('booking_cancelled'), 'green');
+          showNotif(kind === 'decline' ? t('booking_declined') : (kind === 'confirm' ? t('booking_confirmed') : t('booking_cancelled')), 'green');
+          if (kind === 'confirm') markBookingsSeen([hireId]);
           switchTab(localStorage.getItem('active_tab') || 'home');
        } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+
+    // ── New bookings for a worker: checked every minute while the site is open ──
+    let bookingPoll = null;
+    function seenBookings() { try { return JSON.parse(localStorage.getItem('seen_bookings') || '[]'); } catch (e) { return []; } }
+    function markBookingsSeen(ids) {
+       const all = [...new Set([...seenBookings(), ...ids.map(String)])].slice(-200);
+       localStorage.setItem('seen_bookings', JSON.stringify(all));
+    }
+    async function checkNewBookings(quiet) {
+       if (localStorage.getItem('user_type') !== 'Worker') return;
+       if (!localStorage.getItem('auth_token')) return;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/history`, { headers: authHeaders() });
+          if (!res.ok) return;
+          const items = (await res.json()).filter(h => h.canDecline);
+          const first = localStorage.getItem('seen_bookings') === null;
+          const seen = new Set(seenBookings());
+          const fresh = items.filter(h => !seen.has(String(h.hireId)));
+          markBookingsSeen(items.map(h => h.hireId));
+          if (quiet) return;
+          if (first) return;
+          if (!fresh.length) return;
+          fresh.forEach(h => showNotif(t('new_booking', { name: h.employer ? h.employer.name : '', when: whenText(h.date, h.time, h.bookedAt) }), 'green'));
+          try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+          if (localStorage.getItem('active_tab') === 'home') loadWorkerStatus();
+          if (localStorage.getItem('active_tab') === 'history') loadHistory();
+       } catch (e) { /* offline: try again next minute */ }
+    }
+    function startBookingPoll() {
+       if (bookingPoll) return;
+       checkNewBookings(false);
+       bookingPoll = setInterval(() => checkNewBookings(false), 60000);
     }
 
     // Worker Home: the server says whether they are live (another phone, a booking or the timer
@@ -1786,6 +1850,18 @@
        document.getElementById('hire-modal').style.display = 'flex';
     }
 
+    // The Booked! box: who, when, where, and Call / WhatsApp with the details filled in
+    function showBooked(name, phone, b) {
+       document.getElementById('booked-title').innerText = t('booked_box');
+       const where = b.location ? `<br><i class="fas fa-location-dot"></i> ${esc(b.location)}` : '';
+       document.getElementById('booked-body').innerHTML =
+          `<p style="font-size:1.1rem; margin-bottom:6px;"><b>${esc(t('calling', name))}</b></p>` +
+          `<p class="hist-meta" style="margin-bottom:14px;"><i class="fas fa-calendar-day"></i> ${esc(whenText(b.date, b.time))}${where}</p>` +
+          (phone ? `<p style="margin-bottom:10px;">${esc(t('tell_worker', name))}</p><div class="hist-actions">${contactButtons(phone, bookingMessage(name, b.date, b.time, b.location))}</div>` : '') +
+          `<button type="button" class="btn btn-outline" style="width:100%; margin-top:18px;" onclick="closeModal()">${esc(t('close'))}</button>`;
+       document.getElementById('booked-modal').style.display = 'flex';
+    }
+
     let hireBusy = false;
     async function confirmHire() {
        if (hireBusy) return;
@@ -1816,9 +1892,8 @@
           confetti({ particleCount: 150, colors: ['#FF5C00', '#3b82f6'] });
           closeModal();
           const who = currentWorkerToHire.name;
-          const phoneNote = data.phone ? ' ' + t('worker_phone') + ': ' + data.phone : '';
           const done = () => {
-             showNotif(t('calling', who) + phoneNote, "green");
+             showBooked(who, data.phone, body);
              if (localStorage.getItem('active_tab') === 'history') loadHistory(); else loadEmployerGrid();
           };
           if (document.getElementById(`scene-${currentWorkerToHire.id}`)) {
