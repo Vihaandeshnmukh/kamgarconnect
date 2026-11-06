@@ -301,6 +301,12 @@
       .tab-btn { min-width: 0; }
       .modal-content { padding: 24px 18px; }
     }
+    /* Pop-ups: at least 5% space on every side, blurred background (content scrolls if taller than the screen) */
+    .modal { padding: 5vh 5vw; align-items: flex-start; justify-content: flex-start; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .modal-content { margin: auto; }
+    #secret-page, #roots-overlay { padding: 5vh 5vw; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    #secret-page { background: rgba(0,0,0,0.88); }
+    #roots-overlay { background: rgba(0,0,0,0.9); }
   </style>
 </head>
 <body onload="initApp()">
@@ -1342,6 +1348,12 @@
        page.style.display='flex'; document.getElementById('secret-access-code').focus();
     }
     function closeSecretPage() { document.getElementById('secret-page').style.display='none'; }
+
+    // Escape closes any open pop-up
+    document.addEventListener('keydown', (e) => {
+       if (e.key !== 'Escape') return;
+       closeModal(); closeRoots(); closeSecretPage();
+    });
 
     function unlockSecret() {
        const code = document.getElementById('secret-access-code').value.toUpperCase();
