@@ -16,6 +16,10 @@ const EmployerSchema = new mongoose.Schema({
   push_token: { type: String, default: null, select: false },
   email: { type: String, select: false }, // From "Sign in with Google" (private)
   googleId: { type: String, index: true, sparse: true, select: false }, // Google account linked for one-tap login
+  location: { // Where they hire (from "Use my current location"); private
+    type: { type: String, default: 'Point' },
+    coordinates: { type: [Number], default: [0, 0] } // [longitude, latitude]
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

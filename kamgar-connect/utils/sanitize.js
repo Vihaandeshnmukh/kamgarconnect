@@ -53,4 +53,37 @@ function stripOperators(obj) {
 const CITIES = ['Aurangabad', 'Nagpur', 'Pune', 'Nashik', 'Mumbai'];
 const SKILLS = ['Mason', 'Electrician', 'Plumber', 'Domestic Help', 'Factory Worker', 'Carpenter', 'Painter', 'Driver'];
 
-module.exports = { cleanText, cleanName, isValidName, normalizePhone, isPhone, stripOperators, CITIES, SKILLS };
+// Centre of each service city [lat, lng], used to pick the city from a GPS location
+const CITY_CENTERS = {
+  Aurangabad: [19.8762, 75.3433],
+  Nagpur: [21.1458, 79.0882],
+  Pune: [18.5204, 73.8567],
+  Nashik: [19.9975, 73.7898],
+  Mumbai: [19.0760, 72.8777]
+};
+
+// A { lat, lng } location from the client, or null when missing / out of range / 0,0
+function parseLocation(value) {
+  if (!value || typeof value !== 'object') return null;
+  const lat = Number(value.lat), lng = Number(value.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  if (lat === 0 || lng === 0) return null;
+  return { lat, lng };
+}
+
+// The service city closest to a location (distance on a flat map is fine at this scale)
+function nearestCity({ lat, lng }) {
+  let best = null, bestDist = Infinity;
+  for (const [city, [clat, clng]] of Object.entries(CITY_CENTERS)) {
+    const dLat = lat - clat, dLng = (lng - clng) * Math.cos(clat * Math.PI / 180);
+    const dist = dLat * dLat + dLng * dLng;
+    if (dist < bestDist) { bestDist = dist; best = city; }
+  }
+  return best;
+}
+
+// GeoJSON point for MongoDB ([longitude, latitude])
+const toPoint = ({ lat, lng }) => ({ type: 'Point', coordinates: [lng, lat] });
+
+module.exports = { cleanText, cleanName, isValidName, normalizePhone, isPhone, stripOperators, CITIES, SKILLS, parseLocation, nearestCity, toPoint };

@@ -132,6 +132,7 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/timeline', require('./routes/timeline'));
+app.use('/api/me', require('./routes/me'));
 
 // Health Check for split frontend. Reports the database too: when Atlas is
 // paused or unreachable this returns 503, so Render's health check and the

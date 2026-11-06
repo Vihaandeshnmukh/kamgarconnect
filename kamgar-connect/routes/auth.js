@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('../middleware/rateLimit');
 const { verifyGoogleCredential } = require('../utils/googleAuth');
-const { cleanName, isValidName, cleanText, normalizePhone, isPhone, CITIES, SKILLS } = require('../utils/sanitize');
+const { cleanName, isValidName, cleanText, normalizePhone, isPhone, CITIES, SKILLS, parseLocation, nearestCity, toPoint } = require('../utils/sanitize');
 
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
@@ -44,8 +44,15 @@ const nameCheck = body('name').customSanitizer(v => cleanName(v)).custom(isValid
 const phoneCheck = body('phone').customSanitizer(normalizePhone).custom(isPhone).withMessage('Please enter a valid 10-digit phone number');
 const cityCheck = body('city').isIn(CITIES).withMessage('Please select your city');
 
+// No city chosen but the location was shared: use the nearest service city
+const cityFromLocation = (req, res, next) => {
+  const loc = parseLocation(req.body.location);
+  if (!req.body.city) { if (loc) req.body.city = nearestCity(loc); }
+  next();
+};
+
 // POST /api/auth/register-worker
-router.post('/register-worker', [
+router.post('/register-worker', cityFromLocation, [
   nameCheck,
   phoneCheck,
   cityCheck,
@@ -76,6 +83,8 @@ router.post('/register-worker', [
       isLooking: true,
       availableUntil: new Date(Date.now() + NEW_WORKER_VISIBLE_MS)
     });
+    const workerLoc = parseLocation(req.body.location);
+    if (workerLoc) worker.location = toPoint(workerLoc);
     // Signed up after "Sign in with Google": link that Google account for one-tap login
     const google = await verifyGoogleCredential(req.body.googleCredential);
     if (google) { worker.googleId = google.googleId; worker.email = google.email; }
@@ -94,7 +103,7 @@ router.post('/register-worker', [
 });
 
 // POST /api/auth/register-employer
-router.post('/register-employer', [
+router.post('/register-employer', cityFromLocation, [
   nameCheck,
   phoneCheck,
   cityCheck,
@@ -118,6 +127,8 @@ router.post('/register-employer', [
       workerType: workerType || undefined,
       workerCount: Number(workerCount) || undefined
     });
+    const employerLoc = parseLocation(req.body.location);
+    if (employerLoc) employer.location = toPoint(employerLoc);
     const google = await verifyGoogleCredential(req.body.googleCredential);
     if (google) { employer.googleId = google.googleId; employer.email = google.email; }
 

@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const { requireRole, requireSelf } = require('../middleware/roles');
-const { normalizePhone, isPhone } = require('../utils/sanitize');
+const { normalizePhone, isPhone, parseLocation, toPoint } = require('../utils/sanitize');
 const Worker = require('../models/Worker');
 const Job = require('../models/Job');
 
@@ -149,10 +149,14 @@ router.put('/:id/go-live', auth, requireRole('worker'), requireSelf(), async (re
     try {
         const availableUntil = parseDate(req.body.availableUntil);
         if (!availableUntil) return res.status(400).json({ msg: 'Valid availableUntil date is required' });
+        // Going live means the worker wants work again, so show them in search.
+        // With a location, "Find nearest worker" can find them too.
+        const update = { isLooking: true, availableUntil, isWithdrawn: false };
+        const loc = parseLocation(req.body.location);
+        if (loc) update.location = toPoint(loc);
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
-            // Going live means the worker wants work again, so show them in search
-            { isLooking: true, availableUntil, isWithdrawn: false },
+            update,
             { new: true }
         ).select('-password');
         if (!worker) return res.status(404).json({ msg: 'Worker not found' });
