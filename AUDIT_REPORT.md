@@ -4,6 +4,8 @@
 **Method:** zero trust. Every claim below was reproduced: code read, local tests against in-memory MongoDB, live HTTP checks, Twilio REST API, Render/Hostinger/WordPress dashboards, read-only DB queries.
 No secret values are printed in this report.
 
+> **Update 6 Nov 2026: voice system PAUSED.** The MVP is now the website marketplace only. All calling code (Twilio, Exotel keypad flow and Voicebot bridge, ElevenLabs agent, call logs, Gemini call extraction, phone audio) was removed from `main` and archived on branch `archive/voice-system` / tag `voice-system-v1` (commit `81f053e`). The V-* (voice) findings and the Twilio-related items below describe that archived system; they are not active on `main`. The website HIRE (`/api/calls/assign-job`) still books the worker but no longer places a call. Verified after the change: test-audit 71/71, test-security 113/113, test-google 12/12; live API (health, CORS, registration, worker list, hire, go-live) and live website (desktop + 375 px mobile) pass.
+
 ## Summary
 
 | Area | State found | State now |
