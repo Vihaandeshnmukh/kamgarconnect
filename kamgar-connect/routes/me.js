@@ -188,6 +188,7 @@ router.get('/history', async (req, res) => {
         instructions: h.assignmentData && h.assignmentData.instructions,
         status: bookingState(h).status,
         canDecline: bookingState(h).upcoming,
+        canConfirm: bookingState(h).upcoming ? bookingState(h).status === 'pending' : false,
         employer: e ? { name: (h.assignmentData && h.assignmentData.employerName) || e.name, phone: e.phone, city: e.city, companyName: e.companyName || '' } : null
       };
     }));
@@ -285,12 +286,13 @@ async function endBooking(req, res, newStatus) {
     const hire = await Call.findOne({ _id: hireId, [mineField]: req.user.id, callType: 'assign' });
     if (!hire) return res.status(404).json({ msg: 'Booking not found' });
     if (!bookingState(hire).upcoming) return res.status(409).json({ msg: 'This booking is over or already cancelled' });
+    if (newStatus === 'confirmed') { if (hire.assignmentData.workerResponse !== 'pending') return res.status(409).json({ msg: 'This booking is already confirmed' }); }
     hire.assignmentData.workerResponse = newStatus;
     await hire.save();
-    // Booked for today by this employer: free the worker now
-    if (hire.assignmentData.date === istDate(0)) {
+    // Booked for today by this employer and it ended: free the worker now
+    if (newStatus !== 'confirmed') { if (hire.assignmentData.date === istDate(0)) {
       await Worker.updateOne({ _id: hire.receiverId, hiredBy: hire.callerId }, { $set: { hiredUntil: null, hiredBy: null } });
-    }
+    } }
     res.json({ ok: true, status: newStatus });
   } catch (err) {
     console.error('Booking update error:', err.message);
@@ -298,6 +300,7 @@ async function endBooking(req, res, newStatus) {
   }
 }
 router.post('/bookings/:hireId/decline', (req, res) => req.user.role === 'worker' ? endBooking(req, res, 'declined') : res.status(403).json({ msg: 'Not authorized' }));
+router.post('/bookings/:hireId/confirm', (req, res) => req.user.role === 'worker' ? endBooking(req, res, 'confirmed') : res.status(403).json({ msg: 'Not authorized' }));
 router.post('/bookings/:hireId/cancel', (req, res) => req.user.role === 'employer' ? endBooking(req, res, 'cancelled') : res.status(403).json({ msg: 'Not authorized' }));
 
 module.exports = router;

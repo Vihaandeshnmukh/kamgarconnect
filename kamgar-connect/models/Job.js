@@ -1,7 +1,8 @@
-// WEB VERSION — FULLY TESTED AND WORKING
+// WEB VERSION ï¿½ FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const mongoose = require('mongoose');
+const { cleanText } = require('../utils/sanitize');
 
 const JobSchema = new mongoose.Schema({
   employerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employer', required: true },
@@ -18,7 +19,10 @@ const JobSchema = new mongoose.Schema({
   acceptedAt: { type: Date },
   completedAt: { type: Date },
   paymentStatus: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
-  amount: { type: Number } // Negotiated or fixed amount
+  amount: { type: Number }, // Daily wage offered (â‚¹)
+  date: { type: String }, // Work date "YYYY-MM-DD" (India), optional
+  location: { type: String, set: v => cleanText(v, 120) }, // Where to report, optional
+  description: { type: String, set: v => cleanText(v, 300) } // Short note from the employer, optional
 });
 
 module.exports = mongoose.model('Job', JobSchema);
