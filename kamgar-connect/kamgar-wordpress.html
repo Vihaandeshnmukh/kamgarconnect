@@ -1950,7 +1950,14 @@
     // Escape closes any open pop-up
     document.addEventListener('keydown', (e) => {
        if (e.key !== 'Escape') return;
-       closeModal(); closeRoots(); closeSecretPage();
+       closeModal(); closeRoots(); closeSecretPage(); closeDropdown();
+    });
+    // A tap anywhere outside the profile pop-up (and its button) closes it
+    function closeDropdown() { document.getElementById('profile-dropdown').style.display = 'none'; }
+    document.addEventListener('click', (e) => {
+       if (document.getElementById('profile-dropdown').style.display !== 'block') return;
+       if (e.target.closest('.profile-wrap')) return;
+       closeDropdown();
     });
 
     function unlockSecret() {
