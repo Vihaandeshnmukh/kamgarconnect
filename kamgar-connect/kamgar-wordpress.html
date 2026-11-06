@@ -424,6 +424,11 @@
     html[data-theme="dark"] .profile-dropdown { background: var(--bg-surface); }
     html[data-theme="dark"] .secret-input { color: var(--text-primary); }
     .theme-btn i { pointer-events: none; }
+    @media (max-width: 480px) {
+      .navbar div:has(> .lang-switcher) { gap: 8px !important; }
+      .lang-switcher { gap: 3px !important; }
+      .lang-switcher .btn { padding: 4px 6px !important; min-width: 36px; }
+    }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
