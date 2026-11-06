@@ -18,11 +18,7 @@ The following variables must be set in your `.env` file or hosting environment:
 | `PORT` | The port the server listens on (default 3000) |
 | `MONGODB_URI` | Connection string for MongoDB |
 | `JWT_SECRET` | Secret key for JWT authentication |
-| `TWILIO_ACCOUNT_SID` | Twilio Account SID for voice/SMS |
-| `TWILIO_AUTH_TOKEN` | Twilio Auth Token |
-| `TWILIO_PHONE_NUMBER` | Your Twilio virtual phone number |
 | `GEMINI_API_KEY` | Google Generative AI API key (Mitra AI) |
-| `ELEVENLABS_API_KEY` | ElevenLabs API key for TTS |
 | `ADMIN_PASSWORD` | Password for admin dashboard access |
 
 ## Local Development

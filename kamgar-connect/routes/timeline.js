@@ -47,8 +47,8 @@ router.get('/mindmap', async (req, res) => {
                     nodes: ['Node.js Express', 'MongoDB Atlas', 'Render Hosting', 'JWT Auth', 'Socket.IO']
                 },
                 {
-                    id: 'calling', name: 'Calling System', color: '#a855f7',
-                    nodes: ['Worker Registration Call', 'Job Assignment Call', 'Hindi Marathi English Voice', 'Twilio Integration']
+                    id: 'calling', name: 'Calling System (paused)', color: '#a855f7',
+                    nodes: ['Paused for the MVP', 'Archived: archive/voice-system', 'Returns after company KYC']
                 },
                 {
                     id: 'mobile', name: 'Mobile App', color: '#14b8a6',

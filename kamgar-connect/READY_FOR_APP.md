@@ -6,7 +6,7 @@ All features working:
 - Find Work button working (smooth scroll to registration)
 - Hire a Worker button working (triggers registration or dashboard)
 - Profile icon showing in corner (with data from localStorage and Logout)
-- Twilio calls triggering on hire (advanced Interactive IVR with instructions)
+- Phone calls on hire: paused for the MVP (archived on branch archive/voice-system)
 - GPS finding nearest workers
 - All 3 languages working (EN, HI, MR)
 - Mission section added with multi-language support

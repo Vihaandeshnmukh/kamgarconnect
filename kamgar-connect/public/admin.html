@@ -21,8 +21,6 @@
     tr:hover { background: rgba(255,255,255,0.02); }
     
     .btn-action { padding: 6px 12px; border-radius: 6px; border: none; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-right: 5px; }
-    .btn-call { background: var(--green); color: white; }
-    .btn-assign { background: var(--accent); color: white; }
     .btn-download { background: var(--bg-surface); color: white; border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; }
     
     .login-overlay { position: fixed; inset: 0; background: var(--bg-base); z-index: 1000; display: flex; align-items: center; justify-content: center; }
@@ -99,22 +97,6 @@
     </table>
   </div>
 
-  <!-- ASSIGN JOB MODAL -->
-  <div id="assignModal" class="login-overlay" style="display:none; z-index:2000;">
-    <div class="login-box" style="text-align:left;">
-      <h2 style="margin-bottom: 20px;">Assign Job</h2>
-      <input type="hidden" id="assignWorkerId">
-      <div style="margin-bottom:10px;"><label>Location</label><input type="text" id="assignLocation" placeholder="MGM Hospital Road"></div>
-      <div style="margin-bottom:10px;"><label>Date</label><input type="date" id="assignDate"></div>
-      <div style="margin-bottom:10px;"><label>Time</label><input type="time" id="assignTime" value="09:00"></div>
-      <div style="margin-bottom:20px;"><label>Employer Name</label><input type="text" id="assignEmployer" placeholder="Ramesh Patel"></div>
-      <div style="display:flex; gap:10px;">
-        <button onclick="submitAssignJob()" class="btn btn-primary" style="flex:1;">Confirm & Call</button>
-        <button onclick="document.getElementById('assignModal').style.display='none'" class="btn btn-outline" style="flex:1;">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <!-- VIEW REVIEWS MODAL -->
   <div id="reviewsModal" class="login-overlay" style="display:none; z-index:2000;">
     <div class="login-box" style="text-align:left; max-width: 600px; max-height: 80vh; overflow-y: auto;">
@@ -183,8 +165,6 @@
           <td>${w.rating > 0 ? w.rating.toFixed(1) + ' ★ (' + w.totalRatings + ')' : 'No reviews'}</td>
           <td>${new Date(w.createdAt).toLocaleDateString()}</td>
           <td>
-            <button class="btn-action btn-call" onclick="initiateCall('${w._id}')">CALL</button>
-            <button class="btn-action btn-assign" onclick="openAssignModal('${w._id}')">ASSIGN</button>
             <button class="btn-action" style="background:var(--bg-base); color:white; border:1px solid var(--border);" onclick="viewReviews('${w._id}')">REVIEWS</button>
           </td>
         </tr>
@@ -202,82 +182,6 @@
           <td>${new Date(e.createdAt).toLocaleDateString()}</td>
         </tr>
       `).join('');
-    }
-
-    async function initiateCall(workerId) {
-      // Find the CALL button for this worker and show spinner
-      const btn = document.querySelector(`button[onclick="initiateCall('${workerId}')"]`);
-      const origText = btn ? btn.innerText : 'CALL';
-      if (btn) { btn.innerText = '⏳'; btn.disabled = true; }
-
-      try {
-        const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/notify/${workerId}`, { method: 'POST', headers: { 'Authorization': adminToken } });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          if (btn) { btn.innerText = '✅'; btn.style.background = '#22C55E'; }
-        } else {
-          if (btn) { btn.innerText = '❌'; btn.style.background = '#EF4444'; }
-        }
-      } catch(e) {
-        if (btn) { btn.innerText = '❌'; btn.style.background = '#EF4444'; }
-      }
-
-      // Reset button after 4 seconds
-      setTimeout(() => {
-        if (btn) { btn.innerText = origText; btn.disabled = false; btn.style.background = ''; }
-      }, 4000);
-    }
-
-    function openAssignModal(workerId) {
-      document.getElementById('assignWorkerId').value = workerId;
-      document.getElementById('assignModal').style.display = 'flex';
-    }
-
-    async function submitAssignJob() {
-       const wId = document.getElementById('assignWorkerId').value;
-       const loc = document.getElementById('assignLocation').value;
-       const date = document.getElementById('assignDate').value;
-       const time = document.getElementById('assignTime').value;
-       const emp = document.getElementById('assignEmployer').value;
-       
-       if(!loc || !emp) {
-         alert('Location and Employer Name are required.');
-         return;
-       }
-
-       // Find the ASSIGN button and show progress
-       const btn = document.querySelector(`button[onclick="openAssignModal('${wId}')"]`);
-       document.getElementById('assignModal').style.display='none';
-       if (btn) { btn.innerText = '⏳'; btn.disabled = true; }
-
-       try {
-         const res = await fetch(`${CONFIG.BACKEND_URL}/api/calls/assign-job`, {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({
-             workerId: wId,
-             location: loc,
-             date: date,
-             time: time,
-             employerName: emp
-           })
-         });
-         const data = await res.json();
-         if (res.ok && data.success) {
-           if (btn) { btn.innerText = '✅'; btn.style.background = '#22C55E'; }
-         } else {
-           if (btn) { btn.innerText = '❌'; btn.style.background = '#EF4444'; }
-           alert('Assign failed: ' + (data.msg || 'Unknown error'));
-         }
-       } catch(e) {
-         if (btn) { btn.innerText = '❌'; btn.style.background = '#EF4444'; }
-         alert('Network error assigning job.');
-       }
-
-       // Reset after 4 seconds
-       setTimeout(() => {
-         if (btn) { btn.innerText = 'ASSIGN'; btn.disabled = false; btn.style.background = ''; }
-       }, 4000);
     }
 
     function downloadWorkersCSV() {
