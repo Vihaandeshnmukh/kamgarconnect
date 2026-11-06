@@ -13,6 +13,18 @@ const Call = require('../models/Call');
 const Job = require('../models/Job');
 const Review = require('../models/Review');
 const { cleanName, isValidName, cleanText, CITIES, SKILLS, parseLocation, nearestCity, toPoint } = require('../utils/sanitize');
+const mongoose = require('mongoose');
+const { ACTIVE, istDate } = require('../utils/bookings');
+
+// What a booking looks like to both sides: its state and what can still be done with it
+const bookingState = (h) => {
+  const a = h.assignmentData || {};
+  const status = a.workerResponse || 'pending';
+  const active = status !== 'declined' ? status !== 'cancelled' : false;
+  const today = istDate(0);
+  const upcoming = active ? (a.date ? a.date >= today : false) : false;
+  return { status, active, upcoming, workDayCome: active ? (a.date ? a.date <= today : true) : false };
+};
 
 router.use(auth);
 
@@ -69,18 +81,22 @@ router.get('/', async (req, res) => {
 });
 
 // Returns an error message for a bad field, or null. Only the fields sent are checked.
+// A whole number from a number or a digits-only string ("7" ok; "", null, true, [7] not)
+const wholeNumber = (v) => (typeof v === 'number' ? Number.isInteger(v) : (typeof v === 'string' ? /^\d+$/.test(v.trim()) : false)) ? Number(v) : NaN;
+const inRange = (v, lo, hi) => { const n = wholeNumber(v); return n >= lo ? n <= hi : false; };
+
 function profileError(b, role) {
-  if (b.name !== undefined && !isValidName(cleanName(b.name))) return 'Please enter your name (letters only)';
+  if (b.name !== undefined && !(typeof b.name === 'string' && isValidName(cleanName(b.name)))) return 'Please enter your name (letters only)';
   if (b.city !== undefined && !CITIES.includes(b.city)) return 'Please select your city';
   if (b.location !== undefined && b.location !== null && !parseLocation(b.location)) return 'Invalid location';
   if (role === 'worker') {
     if (b.skill !== undefined && !SKILLS.includes(b.skill)) return 'Please select your work type';
-    if (b.experience !== undefined && !(Number.isInteger(Number(b.experience)) && Number(b.experience) >= 0 && Number(b.experience) <= 60)) return 'Experience must be 0-60 years';
-    if (b.expectedSalary !== undefined && !(Number.isInteger(Number(b.expectedSalary)) && Number(b.expectedSalary) >= 100 && Number(b.expectedSalary) <= 5000)) return 'Daily wage must be between 100 and 5000';
+    if (b.experience !== undefined && !inRange(b.experience, 0, 60)) return 'Experience must be 0-60 years';
+    if (b.expectedSalary !== undefined && !inRange(b.expectedSalary, 100, 5000)) return 'Daily wage must be between 100 and 5000';
     if (b.availability !== undefined && !(Array.isArray(b.availability) && b.availability.length >= 1 && b.availability.length <= 8 && b.availability.every(d => DAYS.includes(d)))) return 'Please select at least one day';
   } else {
     if (b.workerType !== undefined && b.workerType !== '' && !SKILLS.includes(b.workerType)) return 'Please select a worker type';
-    if (b.workerCount !== undefined && b.workerCount !== null && b.workerCount !== '' && !(Number.isInteger(Number(b.workerCount)) && Number(b.workerCount) >= 1 && Number(b.workerCount) <= 500)) return 'Number of workers must be 1-500';
+    if (b.workerCount !== undefined && b.workerCount !== null && b.workerCount !== '' && !inRange(b.workerCount, 1, 500)) return 'Number of workers must be 1-500';
     if (b.companyName !== undefined && typeof b.companyName !== 'string') return 'Invalid company name';
   }
   return null;
@@ -106,13 +122,14 @@ router.put('/', async (req, res) => {
     }
     if (role === 'worker') {
       if (b.skill !== undefined) me.skill = b.skill;
-      if (b.experience !== undefined) me.experience = Number(b.experience);
-      if (b.expectedSalary !== undefined) me.expectedSalary = Number(b.expectedSalary);
-      if (b.availability !== undefined) me.availability = b.availability.includes('24/7') ? ['24/7'] : b.availability;
+      if (b.experience !== undefined) me.experience = wholeNumber(b.experience);
+      if (b.expectedSalary !== undefined) me.expectedSalary = wholeNumber(b.expectedSalary);
+      // 24/7 alone, or the chosen days once each in week order
+      if (b.availability !== undefined) me.availability = b.availability.includes('24/7') ? ['24/7'] : DAYS.filter(d => b.availability.includes(d));
     } else {
       if (b.companyName !== undefined) me.companyName = cleanText(b.companyName, 80);
       if (b.workerType !== undefined) me.workerType = b.workerType || undefined;
-      if (b.workerCount !== undefined) me.workerCount = Number(b.workerCount) || undefined;
+      if (b.workerCount !== undefined) me.workerCount = wholeNumber(b.workerCount) || undefined;
     }
     await me.save();
     res.json(ownProfile(me, role));
@@ -145,6 +162,9 @@ router.get('/history', async (req, res) => {
           time: h.assignmentData && h.assignmentData.time,
           location: h.assignmentData && h.assignmentData.location,
           rated: rated.has(String(h._id)),
+          status: bookingState(h).status,
+          canCancel: bookingState(h).upcoming,
+          canRate: bookingState(h).workDayCome ? !rated.has(String(h._id)) : false,
           worker: w ? {
             _id: w._id, name: w.name, skill: w.skill, phone: w.phone, city: w.city,
             rating: w.rating, totalRatings: w.totalRatings, expectedSalary: w.expectedSalary,
@@ -166,6 +186,8 @@ router.get('/history', async (req, res) => {
         time: h.assignmentData && h.assignmentData.time,
         location: h.assignmentData && h.assignmentData.location,
         instructions: h.assignmentData && h.assignmentData.instructions,
+        status: bookingState(h).status,
+        canDecline: bookingState(h).upcoming,
         employer: e ? { name: (h.assignmentData && h.assignmentData.employerName) || e.name, phone: e.phone, city: e.city, companyName: e.companyName || '' } : null
       };
     }));
@@ -191,7 +213,7 @@ router.get('/stats', async (req, res) => {
   try {
     const me = await Model(req).findById(req.user.id);
     if (!me) return res.status(404).json({ msg: 'Account not found' });
-    const hires = await hiresFor(req);
+    const hires = (await hiresFor(req)).filter(h => bookingState(h).active);
     const months = lastMonths(6);
     const perMonth = Object.fromEntries(months.map(m => [m, 0]));
     hires.forEach(h => { const k = monthKey(h.timestamp); if (k in perMonth) perMonth[k]++; });
@@ -252,5 +274,30 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({ msg: 'Server error' });
   }
 });
+
+// POST /api/me/bookings/:hireId/decline (worker) or /cancel (employer):
+// turn down / cancel a booking for today or a later day. The worker shows up in search again.
+async function endBooking(req, res, newStatus) {
+  try {
+    const { hireId } = req.params;
+    if (!mongoose.isValidObjectId(hireId)) return res.status(400).json({ msg: 'Invalid booking id' });
+    const mineField = req.user.role === 'worker' ? 'receiverId' : 'callerId';
+    const hire = await Call.findOne({ _id: hireId, [mineField]: req.user.id, callType: 'assign' });
+    if (!hire) return res.status(404).json({ msg: 'Booking not found' });
+    if (!bookingState(hire).upcoming) return res.status(409).json({ msg: 'This booking is over or already cancelled' });
+    hire.assignmentData.workerResponse = newStatus;
+    await hire.save();
+    // Booked for today by this employer: free the worker now
+    if (hire.assignmentData.date === istDate(0)) {
+      await Worker.updateOne({ _id: hire.receiverId, hiredBy: hire.callerId }, { $set: { hiredUntil: null, hiredBy: null } });
+    }
+    res.json({ ok: true, status: newStatus });
+  } catch (err) {
+    console.error('Booking update error:', err.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+router.post('/bookings/:hireId/decline', (req, res) => req.user.role === 'worker' ? endBooking(req, res, 'declined') : res.status(403).json({ msg: 'Not authorized' }));
+router.post('/bookings/:hireId/cancel', (req, res) => req.user.role === 'employer' ? endBooking(req, res, 'cancelled') : res.status(403).json({ msg: 'Not authorized' }));
 
 module.exports = router;

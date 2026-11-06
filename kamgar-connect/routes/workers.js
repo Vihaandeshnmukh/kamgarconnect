@@ -10,6 +10,8 @@ const { requireRole, requireSelf } = require('../middleware/roles');
 const { normalizePhone, isPhone, parseLocation, toPoint } = require('../utils/sanitize');
 const Worker = require('../models/Worker');
 const Job = require('../models/Job');
+const Call = require('../models/Call');
+const { ACTIVE, istDate, activateTodaysBookings } = require('../utils/bookings');
 
 // TODO BEFORE PRODUCTION:
 // 1. Workers only see worker dashboard
@@ -24,11 +26,15 @@ router.param('id', (req, res, next, id) => {
     next();
 });
 
-// Reads the login token if there is one; public routes still work without it
+// Reads the login token if there is one; public routes still work without it.
+// A token that is sent but expired/invalid gets 401, so the website can say "Session expired".
 const optionalAuth = (req, res, next) => {
     const token = req.header('x-auth-token') || req.header('Authorization')?.replace('Bearer ', '');
     if (token) {
-        try { req.user = jwt.verify(token, process.env.JWT_SECRET).user; } catch (err) { /* treat as logged out */ }
+        if (token !== 'null') { if (token !== 'undefined') {
+            try { req.user = jwt.verify(token, process.env.JWT_SECRET).user; }
+            catch (err) { return res.status(401).json({ msg: 'Token is not valid' }); }
+        } }
     }
     next();
 };
@@ -76,6 +82,8 @@ const autoExpireAvailability = async () => {
             { hiredUntil: { $lt: now, $ne: null } },
             { $set: { hiredUntil: null, hiredBy: null } }
         );
+        // Bookings made earlier for today start now
+        await activateTodaysBookings();
     } catch (err) {
         console.error('Auto-expire failed:', err.message);
     }
@@ -102,7 +110,9 @@ router.get('/nearby', optionalAuth, async (req, res) => {
     if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
       return res.status(400).json({ msg: 'Coordinates required' });
     }
-    const maxDistance = Math.min(parseInt(req.query.maxDistance, 10) || 10000, 50000);
+    // 100 m to 50 km (default 10 km)
+    const asked = parseInt(req.query.maxDistance, 10);
+    const maxDistance = asked > 0 ? Math.min(Math.max(asked, 100), 50000) : 10000;
     const query = {
       ...visibleNow(),
       location: {
@@ -149,6 +159,11 @@ router.put('/:id/go-live', auth, requireRole('worker'), requireSelf(), async (re
     try {
         const availableUntil = parseDate(req.body.availableUntil);
         if (!availableUntil) return res.status(400).json({ msg: 'Valid availableUntil date is required' });
+        // Live for a few hours at a time (the website uses 4 h; at most 24 h)
+        const ms = availableUntil - Date.now();
+        if (!(ms > 0 && ms <= 24 * 3600 * 1000 + 60000)) return res.status(400).json({ msg: 'You can go live for up to 24 hours' });
+        const me = await Worker.findById(req.params.id).select('hiredUntil');
+        if (me) { if (me.hiredUntil > new Date()) return res.status(409).json({ msg: 'You are booked today. You can go live again after this booking.' }); }
         // Going live means the worker wants work again, so show them in search.
         // With a location, "Find nearest worker" can find them too.
         const update = { isLooking: true, availableUntil, isWithdrawn: false };
@@ -210,34 +225,22 @@ router.put('/:id/rejoin', auth, requireRole('worker'), requireSelf(), async (req
     }
 });
 
-router.put('/:id/hire', auth, requireRole('employer'), async (req, res) => {
-    try {
-        const hiredUntil = parseDate(req.body.hiredUntil);
-        if (!hiredUntil) return res.status(400).json({ msg: 'Valid hiredUntil date is required' });
-        const target = await Worker.findById(req.params.id).select('isWithdrawn hiredUntil hiredBy');
-        if (!target) return res.status(404).json({ msg: 'Worker not found' });
-        if (target.isWithdrawn) return res.status(409).json({ msg: 'This worker is not available' });
-        // Already booked by someone else: no double-hire
-        if (target.hiredUntil > new Date() && String(target.hiredBy) !== req.user.id) {
-            return res.status(409).json({ msg: 'This worker is already hired' });
-        }
-        const worker = await Worker.findByIdAndUpdate(
-            req.params.id,
-            { hiredUntil, hiredBy: req.user.id, isLooking: false, availableUntil: null },
-            { new: true }
-        );
-        res.json(publicWorker(worker, req.user));
-    } catch (err) {
-        res.status(500).json({ error: 'Server Error' });
-    }
+// PUT /:id/hire (book until any date) was removed: it let an employer hide a worker
+// for years. Bookings go through POST /api/calls/assign-job (one day, max 14 days ahead).
+router.put('/:id/hire', auth, (req, res) => {
+    res.status(410).json({ msg: 'Use the HIRE NOW button (POST /api/calls/assign-job)' });
 });
 
-// Only the employer who hired the worker can release them
+// Only the employer who hired the worker can release them (cancels today's booking)
 router.put('/:id/release', auth, requireRole('employer'), async (req, res) => {
     try {
         const target = await Worker.findById(req.params.id).select('hiredBy');
         if (!target) return res.status(404).json({ msg: 'Worker not found' });
         if (String(target.hiredBy) !== req.user.id) return res.status(403).json({ msg: 'Only the employer who hired this worker can release them' });
+        await Call.updateMany(
+            { receiverId: req.params.id, callerId: req.user.id, callType: 'assign', 'assignmentData.date': istDate(0), 'assignmentData.workerResponse': ACTIVE },
+            { $set: { 'assignmentData.workerResponse': 'cancelled' } }
+        );
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
             { hiredUntil: null, hiredBy: null },

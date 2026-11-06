@@ -1,4 +1,10 @@
-// In-memory rate limiter: at most maxRequests per IP within windowMs
+// In-memory rate limiter: at most maxRequests per visitor IP within windowMs
+
+// The visitor's real IP. kamgar-api runs behind Cloudflare (Render's edge), which always
+// overwrites CF-Connecting-IP with the real address; X-Forwarded-For can be faked by the
+// visitor, so it is only the fallback (local runs and tests have no Cloudflare).
+const visitorIp = (req) => req.header('cf-connecting-ip') || req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
+
 module.exports = function rateLimit({ windowMs = 60000, maxRequests = 60, message = 'Too many requests. Please wait a minute.' } = {}) {
   const hits = new Map();
 
@@ -13,7 +19,7 @@ module.exports = function rateLimit({ windowMs = 60000, maxRequests = 60, messag
   }, 300000).unref();
 
   return function (req, res, next) {
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    const ip = visitorIp(req);
     const now = Date.now();
     const timestamps = (hits.get(ip) || []).filter(t => now - t < windowMs);
     timestamps.push(now);
@@ -25,3 +31,5 @@ module.exports = function rateLimit({ windowMs = 60000, maxRequests = 60, messag
     next();
   };
 };
+
+module.exports.visitorIp = visitorIp;

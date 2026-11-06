@@ -15,18 +15,13 @@ const Call = require('../models/Call');
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
 const { cleanText, cleanName } = require('../utils/sanitize');
-
-// ── Helper: end of the work day (India time) for a "YYYY-MM-DD" hire date, or null ──
-function endOfHireDay(date) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return null;
-  const end = new Date(`${date}T23:59:59+05:30`);
-  return isNaN(end.getTime()) ? null : end;
-}
+const { ACTIVE, istDate, endOfDay, bookingDateError } = require('../utils/bookings');
 
 /* ═══════════════════════════════════════════
    POST /api/calls/assign-job
-   Employer hires a worker for a day: the booking is recorded and the worker
-   is taken off the search list until the end of that day.
+   Employer books a worker for one day (today or up to 14 days ahead).
+   One booking per worker per day. On the work day the worker is taken off the
+   search list; a booking for a later day does not hide them before that.
    ═══════════════════════════════════════════ */
 router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
   try {
@@ -37,25 +32,30 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     if (!mongoose.isValidObjectId(workerId)) {
       return res.status(400).json({ success: false, msg: 'Invalid worker id' });
     }
-    const hiredUntil = endOfHireDay(date);
-    if (!hiredUntil || hiredUntil < new Date()) {
-      return res.status(400).json({ success: false, msg: 'Please choose today or a future date' });
-    }
-    if (!/^\d{1,2}:\d{2}/.test(String(time))) {
-      return res.status(400).json({ success: false, msg: 'Please choose a reporting time' });
-    }
+    const dateError = bookingDateError(date, time);
+    if (dateError) return res.status(400).json({ success: false, msg: dateError });
 
     const worker = await Worker.findById(workerId);
     if (!worker) return res.status(404).json({ success: false, msg: 'Worker not found' });
     if (worker.isWithdrawn) return res.status(409).json({ success: false, msg: 'This worker is not available' });
-    // Booked by another employer: no double-hire
-    if (worker.hiredUntil > new Date() && String(worker.hiredBy) !== req.user.id) {
-      return res.status(409).json({ success: false, msg: 'This worker is already hired' });
-    }
 
     const employer = await Employer.findById(req.user.id);
     // Same phone has both accounts: you can't hire yourself
     if (employer) { if (employer.phone === worker.phone) return res.status(400).json({ success: false, msg: "You can't hire yourself" }); }
+
+    // One booking per worker per day (also stops double clicks making two bookings)
+    const sameDay = await Call.findOne({ receiverId: worker._id, callType: 'assign', 'assignmentData.date': date, 'assignmentData.workerResponse': ACTIVE });
+    if (sameDay) {
+      const mine = String(sameDay.callerId) === req.user.id;
+      return res.status(409).json({ success: false, msg: mine ? 'You have already booked this worker for that day' : 'This worker is already booked for that day' });
+    }
+    const isToday = date === istDate(0);
+    // Booked today by someone else (older records without a matching booking)
+    if (isToday) {
+      if (worker.hiredUntil > new Date() && String(worker.hiredBy) !== req.user.id) {
+        return res.status(409).json({ success: false, msg: 'This worker is already booked for that day' });
+      }
+    }
     const employerName = cleanName(req.body.employerName) || (employer ? employer.name : 'Employer');
 
     // The hire record (reviews for website hires refer to it)
@@ -67,7 +67,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
       status: 'completed',
       assignmentData: {
         location: cleanText(location, 120),
-        date: cleanText(date, 20),
+        date,
         time: cleanText(time, 20),
         employerName,
         instructions: cleanText(req.body.instructions || '', 300),
@@ -75,13 +75,15 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
       }
     }).save();
 
-    // Book the worker for that day (off the search list; nobody else can hire them)
-    await Worker.findByIdAndUpdate(worker._id, {
-      hiredUntil,
-      hiredBy: req.user.id,
-      isLooking: false,
-      availableUntil: null
-    });
+    // Work is today: off the search list until the end of the day (nobody else can book them)
+    if (isToday) {
+      await Worker.findByIdAndUpdate(worker._id, {
+        hiredUntil: endOfDay(date),
+        hiredBy: req.user.id,
+        isLooking: false,
+        availableUntil: null
+      });
+    }
 
     // The employer gets the worker's number to contact them directly
     res.json({ success: true, msg: 'Worker booked', callRecordId: hire._id, phone: worker.phone });

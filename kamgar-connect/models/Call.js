@@ -17,7 +17,7 @@ const CallSchema = new mongoose.Schema({
     time: String,
     employerName: String,
     instructions: String,
-    workerResponse: { type: String, enum: ['pending', 'confirmed', 'declined'], default: 'pending' }
+    workerResponse: { type: String, enum: ['pending', 'confirmed', 'declined', 'cancelled'], default: 'pending' }
   },
   status: { 
     type: String, 

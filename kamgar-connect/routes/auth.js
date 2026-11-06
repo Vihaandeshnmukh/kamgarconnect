@@ -178,12 +178,9 @@ router.post('/login', [
     const isMatch = await bcrypt.compare(phone, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
 
-    // Came from "Continue with Google" with a phone that already has an account:
-    // link that Google account (if none is linked yet) so next time one tap is enough
-    if (req.body.googleCredential && !user.googleId) {
-      const google = await verifyGoogleCredential(req.body.googleCredential);
-      if (google) { user.googleId = google.googleId; user.email = google.email; await user.save(); }
-    }
+    // A Google account is NOT linked here: typing a phone number doesn't prove the phone is
+    // yours, so anyone could attach their Google account to someone else's number and keep
+    // one-tap access even after OTP exists. Re-add linking once OTP verification is in place.
 
     const token = await issueToken(user, role);
     res.json({ token, user: publicUser(user, role) });

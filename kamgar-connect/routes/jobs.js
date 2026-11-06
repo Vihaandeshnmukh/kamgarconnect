@@ -165,7 +165,10 @@ router.put('/:id/complete', auth, async (req, res) => {
 // GET /api/jobs/available/:city
 router.get('/available/:city', async (req, res) => {
   try {
-    const jobs = await Job.find({ city: String(req.params.city), status: 'pending' }).select(OPEN_JOB_FIELDS).sort({ postedAt: -1 }).limit(50);
+    // ?skill=Mason shows only that work type
+    const filter = { city: String(req.params.city), status: 'pending' };
+    if (typeof req.query.skill === 'string' ? SKILLS.includes(req.query.skill) : false) filter.jobType = req.query.skill;
+    const jobs = await Job.find(filter).select(OPEN_JOB_FIELDS).sort({ postedAt: -1 }).limit(50);
     res.json(jobs);
   } catch (err) {
     console.error(err.message);

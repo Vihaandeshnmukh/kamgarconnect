@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 const { cleanText } = require('../utils/sanitize');
 const auth = require('../middleware/auth');
 const { requireRole } = require('../middleware/roles');
+const { ACTIVE, istDate } = require('../utils/bookings');
 
 // POST /api/reviews - only an employer who really worked with this worker:
 // either a completed job (jobId) or a website hire the worker did not turn down (hireId).
@@ -25,26 +26,31 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
     if (!Number.isInteger(Number(rating)) || Number(rating) < 1 || Number(rating) > 5) {
       return res.status(400).json({ success: false, msg: 'Rating must be between 1 and 5' });
     }
-    if (!mongoose.isValidObjectId(jobId) && !mongoose.isValidObjectId(hireId)) {
+    // Exactly one of jobId / hireId, and it must be a real id
+    const given = (v) => v !== undefined && v !== null && v !== '';
+    const byJob = given(jobId);
+    if (byJob ? !mongoose.isValidObjectId(jobId) : !(given(hireId) && mongoose.isValidObjectId(hireId))) {
       return res.status(400).json({ success: false, msg: 'Which job is this review for?' });
     }
 
     let worked = null;
-    if (mongoose.isValidObjectId(jobId)) {
+    if (byJob) {
       worked = await Job.findOne({ _id: jobId, employerId: req.user.id, workerId, status: 'completed' });
     } else {
-      worked = await Call.findOne({ _id: hireId, callerId: req.user.id, receiverId: workerId, callType: 'assign', 'assignmentData.workerResponse': { $ne: 'declined' } });
+      // A website booking counts once its work day has come (not before), unless it was turned down or cancelled
+      worked = await Call.findOne({ _id: hireId, callerId: req.user.id, receiverId: workerId, callType: 'assign',
+        'assignmentData.workerResponse': ACTIVE, 'assignmentData.date': { $lte: istDate(0) } });
     }
     if (!worked) {
-      return res.status(403).json({ success: false, msg: 'You can only rate a worker after a finished job with them' });
+      return res.status(403).json({ success: false, msg: 'You can rate a worker on or after the day they worked for you' });
     }
-    const already = await Review.exists(jobId ? { jobId } : { hireId });
+    const already = await Review.exists(byJob ? { jobId } : { hireId });
     if (already) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
 
     const review = new Review({
       workerId,
-      jobId: jobId || undefined,
-      hireId: jobId ? undefined : hireId,
+      jobId: byJob ? jobId : undefined,
+      hireId: byJob ? undefined : hireId,
       employerId: req.user.id,
       rating: Number(rating),
       tags: Array.isArray(tags) ? tags.slice(0, 6).map(t => cleanText(t, 30)) : [],
@@ -53,19 +59,16 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
     
     await review.save();
 
-    // Update worker rating
-    const worker = await Worker.findById(workerId);
-    if (worker) {
-      const currentTotal = worker.totalRatings || 0;
-      const currentAvg = worker.rating || 0;
-      
-      const newTotal = currentTotal + 1;
-      const newRating = ((currentAvg * currentTotal) + Number(rating)) / newTotal;
-      
-      worker.rating = newRating;
-      worker.totalRatings = newTotal;
-      await worker.save();
-    }
+    // Worker rating = average of each employer's LATEST rating, so one employer who books
+    // the same worker many times can't push the rating up or down on their own
+    const perEmployer = await Review.aggregate([
+      { $match: { workerId: new mongoose.Types.ObjectId(String(workerId)) } },
+      { $sort: { createdAt: -1 } },
+      { $group: { _id: { $ifNull: ['$employerId', '$_id'] }, rating: { $first: '$rating' } } },
+      { $group: { _id: null, avg: { $avg: '$rating' }, n: { $sum: 1 } } }
+    ]);
+    const agg = perEmployer[0] || { avg: 0, n: 0 };
+    await Worker.updateOne({ _id: workerId }, { $set: { rating: agg.avg, totalRatings: agg.n } });
 
     res.status(201).json({ success: true, review });
   } catch (err) {
