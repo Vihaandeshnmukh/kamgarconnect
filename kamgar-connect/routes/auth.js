@@ -145,11 +145,11 @@ router.post('/login', [
   const { phone } = req.body;
 
   try {
-    let user = await Worker.findOne({ phone }).select('+password');
+    let user = await Worker.findOne({ phone }).select('+password +googleId');
     let role = 'worker';
 
     if (!user) {
-      user = await Employer.findOne({ phone }).select('+password');
+      user = await Employer.findOne({ phone }).select('+password +googleId');
       role = 'employer';
     }
 
@@ -163,6 +163,13 @@ router.post('/login', [
 
     const isMatch = await bcrypt.compare(phone, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
+
+    // Came from "Continue with Google" with a phone that already has an account:
+    // link that Google account (if none is linked yet) so next time one tap is enough
+    if (req.body.googleCredential && !user.googleId) {
+      const google = await verifyGoogleCredential(req.body.googleCredential);
+      if (google) { user.googleId = google.googleId; user.email = google.email; await user.save(); }
+    }
 
     const token = await issueToken(user, role);
     res.json({ token, user: publicUser(user, role) });
