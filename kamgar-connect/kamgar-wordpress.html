@@ -134,7 +134,7 @@
     .loader-s { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .gps-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    .gps-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px; }
 
     @media (max-width: 768px) { .gps-row, .selector-grid { grid-template-columns: 1fr; } }
 
@@ -341,6 +341,11 @@
     .hist-meta { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; line-height: 1.5; overflow-wrap: anywhere; }
     .hist-tag { display: inline-block; background: var(--bg-elevated); border-radius: 999px; padding: 2px 10px; font-size: 0.75rem; font-weight: 800; margin-left: 6px; }
     .hist-tag.ok { background: #DCFCE7; color: #166534; }
+    .hist-tag.bad { background: #FEE2E2; color: #991B1B; }
+    .wk-booking { text-align: left; background: #ECFDF5; border: 2px solid #16A34A; border-radius: 16px; padding: 16px 18px; margin: 0 0 10px; }
+    .wk-booking h4 { margin: 0 0 4px; color: #166534; }
+    .wk-booking .wk-item { margin-top: 10px; }
+    .wk-booking .hist-actions { margin-top: 10px; }
     .hist-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .hist-actions .btn, .hist-actions a { min-height: 42px; padding: 8px 14px; font-size: 0.85rem; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px; font-weight: 800; text-decoration: none; }
     .act-call { background: var(--accent); color: #FFFFFF; }
@@ -489,6 +494,7 @@
       </nav>
 
       <div id="pane-worker" style="display:none;">
+         <div id="wk-bookings"></div>
          <div style="text-align:center; padding:50px 0;">
             <button class="btn btn-primary" id="main-live-btn" onclick="handleTogglePress()" style="padding:25px 60px; font-size:1.5rem; border-radius:20px;">
                <i class="fas fa-search"></i> <span id="live-btn-text">START LOOKING</span>
@@ -524,6 +530,10 @@
                <option value="" data-i18n="all_types">ALL WORK TYPES</option>
                <option value="Mason" data-skill>Mason</option><option value="Electrician" data-skill>Electrician</option><option value="Plumber" data-skill>Plumber</option><option value="Domestic Help" data-skill>Domestic Help</option>
                <option value="Factory Worker" data-skill>Factory Worker</option><option value="Carpenter" data-skill>Carpenter</option><option value="Painter" data-skill>Painter</option><option value="Driver" data-skill>Driver</option>
+            </select>
+            <select id="city-filter" class="input-field" style="height:unset;" onchange="loadEmployerGrid()">
+               <option value="" data-i18n="all_cities">ALL CITIES</option>
+               <option value="Aurangabad">Aurangabad</option><option value="Nagpur">Nagpur</option><option value="Pune">Pune</option><option value="Nashik">Nashik</option><option value="Mumbai">Mumbai</option>
             </select>
          </div>
 
@@ -817,7 +827,15 @@
           loc_ok: c => `Location added (${c})`, loc_failed: "Couldn't get your location. Please choose your city.", loc_need: "Please share your location (or choose your city).",
           loc_hint_emp: "So we can show you workers nearby.", loc_hint_wk: "Optional: helps employers near you find you.",
           company: "Company name (optional)", usual_type: "Usual worker type (optional)", usual_count: "Usual number of workers",
-          google_linked: e => `Google account linked (${e})`, google_not: "Google not linked", save: "SAVE CHANGES", saved: "Profile saved.", save_failed: "Could not save. Please try again."
+          google_linked: e => `Google account linked (${e})`, google_not: "Google not linked", save: "SAVE CHANGES", saved: "Profile saved.", save_failed: "Could not save. Please try again.",
+          all_cities: "ALL CITIES", booked_title: "You are booked", decline: "Decline", decline_confirm: "Turn down this booking? The employer will see that you declined.",
+          declined_tag: "Declined", cancelled_tag: "Cancelled", cancel_booking: "Cancel booking", cancel_confirm: "Cancel this booking?",
+          booking_cancelled: "Booking cancelled.", booking_declined: "Booking declined.", booked_today: "You are booked today, so you can't go live until this booking is over.",
+          job_processing: "Accepting the job...", job_accepted: "Job accepted.", job_failed: "Could not accept the job. Someone may have taken it.",
+          loc_denied: "Could not get your location. Please allow location and try again.", session_expired: "Session expired. Please log in again.",
+          roots_loading: "Loading previous jobs...", roots_empty: "No previous jobs yet", server_problem: "The server had a problem. Please try again in a minute.",
+          waking: "Server is waking up, please wait up to a minute...",
+          google_note: n => `Signed in with Google as ${n}. Just add your phone number and work details below.`, google_other: "Use another account", welcome_back: "Welcome back!"
        },
        hi: {
           search_phone: "फ़ोन नंबर से खोजें", search: "खोजें", find_nearest: "सबसे पास का कामगार", all_types: "सभी काम",
@@ -855,7 +873,15 @@
           loc_ok: c => `लोकेशन मिल गई (${c})`, loc_failed: "लोकेशन नहीं मिली। कृपया अपना शहर चुनें।", loc_need: "कृपया अपनी लोकेशन दें (या शहर चुनें)।",
           loc_hint_emp: "ताकि हम आपको पास के कामगार दिखा सकें।", loc_hint_wk: "ज़रूरी नहीं: पास के काम देने वाले आपको ढूंढ सकेंगे।",
           company: "कंपनी का नाम (ज़रूरी नहीं)", usual_type: "आम तौर पर किस काम के कामगार (ज़रूरी नहीं)", usual_count: "आम तौर पर कितने कामगार",
-          google_linked: e => `Google खाता जुड़ा है (${e})`, google_not: "Google नहीं जुड़ा", save: "बदलाव सेव करें", saved: "प्रोफ़ाइल सेव हो गई।", save_failed: "सेव नहीं हुआ। फिर कोशिश करें।"
+          google_linked: e => `Google खाता जुड़ा है (${e})`, google_not: "Google नहीं जुड़ा", save: "बदलाव सेव करें", saved: "प्रोफ़ाइल सेव हो गई।", save_failed: "सेव नहीं हुआ। फिर कोशिश करें।",
+          all_cities: "सभी शहर", booked_title: "आपकी बुकिंग", decline: "मना करें", decline_confirm: "यह बुकिंग मना करें? काम देने वाले को दिखेगा कि आपने मना किया।",
+          declined_tag: "मना किया", cancelled_tag: "रद्द", cancel_booking: "बुकिंग रद्द करें", cancel_confirm: "यह बुकिंग रद्द करें?",
+          booking_cancelled: "बुकिंग रद्द हो गई।", booking_declined: "आपने बुकिंग मना कर दी।", booked_today: "आज आपकी बुकिंग है, इसलिए यह बुकिंग खत्म होने तक लाइव नहीं हो सकते।",
+          job_processing: "काम स्वीकार हो रहा है...", job_accepted: "काम स्वीकार हो गया।", job_failed: "काम स्वीकार नहीं हुआ। शायद किसी और ने ले लिया।",
+          loc_denied: "लोकेशन नहीं मिली। लोकेशन की अनुमति दें और फिर कोशिश करें।", session_expired: "लॉगिन का समय खत्म हो गया। कृपया फिर से लॉगिन करें।",
+          roots_loading: "पिछले काम लोड हो रहे हैं...", roots_empty: "अभी तक कोई पिछला काम नहीं", server_problem: "सर्वर में समस्या है। एक मिनट बाद फिर कोशिश करें।",
+          waking: "सर्वर चालू हो रहा है, कृपया एक मिनट रुकें...",
+          google_note: n => `Google से ${n} के रूप में साइन इन किया। नीचे बस अपना फ़ोन नंबर और काम की जानकारी भरें।`, google_other: "दूसरा खाता", welcome_back: "फिर से स्वागत है!"
        },
        mr: {
           search_phone: "फोन नंबरने शोधा", search: "शोधा", find_nearest: "जवळचा कामगार शोधा", all_types: "सर्व कामे",
@@ -893,7 +919,15 @@
           loc_ok: c => `लोकेशन मिळाले (${c})`, loc_failed: "लोकेशन मिळाले नाही. कृपया तुमचे शहर निवडा.", loc_need: "कृपया तुमचे लोकेशन द्या (किंवा शहर निवडा).",
           loc_hint_emp: "म्हणजे आम्ही तुम्हाला जवळचे कामगार दाखवू शकू.", loc_hint_wk: "आवश्यक नाही: जवळचे काम देणारे तुम्हाला शोधू शकतील.",
           company: "कंपनीचे नाव (आवश्यक नाही)", usual_type: "सहसा कोणत्या कामाचे कामगार (आवश्यक नाही)", usual_count: "सहसा किती कामगार",
-          google_linked: e => `Google खाते जोडले आहे (${e})`, google_not: "Google जोडलेले नाही", save: "बदल सेव्ह करा", saved: "प्रोफाइल सेव्ह झाली.", save_failed: "सेव्ह झाले नाही. पुन्हा प्रयत्न करा."
+          google_linked: e => `Google खाते जोडले आहे (${e})`, google_not: "Google जोडलेले नाही", save: "बदल सेव्ह करा", saved: "प्रोफाइल सेव्ह झाली.", save_failed: "सेव्ह झाले नाही. पुन्हा प्रयत्न करा.",
+          all_cities: "सर्व शहरे", booked_title: "तुमची बुकिंग", decline: "नकार द्या", decline_confirm: "ही बुकिंग नाकारायची? काम देणाऱ्याला दिसेल की तुम्ही नकार दिला.",
+          declined_tag: "नाकारले", cancelled_tag: "रद्द", cancel_booking: "बुकिंग रद्द करा", cancel_confirm: "ही बुकिंग रद्द करायची?",
+          booking_cancelled: "बुकिंग रद्द झाली.", booking_declined: "तुम्ही बुकिंग नाकारली.", booked_today: "आज तुमची बुकिंग आहे, म्हणून ही बुकिंग संपेपर्यंत लाइव्ह होता येणार नाही.",
+          job_processing: "काम स्वीकारत आहे...", job_accepted: "काम स्वीकारले.", job_failed: "काम स्वीकारता आले नाही. कदाचित दुसऱ्याने घेतले.",
+          loc_denied: "लोकेशन मिळाले नाही. लोकेशनची परवानगी द्या आणि पुन्हा प्रयत्न करा.", session_expired: "लॉगिनची वेळ संपली. कृपया पुन्हा लॉगिन करा.",
+          roots_loading: "मागील कामे लोड होत आहेत...", roots_empty: "अजून मागील काम नाही", server_problem: "सर्व्हरमध्ये अडचण आहे. एका मिनिटाने पुन्हा प्रयत्न करा.",
+          waking: "सर्व्हर सुरू होत आहे, कृपया एक मिनिट थांबा...",
+          google_note: n => `Google ने ${n} म्हणून साइन इन केले. खाली फक्त तुमचा फोन नंबर आणि कामाची माहिती भरा.`, google_other: "दुसरे खाते", welcome_back: "पुन्हा स्वागत आहे!"
        }
     };
     const SKILL_NAMES = {
@@ -905,6 +939,14 @@
        const table = UI_TEXT[currentLang] || UI_TEXT.en;
        const v = table[key] === undefined ? UI_TEXT.en[key] : table[key];
        return typeof v === 'function' ? v(arg) : v;
+    }
+    const DAY_NAMES = {
+       hi: { 'Mon': 'सोम', 'Tue': 'मंगल', 'Wed': 'बुध', 'Thu': 'गुरु', 'Fri': 'शुक्र', 'Sat': 'शनि', 'Sun': 'रवि' },
+       mr: { 'Mon': 'सोम', 'Tue': 'मंगळ', 'Wed': 'बुध', 'Thu': 'गुरु', 'Fri': 'शुक्र', 'Sat': 'शनि', 'Sun': 'रवि' }
+    };
+    function dayName(d) {
+       const names = DAY_NAMES[currentLang];
+       return names ? (names[d] || d) : d;
     }
     function skillName(s) {
        const names = SKILL_NAMES[currentLang];
@@ -967,16 +1009,23 @@
        }
        appReady = true;
        openReviewFromLink();
+       let healthDone = false;
+       const wakeTimer = setTimeout(() => { if (!healthDone) showWakeBanner(); }, 4000);
        try {
          const h = await fetch(CONFIG.BACKEND_URL + '/api/health');
          const d = await h.json();
          console.log('Backend connected:', d);
+         healthDone = true; clearTimeout(wakeTimer); hideWakeBanner();
        } catch (e) {
-         document.body.insertAdjacentHTML('afterbegin',
-           '<div style="background:red;color:white;text-align:center;padding:8px;position:fixed;top:44px;width:100%;z-index:999999;font-size:0.8rem;">&#9888;&#65039; Server is waking up, please wait a minute and refresh</div>'
-         );
+         healthDone = true; clearTimeout(wakeTimer); showWakeBanner();
        }
     }
+    function showWakeBanner() {
+       if (document.getElementById('wake-banner')) return;
+       document.body.insertAdjacentHTML('afterbegin',
+         '<div id="wake-banner" style="background:#B45309;color:white;text-align:center;padding:8px;position:fixed;top:44px;width:100%;z-index:999999;font-size:0.85rem;">&#9888;&#65039; ' + esc(t('waking')) + '</div>');
+    }
+    function hideWakeBanner() { const b = document.getElementById('wake-banner'); if (b) b.remove(); }
 
     function setLang(l) {
        currentLang = TRANSLATIONS[l] ? l : 'en'; localStorage.setItem('lang', currentLang);
@@ -1087,8 +1136,8 @@
              if (name) document.getElementById('reg-name').closest('.input-grp').style.display = 'none';
              document.getElementById('google-signin-btn').style.display = 'none';
              const note = document.getElementById('google-signin-note');
-             note.innerHTML = '&#10003; Signed in with Google as <b>' + esc(name || email) + '</b>' + (email ? ' (' + esc(email) + ')' : '') +
-                '.<br>Just add your phone number and work details below - next time one tap is enough. <button type="button" onclick="resetGoogleSignup()">Use another account</button>';
+             note.innerHTML = '&#10003; ' + esc(t('google_note', (name || email) + (email ? ' (' + email + ')' : ''))) +
+                ' <button type="button" onclick="resetGoogleSignup()">' + esc(t('google_other')) + '</button>';
              note.style.display = 'block';
              document.getElementById('reg-phone').focus();
              return;
@@ -1151,14 +1200,14 @@
              const loginData = await loginRes.json();
              resetGoogleSignup();
              const role = loginData.user.role === 'employer' ? 'Employer' : 'Worker';
-             loginUser(loginData.user, role, loginData.token);
+             loginUser(loginData.user, role, loginData.token, t('welcome_back'));
              // Picked "I need a worker" but this phone is a worker account (or the other way round)
              if (role !== selectedType) setTimeout(() => showNotif(t('role_note', role), 'red'), 600);
              return;
           }
           if (loginRes.status === 400) { const d = await loginRes.json(); showError(d.msg || (d.errors ? d.errors[0].msg : '') || "Please check your phone number."); return; }
           if (loginRes.status === 429) { const d = await loginRes.json(); showError(d.error || "Too many attempts. Please wait a few minutes."); return; }
-          if (loginRes.status !== 404) throw new Error("Could not reach server");
+          if (loginRes.status !== 404) { showError(t('server_problem')); return; }
           if (!signupFieldsOk(name, city)) return;
           const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
           const body = { name, phone };
@@ -1192,10 +1241,10 @@
     }
 
     // Token missing or expired (tokens last 5 days): ask the user to log in again
+    let sessionEnding = false;
     function sessionExpired(res) {
        if (res.status !== 401) return false;
-       showNotif("Session expired. Please log in again.", "red");
-       setTimeout(logout, 2000);
+       if (!sessionEnding) { sessionEnding = true; showNotif(t('session_expired'), "red"); setTimeout(logout, 2000); }
        return true;
     }
 
@@ -1296,7 +1345,7 @@
        document.getElementById('pane-worker').style.display = (home ? isWorker : false) ? 'block' : 'none';
        document.getElementById('pane-employer').style.display = (home ? !isWorker : false) ? 'block' : 'none';
        ['history', 'stats', 'profile'].forEach(p => { document.getElementById('pane-' + p).style.display = p === t ? 'block' : 'none'; });
-       if (home) { if (isWorker) loadCityJobs(); else loadEmployerGrid(); }
+       if (home) { if (isWorker) { loadWorkerStatus(); loadCityJobs(); } else loadEmployerGrid(); }
        if (t === 'history') loadHistory();
        if (t === 'stats') loadStats();
        if (t === 'profile') loadProfile();
@@ -1343,16 +1392,17 @@
        const id = safeId(w._id);
        workerCache[id] = w;
        const rating = w.totalRatings > 0 ? ' · ' + esc(Number(w.rating).toFixed(1)) + ' &#9733;' : '';
-       const tag = w.bookedByYouNow ? `<span class="hist-tag ok">${esc(t('booked_now'))}</span>` : '';
+       const tag = (w.bookedByYouNow ? h.canCancel : false) ? `<span class="hist-tag ok">${esc(t('booked_now'))}</span>` : '';
        const again = w.availableNow ? `<button class="btn btn-outline" onclick="openHireModal('${id}', event)"><i class="fas fa-rotate-right"></i> ${esc(t('hire_again'))}</button>` : '';
        const rate = h.rated ? `<span class="hist-tag">&#9733; ${esc(t('rated'))}</span>`
-          : `<button class="btn btn-outline" onclick="openRateHire('${safeId(h.hireId)}', '${id}')"><i class="fas fa-star"></i> ${esc(t('rate'))}</button>`;
+          : (h.canRate ? `<button class="btn btn-outline" onclick="openRateHire('${safeId(h.hireId)}', '${id}')"><i class="fas fa-star"></i> ${esc(t('rate'))}</button>` : '');
+       const cancel = h.canCancel ? `<button class="btn btn-outline" onclick="endBooking('${safeId(h.hireId)}', 'cancel')"><i class="fas fa-xmark"></i> ${esc(t('cancel_booking'))}</button>` : '';
        return `<div class="hist-card">
           <div class="hist-main">
-             <div class="hist-name">${esc(w.name)}${tag}</div>
+             <div class="hist-name">${esc(w.name)}${tag}${statusTag(h)}</div>
              <div class="hist-meta">${esc(skillName(w.skill))}${rating}<br>${histWhen(h)}</div>
           </div>
-          <div class="hist-actions">${contactButtons(w.phone)}${again}${rate}</div>
+          <div class="hist-actions">${contactButtons(w.phone)}${again}${rate}${cancel}</div>
        </div>`;
     }
     function histEmployerCard(h) {
@@ -1362,11 +1412,63 @@
        const note = h.instructions ? `<br><i class="fas fa-note-sticky"></i> ${esc(h.instructions)}` : '';
        return `<div class="hist-card">
           <div class="hist-main">
-             <div class="hist-name">${esc(e.name)}${company}</div>
+             <div class="hist-name">${esc(e.name)}${company}${statusTag(h)}</div>
              <div class="hist-meta">${histWhen(h)}${note}</div>
           </div>
-          <div class="hist-actions">${contactButtons(e.phone)}</div>
+          <div class="hist-actions">${contactButtons(e.phone)}${declineButton(h)}</div>
        </div>`;
+    }
+    function statusTag(h) {
+       if (h.status === 'declined') return `<span class="hist-tag bad">${esc(t('declined_tag'))}</span>`;
+       if (h.status === 'cancelled') return `<span class="hist-tag bad">${esc(t('cancelled_tag'))}</span>`;
+       return '';
+    }
+    function declineButton(h) {
+       return h.canDecline ? `<button class="btn btn-outline" onclick="endBooking('${safeId(h.hireId)}', 'decline')"><i class="fas fa-xmark"></i> ${esc(t('decline'))}</button>` : '';
+    }
+    // Worker turns down / employer cancels a booking (today or later)
+    async function endBooking(hireId, kind) {
+       if (!hireId) return;
+       if (!confirm(kind === 'decline' ? t('decline_confirm') : t('cancel_confirm'))) return;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/bookings/${hireId}/${kind === 'decline' ? 'decline' : 'cancel'}`, { method: 'POST', headers: authHeaders() });
+          if (sessionExpired(res)) return;
+          const data = await res.json();
+          if (!res.ok) { showNotif(data.msg || t('update_failed'), 'red'); return; }
+          showNotif(kind === 'decline' ? t('booking_declined') : t('booking_cancelled'), 'green');
+          switchTab(localStorage.getItem('active_tab') || 'home');
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+
+    // Worker Home: the server says whether they are live (another phone, a booking or the timer
+    // may have changed it) and which bookings are coming up
+    async function loadWorkerStatus() {
+       const box = document.getElementById('wk-bookings');
+       try {
+          const [meRes, hRes] = await Promise.all([
+             fetch(`${CONFIG.BACKEND_URL}/api/me`, { headers: authHeaders() }),
+             fetch(`${CONFIG.BACKEND_URL}/api/me/history`, { headers: authHeaders() })
+          ]);
+          if (sessionExpired(meRes)) return;
+          if (!meRes.ok) return;
+          const me = await meRes.json();
+          const live = me.isLooking ? new Date(me.availableUntil) > new Date() : false;
+          const wasLive = localStorage.getItem('isLooking') === 'true';
+          localStorage.setItem('isLooking', live ? 'true' : 'false');
+          if (live) {
+             localStorage.setItem('availableUntil', me.availableUntil);
+             if (!wasLive) localStorage.setItem('liveStartTime', String(Date.now()));
+          }
+          updateAvailabilityUI();
+          const items = hRes.ok ? await hRes.json() : [];
+          const upcoming = items.filter(h => h.canDecline).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+          box.innerHTML = upcoming.length ? `<div class="wk-booking"><h4><i class="fas fa-calendar-check"></i> ${esc(t('booked_title'))}</h4>` + upcoming.map(h => {
+             const e = h.employer || {};
+             const company = e.companyName ? ' · ' + esc(e.companyName) : '';
+             const note = h.instructions ? `<br><i class="fas fa-note-sticky"></i> ${esc(h.instructions)}` : '';
+             return `<div class="wk-item"><b>${esc(e.name || '')}</b>${company}<br>${histWhen(h)}${note}<div class="hist-actions">${contactButtons(e.phone)}${declineButton(h)}</div></div>`;
+          }).join('') + '</div>' : '';
+       } catch (e) { /* offline: keep what is shown */ }
     }
     // Rate a worker from History (website hire record)
     function openRateHire(hireId, workerId) {
@@ -1452,7 +1554,7 @@
              grp(t('label_salary'), `<input type="number" id="pf-salary" class="input-field" min="100" max="5000" value="${esc(p.expectedSalary || 600)}">`) +
              `</div>` +
              grp(t('availability'), `<div class="day-chips">` + days.map(d =>
-                `<label class="day-chip"><input type="checkbox" name="pf-day" value="${d}" onchange="profDayChange(this)"${have.includes(d) ? ' checked' : ''}> ${d}</label>`).join('') + `</div>`);
+                `<label class="day-chip"><input type="checkbox" name="pf-day" value="${d}" onchange="profDayChange(this)"${have.includes(d) ? ' checked' : ''}> ${esc(dayName(d))}</label>`).join('') + `</div>`);
        } else {
           roleFields = grp(t('company'), `<input type="text" id="pf-company" class="input-field" maxlength="80" value="${esc(p.companyName)}">`) +
              `<div class="prof-row2">` +
@@ -1522,10 +1624,11 @@
 
     async function loadCityJobs() {
        const city = localStorage.getItem('user_city');
+       const skill = localStorage.getItem('user_skill') || '';
        const list = document.getElementById('city-jobs-list');
        list.innerHTML = LOADER;
        try {
-          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/available/${encodeURIComponent(city)}`);
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/available/${encodeURIComponent(city)}${skill ? '?skill=' + encodeURIComponent(skill) : ''}`);
           if (!res.ok) throw new Error();
           const jobs = await res.json();
           if (jobs.length === 0) { list.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5;">${esc(t('no_jobs'))}</p>`; return; }
@@ -1543,24 +1646,32 @@
     }
 
     async function acceptJob(id) {
-       showNotif("Processing job acceptance...", "green");
+       showNotif(t('job_processing'), "green");
        try {
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/accept`, {method:'PUT', headers: authHeaders()});
           if (sessionExpired(res)) return;
           if (!res.ok) throw new Error("Failed to accept");
-          showNotif("Job Accepted! Directions sent to mobile.", "green");
+          showNotif(t('job_accepted'), "green");
           loadCityJobs();
-       } catch (e) { showNotif("Could not accept job. It might have been taken.", "red"); }
+       } catch (e) { showNotif(t('job_failed'), "red"); }
     }
 
     async function loadEmployerGrid() {
        const grid = document.getElementById('worker-grid');
        const filter = document.getElementById('skill-filter');
        const skill = filter ? filter.value : '';
+       const cityFilter = document.getElementById('city-filter');
+       // First time for this login: start on the employer's own city
+       if (cityFilter.dataset.user !== localStorage.getItem('user_id')) {
+          cityFilter.dataset.user = localStorage.getItem('user_id');
+          cityFilter.value = CITY_LIST.includes(localStorage.getItem('user_city')) ? localStorage.getItem('user_city') : '';
+       }
+       const query = [skill ? 'skill=' + encodeURIComponent(skill) : '', cityFilter.value ? 'city=' + encodeURIComponent(cityFilter.value) : ''].filter(Boolean).join('&');
        grid.innerHTML = LOADER;
        try {
           // With an employer login the server includes each worker's phone number
-          const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers${skill ? '?skill=' + encodeURIComponent(skill) : ''}`, { headers: authHeaders() });
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers${query ? '?' + query : ''}`, { headers: authHeaders() });
+          if (sessionExpired(res)) return;
           if (!res.ok) throw new Error();
           let workers = await res.json();
           const now = new Date();
@@ -1575,7 +1686,7 @@
        workerCache[id] = w;
        const rating = w.totalRatings > 0 ? esc(t('rating')) + ': ' + esc(Number(w.rating).toFixed(1)) + ' &#9733; (' + esc(Number(w.totalRatings)) + ')' : esc(t('new_worker'));
        const phone = w.phone ? `<div style="font-size:0.9rem; margin-top:6px;"><i class="fas fa-phone"></i> <a href="tel:${esc(w.phone)}" onclick="event.stopPropagation()">${esc(w.phone)}</a></div>` : '';
-       const avail = esc((w.availability || []).join(', ')) || esc(t('not_specified'));
+       const avail = esc((w.availability || []).map(dayName).join(', ')) || esc(t('not_specified'));
        return `
           <div class="card-scene" id="scene-${id}">
              <div class="card-inner" onclick="this.classList.toggle('flipped')">
@@ -1610,10 +1721,14 @@
        // Today in the visitor's time zone (toISOString alone is UTC: yesterday before 5:30 am in India)
        const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
        document.getElementById('hire-date').min = today.toISOString().split("T")[0];
+       document.getElementById('hire-date').max = new Date(today.getTime() + 14 * 86400000).toISOString().split("T")[0];
+       ['hire-loc', 'hire-date', 'hire-time', 'hire-inst'].forEach(f => { document.getElementById(f).value = ''; });
        document.getElementById('hire-modal').style.display = 'flex';
     }
 
+    let hireBusy = false;
     async function confirmHire() {
+       if (hireBusy) return;
        resetErrors();
        const loc = document.getElementById('hire-loc').value;
        const date = document.getElementById('hire-date').value;
@@ -1626,6 +1741,8 @@
        if (!name) { document.getElementById('err-hire-name').style.display='block'; v=false; }
        if (!v) return;
        const ldr = document.getElementById('hire-loader');
+       const hireBtn = document.querySelector('#hire-modal .btn-primary');
+       hireBusy = true; hireBtn.disabled = true;
        ldr.style.display='block';
        const body = {
           workerId: currentWorkerToHire.id, employerName: name, location: loc, date: date, time: time,
@@ -1648,7 +1765,7 @@
              gsap.to(`#scene-${currentWorkerToHire.id}`, {y: -1000, opacity:0, rotate:15, duration:1.5, ease:'power2.in', onComplete: done});
           } else done();
        } catch (e) { showNotif(t('hire_failed'), "red"); }
-       finally { ldr.style.display='none'; }
+       finally { ldr.style.display='none'; hireBusy = false; hireBtn.disabled = false; }
     }
 
     function updateAvailabilityUI() {
@@ -1677,7 +1794,7 @@
        timerInt = setInterval(() => {
           const now = new Date();
           const diff = until - now;
-          if (diff <= 0) { handleTogglePress(); return; }
+          if (diff <= 0) { clearInterval(timerInt); timerInt = null; liveExpired(); return; }
           const h = Math.floor(diff/3600000);
           const m = Math.floor((diff%3600000)/60000);
           const s = Math.floor((diff%60000)/1000);
@@ -1689,6 +1806,12 @@
           else if (pct > 20) { bar.style.background = 'var(--amber)'; bar.style.boxShadow = '0 0 15px var(--amber)'; }
           else { bar.style.background = 'var(--red)'; bar.style.boxShadow = '0 0 15px var(--red)'; }
        }, 1000);
+    }
+
+    function liveExpired() {
+       localStorage.setItem('isLooking', 'false');
+       updateAvailabilityUI();
+       fetch(`${CONFIG.BACKEND_URL}/api/workers/${localStorage.getItem('user_id')}/go-offline`, { method: 'PUT', headers: authHeaders() }).catch(() => {});
     }
 
     async function handleTogglePress() {
@@ -1708,6 +1831,7 @@
                 body: JSON.stringify(hasLocation() ? { availableUntil: until.toISOString(), location: gpsCoords } : { availableUntil: until.toISOString() })
              });
              if (sessionExpired(res)) return;
+             if (res.status === 409) { showNotif(t('booked_today'), 'red'); return; }
              if (!res.ok) throw new Error("Failed to go live");
              localStorage.setItem('isLooking', 'true');
              localStorage.setItem('liveStartTime', new Date().getTime());
@@ -1734,7 +1858,7 @@
        if (e) e.stopPropagation();
        document.getElementById('roots-overlay').style.display='flex';
        const svg = document.getElementById('roots-svg');
-       svg.innerHTML = '<text x="500" y="500" fill="white" text-anchor="middle">Loading roots...</text>';
+       svg.innerHTML = '<text x="500" y="500" fill="white" text-anchor="middle">' + esc(t('roots_loading')) + '</text>';
        try {
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${id}/jobs`);
           if (!res.ok) throw new Error();
@@ -1766,7 +1890,7 @@
 
     function drawStumpRoot() {
        const svg = document.getElementById('roots-svg');
-       svg.innerHTML = '<path d="M500,500 L500,450" class="root-line" stroke-dashoffset="0"></path><text x="500" y="440" fill="white" text-anchor="middle" font-size="12">Just starting to grow...</text>';
+       svg.innerHTML = '<path d="M500,500 L500,450" class="root-line" stroke-dashoffset="0"></path><text x="500" y="440" fill="white" text-anchor="middle" font-size="12">' + esc(t('roots_empty')) + '</text>';
     }
 
     function closeRoots() { document.getElementById('roots-overlay').style.display='none'; }
@@ -1973,17 +2097,22 @@
     }
 
     async function findNearbyWorkers() {
+       if (!navigator.geolocation) { showNotif(t('loc_denied'), 'red'); return; }
        navigator.geolocation.getCurrentPosition(async (pos) => {
           const { latitude: lat, longitude: lng } = pos.coords;
           const grid = document.getElementById('worker-grid');
+          const filter = document.getElementById('skill-filter');
+          const skill = filter ? filter.value : '';
           grid.innerHTML = LOADER;
           try {
-             const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/nearby?lat=${Number(lat)}&lng=${Number(lng)}`, { headers: authHeaders() });
+             const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/nearby?lat=${Number(lat)}&lng=${Number(lng)}${skill ? '&skill=' + encodeURIComponent(skill) : ''}`, { headers: authHeaders() });
+             if (sessionExpired(res)) return;
              if (!res.ok) throw new Error();
              const workers = await res.json();
+             document.getElementById('employer-stats').innerText = t('workers_available', workers.length);
              grid.innerHTML = workers.length ? workers.map(w => renderWorkerCard(w)).join('') : `<p style="grid-column:1/-1; opacity:0.6;">${esc(t('no_workers'))}</p>`;
           } catch (e) { grid.innerHTML = `<p>${esc(t('load_error'))}</p>`; }
-       }, () => showNotif("Could not get your location.", "red"));
+       }, () => showNotif(t('loc_denied'), "red"), { timeout: 15000 });
     }
 
 
