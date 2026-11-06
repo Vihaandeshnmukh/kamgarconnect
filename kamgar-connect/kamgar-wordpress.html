@@ -307,6 +307,16 @@
     #secret-page, #roots-overlay { padding: 5vh 5vw; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     #secret-page { background: rgba(0,0,0,0.88); }
     #roots-overlay { background: rgba(0,0,0,0.9); }
+    /* The close (x) button sits top-right: keep pop-up titles clear of it */
+    .modal-content h2 { padding-right: 56px; }
+    .lang-switcher .btn { min-width: 40px; min-height: 40px; }
+    .job-accept-btn { min-height: 40px; }
+    #google-signin-note button { background: none; border: 0; color: var(--accent); text-decoration: underline; cursor: pointer; font-weight: 700; padding: 0; }
+    @media (max-width: 760px) {
+      /* Lock button goes into the bottom bar instead of floating over page buttons */
+      .st-dock { padding-left: 72px; }
+      .secret-trigger { bottom: 12px; left: 12px; right: auto; width: 50px; height: 50px; opacity: 1; z-index: 950; }
+    }
   </style>
 </head>
 <body onload="initApp()">
@@ -359,8 +369,8 @@
       <h2 class="st-title">How Kamgar Connect works</h2>
       <p class="st-sub">फक्त ३ सोप्या टप्प्यांत थेट काम मिळवा</p>
       <div class="st-steps">
-        <div class="st-step"><div class="ico"><i class="fas fa-id-card"></i></div><h3>1. Register / नोंदणी करा</h3><div class="hi">नाम और हुनर बताएं</div><p>Call our number and answer a few questions, or fill the 1-minute form with your trade (Mason, Plumber, Helper).</p></div>
-        <div class="st-step"><div class="ico"><i class="fas fa-phone-volume"></i></div><h3>2. Get called / काम पाएं</h3><div class="hi">काम की कॉल सीधे आपके फ़ोन पर</div><p>Tap START LOOKING when you are free. Employers near you can hire you, and you get a call with the job details.</p></div>
+        <div class="st-step"><div class="ico"><i class="fas fa-id-card"></i></div><h3>1. Register / नोंदणी करा</h3><div class="hi">नाम और हुनर बताएं</div><p>Fill the 1-minute form with your trade (Mason, Plumber, Helper).</p></div>
+        <div class="st-step"><div class="ico"><i class="fas fa-handshake"></i></div><h3>2. Get hired / काम पाएं</h3><div class="hi">काम देने वाले सीधे आपसे संपर्क करेंगे</div><p>Tap START LOOKING when you are free. Employers near you can hire you and contact you directly.</p></div>
         <div class="st-step"><div class="ico"><i class="fas fa-indian-rupee-sign"></i></div><h3>3. Work &amp; get paid / मेहनताना</h3><div class="hi">सीधे नियोक्ता से भुगतान</div><p>Agree the wage with the employer and be paid directly in cash or UPI. No middleman in between.</p></div>
       </div>
     </div>
@@ -696,7 +706,7 @@
           enter_phone: "Enter a 10-digit phone number", search_error: "Error searching. Try again later.", load_error: "Could not load workers. Please try again.",
           hire_now: "HIRE NOW", full_profile: "FULL PROFILE", exp: "Experience", years: "years", city: "City", availability: "Availability",
           not_specified: "Not specified", previous_jobs: "PREVIOUS JOBS", day: "day", rating: "Rating", new_worker: "New on Kamgar Connect", phone: "Phone",
-          no_jobs: "No jobs right now. Stay live and we will call you!", jobs_error: "Failed to load jobs.", accept_job: "Accept Job", workers_word: "workers",
+          no_jobs: "No jobs right now. Stay live so employers can find you.", jobs_error: "Failed to load jobs.", accept_job: "Accept Job", workers_word: n => (n === 1 ? "worker" : "workers"),
           going_live: "Going live...", going_offline: "Going offline...", status_failed: "Failed to update status. Check your connection.",
           hidden_msg: "You are hidden from search. Tap START LOOKING to appear again.", update_failed: "Could not update. Check your connection.",
           hire_title: "Hire", job_location: "Job Location", work_date: "Date of Work", report_time: "Reporting Time", employer_name: "Employer Name",
@@ -718,7 +728,7 @@
           enter_phone: "10 अंकों का फ़ोन नंबर डालें", search_error: "खोज में समस्या। बाद में कोशिश करें।", load_error: "कामगार लोड नहीं हो सके। फिर कोशिश करें।",
           hire_now: "काम पर रखें", full_profile: "पूरी जानकारी", exp: "अनुभव", years: "साल", city: "शहर", availability: "उपलब्धता",
           not_specified: "नहीं बताया", previous_jobs: "पिछले काम", day: "दिन", rating: "रेटिंग", new_worker: "कामगार कनेक्ट पर नया", phone: "फ़ोन",
-          no_jobs: "अभी कोई काम नहीं। लाइव रहें, हम कॉल करेंगे!", jobs_error: "काम लोड नहीं हो सके।", accept_job: "काम स्वीकारें", workers_word: "कामगार",
+          no_jobs: "अभी कोई काम नहीं। लाइव रहें, काम देने वाले आपको ढूंढ सकेंगे।", jobs_error: "काम लोड नहीं हो सके।", accept_job: "काम स्वीकारें", workers_word: "कामगार",
           going_live: "लाइव हो रहे हैं...", going_offline: "ऑफ़लाइन हो रहे हैं...", status_failed: "स्थिति नहीं बदली। इंटरनेट जांचें।",
           hidden_msg: "आप खोज से छिपे हैं। फिर से दिखने के लिए काम ढूंढना शुरू करें दबाएं।", update_failed: "बदलाव नहीं हुआ। इंटरनेट जांचें।",
           hire_title: "काम पर रखें:", job_location: "काम की जगह", work_date: "काम की तारीख", report_time: "पहुंचने का समय", employer_name: "नियोक्ता का नाम",
@@ -740,7 +750,7 @@
           enter_phone: "10 अंकी फोन नंबर टाका", search_error: "शोधताना अडचण. नंतर प्रयत्न करा.", load_error: "कामगार लोड झाले नाहीत. पुन्हा प्रयत्न करा.",
           hire_now: "कामावर घ्या", full_profile: "पूर्ण माहिती", exp: "अनुभव", years: "वर्षे", city: "शहर", availability: "उपलब्धता",
           not_specified: "सांगितले नाही", previous_jobs: "मागील कामे", day: "दिवस", rating: "रेटिंग", new_worker: "कामगार कनेक्टवर नवीन", phone: "फोन",
-          no_jobs: "आता काम नाही. लाइव्ह रहा, आम्ही कॉल करू!", jobs_error: "कामे लोड झाली नाहीत.", accept_job: "काम स्वीकारा", workers_word: "कामगार",
+          no_jobs: "आता काम नाही. लाइव्ह रहा, काम देणारे तुम्हाला शोधू शकतील.", jobs_error: "कामे लोड झाली नाहीत.", accept_job: "काम स्वीकारा", workers_word: "कामगार",
           going_live: "लाइव्ह होत आहे...", going_offline: "ऑफलाइन होत आहे...", status_failed: "स्थिती बदलली नाही. इंटरनेट तपासा.",
           hidden_msg: "तुम्ही शोधातून लपलेले आहात. पुन्हा दिसण्यासाठी काम शोधणे सुरू करा दाबा.", update_failed: "बदल झाला नाही. इंटरनेट तपासा.",
           hire_title: "कामावर घ्या:", job_location: "कामाची जागा", work_date: "कामाची तारीख", report_time: "पोहोचण्याची वेळ", employer_name: "एम्प्लॉयरचे नाव",
@@ -910,16 +920,31 @@
           const data = await res.json();
           if (res.ok) { loginUser(data.user, data.user.role === 'employer' ? 'Employer' : 'Worker', data.token); return; }
           if (res.status === 404) {
-             // New person: keep the Google link and ask once for the remaining details
+             // New here (or Google not linked yet): Google gave us the name, ask only for the rest
              pendingGoogleCredential = resp.credential;
-             document.getElementById('reg-name').value = data.profile ? data.profile.name : '';
+             const name = data.profile ? (data.profile.name || '') : '';
+             const email = data.profile ? (data.profile.email || '') : '';
+             document.getElementById('reg-name').value = name;
+             if (name) document.getElementById('reg-name').closest('.input-grp').style.display = 'none';
+             document.getElementById('google-signin-btn').style.display = 'none';
              const note = document.getElementById('google-signin-note');
-             note.innerText = "Google linked. Add your phone number and details once - next time just tap Google.";
+             note.innerHTML = '&#10003; Signed in with Google as <b>' + esc(name || email) + '</b>' + (email ? ' (' + esc(email) + ')' : '') +
+                '.<br>Just add your phone number and work details below - next time one tap is enough. <button type="button" onclick="resetGoogleSignup()">Use another account</button>';
              note.style.display = 'block';
+             document.getElementById('reg-phone').focus();
              return;
           }
           showNotif(data.msg || "Google sign-in failed", "red");
        } catch (e) { showNotif("Google sign-in failed. Check your connection.", "red"); }
+    }
+
+    // Back to the normal form (after sign-up, or "Use another account")
+    function resetGoogleSignup() {
+       pendingGoogleCredential = null;
+       document.getElementById('reg-name').closest('.input-grp').style.display = '';
+       document.getElementById('google-signin-btn').style.display = 'inline-block';
+       const note = document.getElementById('google-signin-note');
+       note.style.display = 'none'; note.innerHTML = '';
     }
 
     async function handleRegistration(e) {
@@ -947,9 +972,10 @@
        btn.style.display='none'; ldr.style.display='block';
        try {
           // Existing user: log in with the phone number (404 means not registered yet)
-          const loginRes = await fetch(`${CONFIG.BACKEND_URL}/api/auth/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ phone }) });
+          const loginRes = await fetch(`${CONFIG.BACKEND_URL}/api/auth/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(pendingGoogleCredential ? { phone, googleCredential: pendingGoogleCredential } : { phone }) });
           if (loginRes.ok) {
              const loginData = await loginRes.json();
+             resetGoogleSignup();
              loginUser(loginData.user, loginData.user.role === 'employer' ? 'Employer' : 'Worker', loginData.token);
              return;
           }
@@ -972,6 +998,7 @@
           const regRes = await fetch(regUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
           const regData = await regRes.json();
           if (regRes.ok) {
+             resetGoogleSignup();
              loginUser(regData.user, selectedType, regData.token);
           } else {
              showError(regData.msg || (regData.errors ? regData.errors[0].msg : '') || "Registration failed. Please try again.");
@@ -1060,10 +1087,10 @@
           list.innerHTML = jobs.map(j => `
              <div class="card-front" style="height:auto;">
                 <h4 style="color:var(--accent);">${esc(skillName(j.jobType))}</h4>
-                <div style="font-size:0.8rem; margin:10px 0; opacity:0.6;"><i class="fas fa-map-marker-alt"></i> ${esc(j.city)} &middot; ${esc(Number(j.workerCount) || 1)} ${esc(t('workers_word'))}</div>
+                <div style="font-size:0.8rem; margin:10px 0; opacity:0.6;"><i class="fas fa-map-marker-alt"></i> ${esc(j.city)} &middot; ${esc(Number(j.workerCount) || 1)} ${esc(t('workers_word', Number(j.workerCount) || 1))}</div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                    <span style="font-weight:900;">${j.amount ? '&#8377;' + esc(Number(j.amount)) : ''}</span>
-                   <button class="btn btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="acceptJob('${safeId(j._id)}')">${esc(t('accept_job'))}</button>
+                   <button class="btn btn-primary job-accept-btn" style="padding:6px 12px; font-size:0.75rem;" onclick="acceptJob('${safeId(j._id)}')">${esc(t('accept_job'))}</button>
                 </div>
              </div>
           `).join('');
@@ -1421,7 +1448,7 @@
           {id: 'root', label: 'Kamgar Connect', x: 500, y: 500, size: 60, color: 'var(--accent)'},
           {id: 'fe', label: 'Frontend', x: 300, y: 300},
           {id: 'be', label: 'Backend', x: 700, y: 300},
-          {id: 'call', label: 'Calling System', x: 250, y: 500},
+          {id: 'call', label: 'Calling (paused)', x: 250, y: 500},
           {id: 'mob', label: 'Mobile App', x: 750, y: 500},
           {id: 'team', label: 'Team', x: 500, y: 250},
           {id: 'future', label: 'Future Plans', x: 500, y: 750}
