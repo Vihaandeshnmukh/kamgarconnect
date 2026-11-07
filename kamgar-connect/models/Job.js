@@ -22,7 +22,8 @@ const JobSchema = new mongoose.Schema({
   amount: { type: Number }, // Daily wage offered (₹)
   date: { type: String }, // Work date "YYYY-MM-DD" (India), optional
   location: { type: String, set: v => cleanText(v, 120) }, // Where to report, optional
-  description: { type: String, set: v => cleanText(v, 300) } // Short note from the employer, optional
+  description: { type: String, set: v => cleanText(v, 300) }, // Short note from the employer, optional
+  splitFrom: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' } // One place taken from a job for several workers
 });
 
 module.exports = mongoose.model('Job', JobSchema);

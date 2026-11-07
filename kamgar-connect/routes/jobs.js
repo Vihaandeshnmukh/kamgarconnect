@@ -130,9 +130,11 @@ router.put('/:id/accept', auth, async (req, res) => {
     // Only workers can accept jobs
     if (req.user.role !== 'worker') return res.status(403).json({ msg: 'Not authorized' });
 
-    const job = await Job.findById(req.params.id);
+    let job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (job.status !== 'pending') return res.status(400).json({ msg: 'Job already accepted' });
+    // A worker can't hold two places of the same posting
+    if (await Job.exists({ splitFrom: job._id, workerId: req.user.id, status: { $in: ['accepted', 'completed'] } })) return res.status(400).json({ msg: 'You already took a place in this job' });
 
     const worker = await Worker.findById(req.user.id);
     const employer = await Employer.findById(job.employerId).select('+push_token');
@@ -140,10 +142,24 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (worker.phone === employer.phone) return res.status(400).json({ msg: 'You cannot take your own job' });
     if (job.date && job.date < istDate(0)) return res.status(400).json({ msg: 'This job date has passed' });
 
-    // Only one worker gets it, even when two press Accept at the same moment
-    const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now() } }, { new: true });
-    if (!taken) return res.status(400).json({ msg: 'Job already accepted' });
-    Object.assign(job, { workerId: taken.workerId, status: taken.status, acceptedAt: taken.acceptedAt });
+    // A job for several workers: this worker takes one place (a job of its own, linked by
+    // splitFrom) and the rest stays open
+    let split = null;
+    if ((job.workerCount || 1) > 1) {
+      split = await Job.findOneAndUpdate({ _id: job._id, status: 'pending', workerCount: { $gt: 1 } }, { $inc: { workerCount: -1 } }, { new: true });
+    }
+    if (split) {
+      job = await new Job({
+        employerId: job.employerId, jobType: job.jobType, city: job.city, workerCount: 1, amount: job.amount,
+        date: job.date, location: job.location, description: job.description, postedAt: job.postedAt,
+        splitFrom: job._id, status: 'accepted', workerId: worker._id, acceptedAt: Date.now()
+      }).save();
+    } else {
+      // Only one worker gets it, even when two press Accept at the same moment
+      const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now() } }, { new: true });
+      if (!taken) return res.status(400).json({ msg: 'Job already accepted' });
+      Object.assign(job, { workerId: taken.workerId, status: taken.status, acceptedAt: taken.acceptedAt });
+    }
 
     worker.jobHistory.push(job.id);
     await worker.save();
@@ -240,6 +256,12 @@ router.put('/:id/leave', auth, async (req, res) => {
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (String(job.workerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status !== 'accepted') return res.status(400).json({ msg: 'This job can no longer be given back' });
+    await Worker.updateOne({ _id: req.user.id }, { $pull: { jobHistory: job._id } });
+    // One place of a job for several workers: give the place back to that job if it is still open
+    if (job.splitFrom) {
+      const parent = await Job.findOneAndUpdate({ _id: job.splitFrom, status: 'pending' }, { $inc: { workerCount: 1 } }, { new: true });
+      if (parent) { await Job.deleteOne({ _id: job._id }); return res.json(parent); }
+    }
     job.status = 'pending';
     job.workerId = undefined;
     job.acceptedAt = undefined;
