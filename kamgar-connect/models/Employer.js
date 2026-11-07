@@ -21,6 +21,8 @@ const EmployerSchema = new mongoose.Schema({
     coordinates: { type: [Number], default: [0, 0] } // [longitude, latitude]
   },
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Worker' }], // workers this employer saved (max 100)
+  blocked: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Worker' }], // workers this employer blocked (hidden from their search)
+  deletionRequestedAt: { type: Date }, // asked the team to delete the account
   createdAt: { type: Date, default: Date.now },
   isDemo: { type: Boolean } // only records made by scripts/demo-seed.js in the kamgar_demo database
 });

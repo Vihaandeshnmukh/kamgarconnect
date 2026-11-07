@@ -57,6 +57,8 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     }
 
     const employer = await Employer.findById(req.user.id);
+    const blockedEither = (worker.blocked || []).some(id => String(id) === req.user.id) || (employer ? (employer.blocked || []).some(id => String(id) === String(worker._id)) : false);
+    if (blockedEither) return res.status(409).json({ success: false, msg: 'This worker is not available' });
     // Same phone has both accounts: you can't hire yourself
     if (employer) { if (employer.phone === worker.phone) return res.status(400).json({ success: false, msg: "You can't hire yourself" }); }
 

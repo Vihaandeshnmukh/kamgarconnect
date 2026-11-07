@@ -362,6 +362,73 @@ router.post('/verify-request', async (req, res) => {
   } catch (err) { res.status(500).json({ msg: 'Server error' }); }
 });
 
+// ===== Report, block, delete account =====
+const Report = require('../models/Report');
+const isOid = (v) => typeof v === 'string' ? mongoose.isValidObjectId(v) : false;
+// POST /api/me/reports { targetId, targetRole, reason, note } - tell the team about a problem with someone
+router.post('/reports', async (req, res) => {
+  try {
+    const { targetId, targetRole, reason, note } = req.body || {};
+    if (!isOid(targetId)) return res.status(400).json({ msg: 'Who is this report about?' });
+    if (!['worker', 'employer'].includes(targetRole)) return res.status(400).json({ msg: 'Who is this report about?' });
+    if (targetRole === req.user.role) return res.status(400).json({ msg: 'You can report the other side of a job' });
+    if (!Report.REASONS.includes(reason) ? true : reason === 'delete_account') return res.status(400).json({ msg: 'Please choose a reason' });
+    if (note !== undefined ? typeof note !== 'string' : false) return res.status(400).json({ msg: 'Invalid note' });
+    const Target = targetRole === 'worker' ? Worker : Employer;
+    if (!(await Target.exists({ _id: targetId }))) return res.status(404).json({ msg: 'Account not found' });
+    const today = await Report.countDocuments({ reporterId: req.user.id, createdAt: { $gt: new Date(Date.now() - 86400000) } });
+    if (today >= 10) return res.status(429).json({ msg: 'You have sent many reports today. Please try tomorrow.' });
+    if (await Report.exists({ reporterId: req.user.id, targetId, reason, status: 'open' })) return res.json({ ok: true, already: true });
+    await Report.create({ reporterId: req.user.id, reporterRole: req.user.role, targetId, targetRole, reason, note: note || '' });
+    res.status(201).json({ ok: true });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+// PUT / DELETE /api/me/blocks/:id - block or unblock the other side (workers block employers, employers block workers)
+router.put('/blocks/:id', async (req, res) => {
+  try {
+    if (!isOid(req.params.id)) return res.status(400).json({ msg: 'Invalid id' });
+    const Me = req.user.role === 'worker' ? Worker : Employer, Other = req.user.role === 'worker' ? Employer : Worker;
+    if (!(await Other.exists({ _id: req.params.id }))) return res.status(404).json({ msg: 'Account not found' });
+    const me = await Me.findById(req.user.id).select('blocked');
+    if (!me) return res.status(404).json({ msg: 'Account not found' });
+    if ((me.blocked || []).length >= 200) return res.status(400).json({ msg: 'You blocked too many people' });
+    await Me.updateOne({ _id: req.user.id }, { $addToSet: { blocked: req.params.id } });
+    if (req.user.role === 'employer') await Employer.updateOne({ _id: req.user.id }, { $pull: { favorites: req.params.id } });
+    res.json({ ok: true, blocked: true });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+router.delete('/blocks/:id', async (req, res) => {
+  try {
+    if (!isOid(req.params.id)) return res.status(400).json({ msg: 'Invalid id' });
+    const Me = req.user.role === 'worker' ? Worker : Employer;
+    await Me.updateOne({ _id: req.user.id }, { $pull: { blocked: req.params.id } });
+    res.json({ ok: true, blocked: false });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+// GET /api/me/blocks - who I blocked (names only)
+router.get('/blocks', async (req, res) => {
+  try {
+    const Me = req.user.role === 'worker' ? Worker : Employer, Other = req.user.role === 'worker' ? Employer : Worker;
+    const me = await Me.findById(req.user.id).select('blocked');
+    const others = await Other.find({ _id: { $in: me ? me.blocked || [] : [] } }).select('name');
+    res.json(others.map(o => ({ _id: o._id, name: o.name })));
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+// POST /api/me/delete-request - ask the team to delete my account and data. The account is hidden from search at once;
+// the team deletes it by hand (a person checks, so a stolen number can't wipe someone's account by mistake).
+router.post('/delete-request', async (req, res) => {
+  try {
+    const Me = req.user.role === 'worker' ? Worker : Employer;
+    const me = await Me.findById(req.user.id).select('deletionRequestedAt');
+    if (!me) return res.status(404).json({ msg: 'Account not found' });
+    if (!me.deletionRequestedAt) {
+      await Me.updateOne({ _id: req.user.id }, { $set: { deletionRequestedAt: new Date(), ...(req.user.role === 'worker' ? { isWithdrawn: true, isLooking: false, availableUntil: null } : {}) } });
+      await Report.create({ reporterId: req.user.id, reporterRole: req.user.role, reason: 'delete_account', note: 'Account deletion requested' });
+    }
+    res.json({ ok: true, requested: true });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+
 // ===== In-app inbox =====
 // GET /api/me/inbox - newest 50 messages and how many are unread
 router.get('/inbox', async (req, res) => {

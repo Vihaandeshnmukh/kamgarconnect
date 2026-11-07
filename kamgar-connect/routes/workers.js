@@ -114,6 +114,11 @@ router.get('/', optionalAuth, async (req, res) => {
     const lat = num(req.query.lat, -90, 90), lng = num(req.query.lng, -180, 180), radius = num(req.query.radiusKm, 0.5, 50);
     const here = (lat !== null ? lng !== null : false) ? [lng, lat] : null;
     if (here) { if (radius) query.location = { $geoWithin: { $centerSphere: [here, radius / 6378.1] } }; }
+    if (req.user ? req.user.role === 'employer' : false) {
+      const me = await Employer.findById(req.user.id).select('blocked');
+      query._id = { $nin: (me ? me.blocked || [] : []) };
+      query.blocked = { $ne: req.user.id };
+    }
     const sortBy = { wage: { expectedSalary: 1, rating: -1 }, experience: { experience: -1, rating: -1 } }[req.query.sort] || { rating: -1, createdAt: -1 };
     const workers = await Worker.find(query).sort(sortBy).limit(200);
     let list = workers.map(w => {

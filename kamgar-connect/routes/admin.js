@@ -82,5 +82,28 @@ router.post('/workers/:id/verify', adminAuth, async (req, res) => {
   } catch (err) { res.status(500).json({ msg: 'Server Error' }); }
 });
 
+// Reports and deletion requests
+router.get('/reports', adminAuth, async (req, res) => {
+  try {
+    const Report = require('../models/Report');
+    const list = await Report.find({ ...noDemo(req), status: req.query.status === 'closed' ? 'closed' : 'open' }).sort({ createdAt: -1 }).limit(100);
+    const ids = list.flatMap(r => [r.reporterId, r.targetId]).filter(Boolean);
+    const [ws, es] = await Promise.all([Worker.find({ _id: { $in: ids } }).select('name phone'), Employer.find({ _id: { $in: ids } }).select('name phone')]);
+    const who = Object.fromEntries(ws.concat(es).map(x => [String(x._id), { name: x.name, phone: x.phone }]));
+    res.json(list.map(r => ({ _id: r._id, reason: r.reason, note: r.note, status: r.status, createdAt: r.createdAt,
+      reporter: { role: r.reporterRole, ...(who[String(r.reporterId)] || { name: '(deleted)' }) },
+      target: r.targetId ? { role: r.targetRole, ...(who[String(r.targetId)] || { name: '(deleted)' }) } : null })));
+  } catch (err) { res.status(500).json({ msg: 'Server Error' }); }
+});
+router.post('/reports/:id/close', adminAuth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ msg: 'Invalid id' });
+    const Report = require('../models/Report');
+    const r = await Report.updateOne({ _id: req.params.id }, { $set: { status: 'closed' } });
+    if (!r.matchedCount) return res.status(404).json({ msg: 'Report not found' });
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ msg: 'Server Error' }); }
+});
+
 module.exports = router;
 

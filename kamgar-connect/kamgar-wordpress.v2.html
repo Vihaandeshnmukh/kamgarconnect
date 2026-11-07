@@ -693,6 +693,21 @@
     .adm-row .btn { min-height: 44px; }
     .ver-tag { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; margin-left: 4px; font-size: 0.8rem; font-weight: 800; color: #1D4ED8; background: #DBEAFE; border-radius: 999px; padding: 3px 10px; }
     html[data-theme="dark"] .ver-tag { color: #BFDBFE; background: #1E3A8A; }
+    /* ===== Trust and safety ===== */
+    .safety-row { display: flex; gap: 8px; margin-top: 10px; }
+    .safety-row .btn { flex: 1; min-height: 44px; font-size: 0.85rem; }
+    .reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+    .reasons button { min-height: 56px; border-radius: 14px; border: 2px solid var(--border); background: var(--bg-surface); color: var(--text-primary); font-weight: 800; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 0 12px; text-align: left; }
+    .reasons button.on { border-color: var(--accent); background: var(--saffron-soft); }
+    .consent-line { font-size: 0.88rem; color: var(--text-secondary); font-weight: 600; margin: 12px 0 0; text-align: center; }
+    .linkish { background: none; border: 0; color: var(--accent); text-decoration: underline; font-weight: 800; cursor: pointer; font-family: inherit; font-size: inherit; padding: 0; }
+    .legal-draft { background: #FEF3C7; color: #78350F; border-radius: 12px; padding: 10px 14px; font-weight: 800; margin-bottom: 14px; }
+    html[data-theme="dark"] .legal-draft { background: #3A2A0A; color: #FCD34D; }
+    .legal-body h3 { font-family: 'Manrope', sans-serif; margin: 16px 0 6px; color: var(--text-primary); }
+    .legal-body p, .legal-body li { color: var(--text-secondary); line-height: 1.6; }
+    .legal-body ul { padding-left: 20px; }
+    .danger-btn { color: var(--red) !important; border-color: var(--red) !important; }
+    .adm-sec:empty { display: none; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -992,6 +1007,8 @@
          <h3 class="pane-title" data-i18n="profile_title">My profile</h3>
          <form id="profile-form" class="prof-card" onsubmit="saveProfile(event)"><div id="profile-body"></div></form>
          <div class="lite-row" id="verify-row" style="display:none;"><div><strong><i class="fas fa-circle-check"></i> <span class="dl" data-en="Verified badge" data-hi="जाँचा हुआ बैज" data-mr="तपासलेला बॅज">Verified badge</span></strong><span class="dl" data-en="Our team checks you in person, then employers see a badge" data-hi="हमारी टीम आपसे मिलकर जाँचेगी, फिर मालिकों को बैज दिखेगा" data-mr="आमची टीम भेटून तपासेल, मग मालकांना बॅज दिसेल">Our team checks you in person, then employers see a badge</span></div><button type="button" class="btn btn-outline lite-btn" id="verify-btn" onclick="askVerify()"><span class="dl" data-en="Ask" data-hi="माँगें" data-mr="मागा">Ask</span></button></div>
+         <div class="lite-row" id="blocked-row" style="display:none;"><div style="width:100%"><strong><i class="fas fa-ban"></i> <span class="dl" data-en="Blocked" data-hi="ब्लॉक किए" data-mr="ब्लॉक केलेले">Blocked</span></strong><div id="blocked-list"></div></div></div>
+         <div class="lite-row"><div><strong><i class="fas fa-user-xmark"></i> <span class="dl" data-en="Delete my account" data-hi="मेरा खाता हटाएँ" data-mr="माझे खाते काढा">Delete my account</span></strong><span class="dl" data-en="We hide you at once and delete your data within 30 days" data-hi="आपको तुरंत छिपा देंगे, 30 दिन में डेटा हटा देंगे" data-mr="तुम्हाला लगेच लपवू, 30 दिवसांत माहिती काढू">We hide you at once and delete your data within 30 days</span></div><button type="button" class="btn btn-outline lite-btn danger-btn" id="delete-btn" onclick="requestDelete()"><span class="dl" data-en="Delete" data-hi="हटाएँ" data-mr="काढा">Delete</span></button></div>
          <div class="lite-row"><div><strong><i class="fas fa-feather"></i> Lite mode</strong><span>Faster on slow internet and older phones</span></div><button type="button" class="btn btn-outline lite-btn" id="lite-btn" onclick="toggleLite()"><span class="lite-label">Off</span></button></div>
       </div>
     </div>
@@ -1024,11 +1041,27 @@
     <div class="container">
       <div><strong>Kamgar Connect • कामगार कनेक्ट</strong><em>Dignity, Not Chowks | सम्मान, चौक नहीं</em></div>
       <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> Serving Chhatrapati Sambhajinagar (Aurangabad), Maharashtra</div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;"><button class="linkish" onclick="openLegal('privacy')">Privacy policy (draft)</button><button class="linkish" onclick="openLegal('terms')">Terms (draft)</button></div>
       <button class="btn btn-outline st-demo-btn" id="demo-open" onclick="openDemoTour()"><i class="fas fa-circle-play"></i> Investor demo</button>
       <button class="btn btn-outline lite-btn" id="lite-btn-footer" onclick="toggleLite()"><i class="fas fa-feather"></i> <span class="lite-label">Lite mode</span></button>
     </div>
   </footer>
   <div id="inbox-panel" role="dialog" aria-label="Messages"></div>
+  <div class="modal" id="report-modal"><div class="modal-content">
+     <button class="btn" style="position:absolute; top:20px; right:20px; background:none; font-size:2rem;" onclick="closeModal()" aria-label="Close">&times;</button>
+     <h2 id="report-title">Report</h2>
+     <p class="prof-hint" id="report-sub"></p>
+     <div class="reasons" id="report-reasons"></div>
+     <textarea id="report-note" class="input-field" rows="3" maxlength="300" style="width:100%;"></textarea>
+     <p class="prof-hint" id="report-privacy"></p>
+     <div class="hist-actions" style="margin-top:12px;"><button class="btn btn-primary" id="report-send" onclick="sendReport()"></button><button class="btn btn-outline" id="report-block" onclick="blockFromReport()"></button></div>
+  </div></div>
+  <div class="modal" id="legal-modal"><div class="modal-content" style="max-width:760px;">
+     <button class="btn" style="position:absolute; top:20px; right:20px; background:none; font-size:2rem;" onclick="closeModal()" aria-label="Close">&times;</button>
+     <h2 id="legal-title"></h2>
+     <div class="legal-draft"><i class="fas fa-triangle-exclamation"></i> DRAFT - needs lawyer review before it is final. / मसुदा - वकिलाने तपासणे बाकी.</div>
+     <div class="legal-body" id="legal-body"></div>
+  </div></div>
   <div id="demo-tour" role="dialog" aria-modal="true" aria-label="Investor demo"><div class="dt-card" id="demo-card"></div></div>
   <div class="st-dock"><a class="d2" href="#" onclick="handleFindWorkClick(); return false;"><i class="fas fa-user-plus"></i> Register</a></div>
 
@@ -1140,6 +1173,7 @@
              <div class="loader-s" id="reg-loader"></div>
              <span id="reg-btn-text" data-i18n="join">JOIN PLATFORM</span>
           </button>
+          <p class="consent-line" id="consent-line"></p>
        </form>
     </div>
   </div>
@@ -1596,7 +1630,7 @@
           switchTab(localStorage.getItem('active_tab') || 'home');
        }
        appReady = true;
-       showLite(); setupManifest();
+       showLite(); setupManifest(); paintConsent();
        if (/[?&]demo=1/.test(location.search)) openDemoTour();
        openReviewFromLink();
        let healthDone = false;
@@ -1643,7 +1677,7 @@
     }
 
     function setLang(l) {
-       setTimeout(() => { try { paintDiscLabels(); } catch (e) {} }, 0);
+       setTimeout(() => { try { paintDiscLabels(); paintConsent(); } catch (e) {} }, 0);
        currentLang = TRANSLATIONS[l] ? l : 'en'; localStorage.setItem('lang', currentLang);
        document.querySelectorAll('[data-i18n]').forEach(el => {
           const key = el.getAttribute('data-i18n');
@@ -2106,6 +2140,7 @@
        localStorage.setItem('active_tab', t);
        const isWorker = localStorage.getItem('user_type') === 'Worker';
        document.querySelectorAll('.app-nav-btn').forEach(b => b.classList.toggle('active', b.id === 'nav-' + t));
+       if (t === 'profile') loadBlocked();
        const home = t === 'home';
        document.getElementById('pane-worker').style.display = (home ? isWorker : false) ? 'block' : 'none';
        document.getElementById('pane-employer').style.display = (home ? !isWorker : false) ? 'block' : 'none';
@@ -2557,7 +2592,7 @@
                 const start = (j.status === 'accepted' ? workDay : false) ? `<button class="btn btn-primary" onclick="startJob('${safeId(j._id)}')"><i class="fas fa-person-digging"></i> ${esc(LX({ en: 'Start work', hi: 'काम शुरू', mr: 'काम सुरू' }))}</button>` : '';
                 return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
                    <div class="hist-meta">${esc(t('posted_by', e.name || ''))}${company} · ${esc(j.city)}${j.amount ? ' · &#8377;' + esc(Number(j.amount)) : ''}</div>${jobDetails(j)}</div>
-                   <div class="hist-actions">${start}${contactButtons(e.phone)}${back}</div></div>`;
+                   <div class="hist-actions">${start}${contactButtons(e.phone)}${back}<button class="btn btn-outline" onclick="openReport('${safeId(j.employerId)}', 'employer', '${esc(String(e.name || '').replace(/'/g, ''))}')"><i class="fas fa-flag"></i> ${esc(LX({ en: 'Report', hi: 'शिकायत', mr: 'तक्रार' }))}</button></div></div>`;
              }).join('');
              return;
           }
@@ -2825,6 +2860,106 @@
           showNotif(approve ? 'Verified' : 'Turned down', 'green'); loadAdmin();
        } catch (e) { showNotif('Could not update', 'red'); }
     }
+    // ===== Trust and safety =====
+    const REPORT_REASONS = [['no_show', 'fa-user-slash', { en: 'Did not come', hi: 'नहीं आए', mr: 'आले नाहीत' }], ['rude', 'fa-face-angry', { en: 'Rude or abusive', hi: 'बदतमीज़ी', mr: 'उद्धट वागणूक' }],
+       ['unsafe', 'fa-triangle-exclamation', { en: 'Unsafe', hi: 'असुरक्षित', mr: 'असुरक्षित' }], ['payment', 'fa-indian-rupee-sign', { en: 'Payment problem', hi: 'पैसे की समस्या', mr: 'पैशांची अडचण' }],
+       ['fake', 'fa-mask', { en: 'Fake profile', hi: 'नकली प्रोफ़ाइल', mr: 'खोटी प्रोफाइल' }], ['other', 'fa-ellipsis', { en: 'Something else', hi: 'कुछ और', mr: 'इतर' }]];
+    let reportTarget = null, reportReason = '';
+    function openReport(id, role, name) {
+       if (!safeId(id)) return;
+       reportTarget = { id, role, name }; reportReason = '';
+       document.getElementById('report-title').innerText = LX({ en: 'Report ', hi: 'शिकायत: ', mr: 'तक्रार: ' }) + name;
+       document.getElementById('report-sub').innerText = LX({ en: 'What happened? Our team reads every report.', hi: 'क्या हुआ? हमारी टीम हर शिकायत पढ़ती है।', mr: 'काय झाले? आमची टीम प्रत्येक तक्रार वाचते.' });
+       document.getElementById('report-reasons').innerHTML = REPORT_REASONS.map(r => '<button type="button" data-r="' + r[0] + '" onclick="pickReason(\'' + r[0] + '\')"><i class="fas ' + r[1] + '"></i> ' + esc(LX(r[2])) + '</button>').join('');
+       document.getElementById('report-note').value = '';
+       document.getElementById('report-note').placeholder = LX({ en: 'Tell us more (optional)', hi: 'और बताएँ (ज़रूरी नहीं)', mr: 'अधिक सांगा (ऐच्छिक)' });
+       document.getElementById('report-privacy').innerText = LX({ en: 'The other person is not told who reported them.', hi: 'सामने वाले को नहीं बताया जाएगा कि शिकायत किसने की।', mr: 'समोरच्याला तक्रार कोणी केली हे सांगितले जाणार नाही.' });
+       document.getElementById('report-send').innerText = LX({ en: 'Send report', hi: 'शिकायत भेजें', mr: 'तक्रार पाठवा' });
+       document.getElementById('report-block').innerText = LX({ en: 'Block ', hi: 'ब्लॉक करें: ', mr: 'ब्लॉक करा: ' }) + name;
+       document.getElementById('report-modal').style.display = 'flex';
+    }
+    function pickReason(r) { reportReason = r; document.querySelectorAll('#report-reasons button').forEach(b => b.classList.toggle('on', b.dataset.r === r)); }
+    async function sendReport() {
+       if (!reportTarget) return;
+       if (!reportReason) { showNotif(LX({ en: 'Choose what happened', hi: 'क्या हुआ चुनें', mr: 'काय झाले ते निवडा' }), 'red'); return; }
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/reports`, { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ targetId: reportTarget.id, targetRole: reportTarget.role, reason: reportReason, note: document.getElementById('report-note').value }) });
+          if (sessionExpired(r)) return;
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) { showNotif(d.msg || t('update_failed'), 'red'); return; }
+          closeModal(); showNotif(LX({ en: 'Thank you. Our team will look at it.', hi: 'धन्यवाद। हमारी टीम देखेगी।', mr: 'धन्यवाद. आमची टीम पाहील.' }), 'green');
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+    function blockFromReport() { if (reportTarget) blockSomeone(reportTarget.id, reportTarget.name); }
+    async function blockSomeone(id, name) {
+       if (!confirm(LX({ en: 'Block ' + name + '? You will not see or book each other.', hi: name + ' को ब्लॉक करें? आप एक-दूसरे को नहीं देख पाएँगे।', mr: name + ' ला ब्लॉक करायचे? तुम्ही एकमेकांना दिसणार नाही.' }))) return;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/blocks/${id}`, { method: 'PUT', headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          if (!r.ok) throw new Error();
+          closeModal(); showNotif(LX({ en: 'Blocked', hi: 'ब्लॉक किया', mr: 'ब्लॉक केले' }), 'green');
+          if (localStorage.getItem('user_type') === 'Employer') loadEmployerGrid();
+       } catch (e) { showNotif(t('update_failed'), 'red'); }
+    }
+    async function loadBlocked() {
+       const row = document.getElementById('blocked-row'); if (!row) return;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/blocks`, { headers: authHeaders() });
+          const list = r.ok ? await r.json() : [];
+          row.style.display = list.length ? 'flex' : 'none';
+          document.getElementById('blocked-list').innerHTML = list.map(x => '<div class="adm-row" style="border-color:var(--border)"><span>' + esc(x.name) + '</span><button type="button" class="btn btn-outline" onclick="unblock(\'' + safeId(x._id) + '\')">' + esc(LX({ en: 'Unblock', hi: 'अनब्लॉक', mr: 'अनब्लॉक' })) + '</button></div>').join('');
+       } catch (e) {}
+    }
+    async function unblock(id) {
+       try { await fetch(`${CONFIG.BACKEND_URL}/api/me/blocks/${id}`, { method: 'DELETE', headers: authHeaders() }); } catch (e) {}
+       loadBlocked();
+    }
+    async function requestDelete() {
+       if (!confirm(LX({ en: 'Delete your account? You will be hidden now and your data deleted within 30 days.', hi: 'अपना खाता हटाएँ? आप अभी छिप जाएँगे और 30 दिन में डेटा हट जाएगा।', mr: 'खाते काढायचे? तुम्ही आता लपाल आणि 30 दिवसांत माहिती काढली जाईल.' }))) return;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/delete-request`, { method: 'POST', headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          if (!r.ok) throw new Error();
+          alert(LX({ en: 'Request received. You are now hidden. You will be logged out.', hi: 'अनुरोध मिला। आप अब छिपे हैं। लॉग आउट हो रहे हैं।', mr: 'विनंती मिळाली. तुम्ही आता लपलेले आहात. लॉग आउट होत आहे.' }));
+          logout();
+       } catch (e) { showNotif(t('update_failed'), 'red'); }
+    }
+    function paintConsent() {
+       const el = document.getElementById('consent-line'); if (!el) return;
+       el.innerHTML = esc(LX({ en: 'By joining you agree to our', hi: 'जुड़कर आप हमारी', mr: 'नोंदणी करून तुम्ही आमच्या' })) + ' <button type="button" class="linkish" onclick="openLegal(\'terms\')">' + esc(LX({ en: 'Terms', hi: 'शर्तें', mr: 'अटी' })) + '</button> ' + esc(LX({ en: 'and', hi: 'और', mr: 'आणि' })) + ' <button type="button" class="linkish" onclick="openLegal(\'privacy\')">' + esc(LX({ en: 'Privacy policy', hi: 'गोपनीयता नीति', mr: 'गोपनीयता धोरण' })) + '</button>' + esc(LX({ en: '. Employers can see a worker\'s phone number.', hi: ' से सहमत हैं। मालिक कामगार का फ़ोन नंबर देख सकते हैं।', mr: ' ला संमती देता. मालक कामगाराचा फोन नंबर पाहू शकतात.' }));
+    }
+    const LEGAL = {
+       privacy: ['Privacy policy', '<h3>Who we are</h3><p>Kamgar Connect is a website that helps daily-wage workers and employers in Aurangabad find each other. [Company name, address and contact email to be added.]</p>'
+          + '<h3>What we collect</h3><ul><li>Name, phone number, city, work type, experience, daily wage and working days.</li><li>Your location, only if you tap "Use my current location". We use it to show nearby workers; we never show your exact location to others, only a rough area name and distance.</li><li>Bookings, jobs, ratings, reviews, reports and messages inside the app.</li><li>If you sign in with Google: your email address (kept private).</li></ul>'
+          + '<h3>Who can see what</h3><ul><li>Employers who are logged in can see a worker\'s name, work type, wage, rating, reviews, rough area and phone number, so they can contact the worker directly.</li><li>Workers see the name and phone number of employers who booked them or whose job they took.</li><li>We do not sell your data.</li></ul>'
+          + '<h3>How long we keep it</h3><p>As long as you have an account. In-app messages are deleted after 60 days. Ask us to delete your account from Profile → Delete my account; we hide you at once and delete your data within 30 days, except records we must keep by law.</p>'
+          + '<h3>Your rights</h3><p>You can see and change your details in Profile, and ask for a copy or deletion of your data. [Grievance officer name and contact to be added under Indian law.]</p>'
+          + '<h3>Safety</h3><p>Report or block anyone from their card or your job list. Our team reads every report.</p>'],
+       terms: ['Terms of use', '<h3>The service</h3><p>Kamgar Connect only connects workers and employers. We are not the employer and do not pay wages. The worker and the employer agree the work, wage and payment directly between themselves.</p>'
+          + '<h3>Your account</h3><ul><li>Give true details. One account per phone number.</li><li>Keep your phone safe: today anyone who knows your number can log in to your account.</li></ul>'
+          + '<h3>Fair use</h3><ul><li>No fake bookings, fake ratings or abuse.</li><li>Employers: pay the agreed wage on time and keep the workplace safe.</li><li>Workers: confirm only bookings you will attend, and give a job back if you cannot come.</li><li>We may hide or remove accounts that break these rules or get serious reports.</li></ul>'
+          + '<h3>Ratings and reliability</h3><p>Employers can rate workers after the work. "Did not come" reports lower a worker\'s reliability score.</p>'
+          + '<h3>Limits</h3><p>The service is free and provided as it is. We are not responsible for the work itself, injuries or payment disputes between users, to the extent the law allows. [To be completed by a lawyer.]</p>'
+          + '<h3>Contact</h3><p>[Contact email / phone to be added.]</p>']
+    };
+    function openLegal(which) {
+       const d = LEGAL[which]; if (!d) return;
+       document.getElementById('legal-title').innerText = d[0] + ' (draft)';
+       document.getElementById('legal-body').innerHTML = d[1];
+       document.getElementById('legal-modal').style.display = 'flex';
+    }
+    async function loadAdminReports(hide) {
+       const box = document.getElementById('adm-reports'); if (!box) return;
+       try {
+          const list = await admGet('reports' + (hide || ''));
+          const label = { no_show: 'Did not come', rude: 'Rude', unsafe: 'Unsafe', payment: 'Payment', fake: 'Fake profile', other: 'Other', delete_account: 'DELETE ACCOUNT request' };
+          box.innerHTML = '<h3>Reports and deletion requests (' + list.length + ')</h3>' + (list.map(r => '<div class="adm-row"><span><b>' + esc(label[r.reason] || r.reason) + '</b> · ' + esc(new Date(r.createdAt).toLocaleString()) + '<br><small>From ' + esc(r.reporter.role + ' ' + r.reporter.name + ' ' + (r.reporter.phone || '')) + (r.target ? ' about ' + esc(r.target.role + ' ' + r.target.name + ' ' + (r.target.phone || '')) : '') + (r.note ? ' - “' + esc(r.note) + '”' : '') + '</small></span><button class="btn btn-outline" onclick="admClose(\'' + safeId(r._id) + '\')">Close</button></div>').join('') || '<small>No open reports.</small>');
+       } catch (e) { box.innerHTML = ''; }
+    }
+    async function admClose(id) {
+       try { await fetch(`${CONFIG.BACKEND_URL}/api/admin/reports/${id}/close`, { method: 'POST', headers: { Authorization: admPw() } }); } catch (e) {}
+       loadAdmin();
+    }
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
     function leaveJob(id) { if (confirm(t('give_back_q'))) jobAction(id, 'leave', t('given_back')); }
@@ -2916,6 +3051,7 @@
                    <p>${esc(t('city'))}: ${esc(w.city)}</p>
                    <p>${esc(t('availability'))}: ${avail}</p>
                    <button class="btn btn-outline" style="margin-top:auto; width:100%;" onclick="openRoots('${id}', event)">${esc(t('previous_jobs'))}</button>
+                   ${localStorage.getItem('user_type') === 'Employer' ? `<div class="safety-row"><button class="btn btn-outline" onclick="event.stopPropagation(); openReport('${id}', 'worker', '${esc(String(w.name || '').replace(/'/g, ''))}')"><i class="fas fa-flag"></i> ${esc(LX({ en: 'Report', hi: 'शिकायत', mr: 'तक्रार' }))}</button><button class="btn btn-outline" onclick="event.stopPropagation(); blockSomeone('${id}', '${esc(String(w.name || '').replace(/'/g, ''))}')"><i class="fas fa-ban"></i> ${esc(LX({ en: 'Block', hi: 'ब्लॉक', mr: 'ब्लॉक' }))}</button></div>` : ''}
                 </div>
              </div>
           </div>
