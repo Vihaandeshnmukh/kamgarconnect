@@ -14,12 +14,17 @@
 | 7 | Trust and safety: report, block, delete request, legal drafts | Done | stage-7 |
 | 8 | Speed: waking-up card, keep-alive notes | Done (lazy three.js reverted) | stage-8 |
 | 9 | Growth: trade pages, QR poster, WhatsApp share | Done | stage-9 |
-| 10 | Quality: accessibility fixes, backups, uptime check | __STAGE10__ | stage-10 |
+| 10 | Quality: accessibility fixes, backups, uptime check | Done | stage-10 |
 
-Nothing was reverted as a whole stage. One idea inside stage 8 (loading three.js only when needed) was tried and taken out again; see BLOCKED.md.
+Nothing was reverted as a whole stage. Server deploys: stages 1, 3, 4, 5, 6 and 7 deployed on Render by me (Manual Deploy, all succeeded); stages 2, 8, 9 and 10 changed only the page, scripts or docs, so no deploy was needed. Live server = `76da167` (stage-7); `main` = `a2a4e30` (stage-10). One idea inside stage 8 (loading three.js only when needed) was tried and taken out again; see BLOCKED.md.
 
 ## Tests
-__TESTS__
+Final full run (gate, 8 Nov ~03:00 IST), all on a throwaway local database:
+- Server: features 40/40, bugfix 49/49, me 38/39*, audit 72/72, security 113/113, google 16/16, demo-seed 13/13, discovery 22/22, lifecycle 36/36, inbox 16/16, admin 21/21, safety 27/27, backup 7/7.
+- Browser (real Chrome): features 25/25, fixcheck 23/23, batchA 7/7, batchB1 5/5, dropdown all pass, devices 128/128 (375/768/1024/1280, light + dark), overnight stages 149/149, accessibility 24/24 (axe-core WCAG 2 AA).
+- \* The one test-me miss ("can't hire your own worker account") already failed before any change tonight: it books "today", and today is a Sunday the test worker doesn't work. Same for a few bugfix/security checks earlier in the night; all are listed in qa-tools/baseline-fails.txt.
+- Live after the last deploy: uptime check 6/6; new endpoints answer (open search 200, protected ones 401).
+- **Production data untouched:** 0 records with isDemo in workers/employers/calls; workers 12, employers 7, jobs 2, the same as before the run. The new `notifications` and `reports` collections exist (created by the server's indexes) and are empty.
 
 ## Links
 - Staging page (log in to WordPress first): https://kamgar.de/kamgar-staging/
@@ -32,7 +37,8 @@ __TESTS__
 1. Look at staging on your phone and laptop: https://kamgar.de/kamgar-staging/
 2. Tell Claude: "publish v2 to live". Claude will take the file from GitHub at a fixed commit, check its SHA-256, save the current live page as a backup, post it to the `twentytwentyfive//home` template and check every script on the live page.
 3. Doing it yourself instead: WordPress → Appearance → Editor → Templates → "Blog Home" (https://kamgar.de/wp-admin/site-editor.php?postType=wp_template) → ⋮ → Code editor → replace everything with the content of `kamgar-connect/kamgar-wordpress.v2.html` from GitHub (https://github.com/Vihaandeshnmukh/kamgarconnect/blob/main/kamgar-connect/kamgar-wordpress.v2.html → Raw) → Save.
-4. **Rollback:** the current live page equals commit `1c14896` of `kamgar-connect/kamgar-wordpress.html`... __ROLLBACK__
+4. **Rollback:** the live page today is the version you approved on 8 Nov: branch `preview/app-ui` commit `5b05e6d`, file `kamgar-connect/kamgar-wordpress.html` (SHA-256 `45a5407f…`). To roll back, tell Claude "roll back live to 5b05e6d", or paste that file from https://github.com/Vihaandeshnmukh/kamgarconnect/blob/5b05e6d/kamgar-connect/kamgar-wordpress.html into the same template. The version before that is commit `1c14896` on main.
+5. After publishing v2, the server already supports everything (all stages are live on Render).
 
 ## Rollback tags (server)
 Every stage is tagged `stage-1` … `stage-10` on GitHub. To go back on Render: Deploys → pick the deploy of the tag you want → **Rollback** (https://dashboard.render.com/web/srv-dbfkordg1s2s7386lq5g/deploys). The deploy before tonight was `60e0e9a`.
