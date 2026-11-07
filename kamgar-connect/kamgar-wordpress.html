@@ -190,6 +190,7 @@
     .notif { color: var(--navy); box-shadow: var(--shadow); }
     .profile-dropdown { box-shadow: var(--shadow); }
     #main-live-btn { min-height: 90px; box-shadow: 0 16px 40px rgba(255, 92, 0, 0.30); }
+    #live-status { text-align: left; margin-top: 14px !important; }
 
     @media (max-width: 768px) {
       .hero { padding: 40px 0 30px; }
@@ -319,7 +320,7 @@
     }
     /* ── App screens (logged in): Home / History / Stats / Profile ── */
     body.app-mode .st-hero, body.app-mode .st-section, body.app-mode .mission-section, body.app-mode #team-section,
-    body.app-mode .st-footer, body.app-mode .st-dock, body.app-mode .nav-team-btn { display: none !important; }
+    body.app-mode .st-footer, body.app-mode .st-dock, body.app-mode .nav-team-btn, body.app-mode .nav-links, body.app-mode .nav-join { display: none !important; }
     body.app-mode #dashboard-tabs { margin: 24px auto 40px !important; }
     body.app-mode .tab-container { margin-top: 0; }
     /* Job cards in "Available jobs" have no 3D flip wrapper: keep them in the list (they covered the whole page) */
@@ -441,6 +442,128 @@
       .lang-switcher { gap: 3px !important; }
       .lang-switcher .btn { padding: 4px 6px !important; min-width: 36px; }
     }
+    /* ===== Device layouts (Stitch redesign) ===== */
+    .nav-links, .nav-join, .side-user, .side-foot, .st-hero-art, .reg-side { display: none; }
+    .st-hero .hero-main > p[data-i18n] { max-width: 640px; }
+    .nav-links a { font-weight: 700; font-size: 0.92rem; color: var(--text-secondary); padding: 10px 4px; cursor: pointer; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-join { min-height: 44px; padding: 8px 18px; border-radius: 12px; font-weight: 800; white-space: nowrap; }
+    /* Facts strip */
+    .st-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 1000px; margin: 0 auto; }
+    .st-fact { background: var(--bg-surface); border: 1.5px solid #E2E8F0; border-radius: 18px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
+    .st-fact i { width: 48px; height: 48px; flex: none; border-radius: 14px; background: var(--saffron-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .st-fact strong { display: block; font-family: 'Manrope', sans-serif; font-size: 1.15rem; color: var(--navy); }
+    .st-fact span { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; }
+    /* How it works: workers and employers */
+    .st-how { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .st-how-col { background: var(--bg-surface); border: 1.5px solid #E2E8F0; border-radius: 22px; padding: 26px; }
+    .st-how-col h3 { font-family: 'Manrope', sans-serif; color: var(--navy); font-size: 1.3rem; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .st-how-col h3 i { color: var(--accent); }
+    .st-how-col > .hi { color: var(--accent); font-weight: 700; margin-bottom: 14px; }
+    .st-how-col ol { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .st-how-col li { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; }
+    .st-how-col li b { width: 40px; height: 40px; border-radius: 50%; background: var(--navy); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Manrope', sans-serif; }
+    .st-how-col li strong { display: block; color: var(--navy); }
+    .st-how-col li span { color: var(--text-secondary); font-size: 0.95rem; }
+    .st-how-emp li b { background: var(--accent); }
+    /* Trust and languages */
+    .st-trust { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .st-trust div { background: var(--bg-surface); border: 1.5px solid #E2E8F0; border-radius: 18px; padding: 22px; }
+    .st-trust i { color: var(--accent); font-size: 1.5rem; margin-bottom: 12px; display: block; }
+    .st-trust strong { display: block; color: var(--navy); font-family: 'Manrope', sans-serif; font-size: 1.05rem; margin-bottom: 4px; }
+    .st-trust span { color: var(--text-secondary); font-size: 0.92rem; }
+    .st-langs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .st-lang { background: var(--bg-surface); border: 2px solid #E2E8F0; border-radius: 18px; padding: 22px; text-align: left; cursor: pointer; font-family: inherit; min-height: 120px; }
+    .st-lang:hover { border-color: var(--accent); }
+    .st-lang strong { display: block; font-family: 'Manrope', sans-serif; font-size: 1.4rem; color: var(--navy); }
+    .st-lang span { color: var(--text-secondary); font-weight: 600; }
+    .st-listen-note { margin-top: 16px; color: var(--text-secondary); font-weight: 600; }
+    .st-listen-note i { color: var(--accent); }
+    .st-final { background: #1E2A4A; color: #FFFFFF; border-radius: 28px; padding: 40px 32px; text-align: center; }
+    .st-final h2 { font-family: 'Manrope', sans-serif; font-size: clamp(1.6rem, 4vw, 2.3rem); margin-bottom: 6px; color: #FFFFFF; }
+    .st-final p { color: #D7DCE6; margin-bottom: 22px; font-weight: 600; }
+    .st-final .st-cta { margin-bottom: 0; }
+    .st-final .st-employer { background: #FFFFFF !important; color: #1E2A4A !important; }
+    @media (max-width: 1023px) {
+      .st-trust { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .st-facts, .st-how, .st-langs { grid-template-columns: 1fr; }
+      .st-trust { grid-template-columns: 1fr; }
+      .st-fact { padding: 14px 16px; }
+      .st-how-col { padding: 20px 16px; }
+      .st-final { padding: 30px 18px; border-radius: 22px; }
+    }
+    html[data-theme="dark"] .st-fact, html[data-theme="dark"] .st-how-col, html[data-theme="dark"] .st-trust div,
+    html[data-theme="dark"] .st-lang, html[data-theme="dark"] .st-hero-art .art-card { background: var(--bg-surface); border-color: var(--border); }
+    html[data-theme="dark"] .st-how-col li b { background: #2B3A63; }
+    html[data-theme="dark"] .st-how-emp li b { background: #C2410C; }
+    html[data-theme="dark"] .st-final { background: #20253A; }
+    html[data-theme="dark"] .st-final .st-employer { background: #E8EAED !important; color: #111827 !important; }
+
+    /* Desktop website (>=1024px) */
+    @media (min-width: 1024px) {
+      body:not(.app-mode) .nav-links { display: flex; gap: 22px; align-items: center; }
+      body:not(.app-mode) .nav-join { display: inline-flex; align-items: center; gap: 8px; }
+      body:not(.app-mode) .nav-team-btn { display: none; }
+      .st-hero .hero-content { max-width: 1120px; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 48px; align-items: center; text-align: left; padding: 0 24px; }
+      .st-hero .hero-main > p[data-i18n] { margin-left: 0; }
+      .st-hero .st-hi { margin-left: 0; }
+      .st-hero .st-cta { margin-left: 0; }
+      .st-hero .st-chips { justify-content: flex-start; }
+      .st-hero-art { display: block; }
+      .st-hero-art .art-card { background: #FFFFFF; border: 2px solid #E2E8F0; border-radius: 24px; padding: 22px; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12); max-width: 380px; margin-left: auto; }
+      .art-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+      .art-top i { width: 52px; height: 52px; border-radius: 14px; background: var(--saffron-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+      .art-top strong { font-family: 'Manrope', sans-serif; font-size: 1.25rem; color: var(--navy); display: block; }
+      .art-top span { color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; }
+      .art-wage { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.8rem; color: var(--navy); }
+      .art-wage small { font-size: 0.95rem; color: var(--text-secondary); font-weight: 700; }
+      .art-rows { margin: 12px 0 16px; display: flex; flex-direction: column; gap: 8px; color: var(--text-secondary); font-weight: 600; }
+      .art-rows i { color: var(--accent); width: 20px; }
+      .art-btn { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border-radius: 14px; background: var(--accent); color: #FFFFFF; font-weight: 800; }
+      .art-note { margin-top: 10px; text-align: center; font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+
+      /* Registration: two columns with a "why join" panel */
+      #reg-modal .modal-content { max-width: 980px; width: 100%; display: grid; grid-template-columns: 340px 1fr; column-gap: 36px; padding: 0 40px 0 0; overflow: hidden; }
+      #reg-modal .modal-content > * { grid-column: 2; }
+      #reg-modal .modal-content > h2 { margin-top: 36px; }
+      #reg-modal .modal-content > form { margin-bottom: 36px; }
+      #reg-modal .reg-side { display: flex; grid-column: 1; grid-row: 1 / span 20; flex-direction: column; gap: 18px; background: #1E2A4A; color: #FFFFFF; padding: 40px 30px; }
+      .reg-side h3 { font-family: 'Manrope', sans-serif; font-size: 1.6rem; color: #FFFFFF; }
+      .reg-side p { color: #D7DCE6; font-weight: 600; }
+      .reg-side ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+      .reg-side li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; font-weight: 700; }
+      .reg-side li i { color: #FFB38A; margin-top: 3px; }
+      .reg-side li small { display: block; color: #C5CBD8; font-weight: 600; }
+      .reg-side .reg-side-foot { margin-top: auto; color: #C5CBD8; font-size: 0.9rem; font-weight: 600; }
+
+      /* Logged in: sidebar */
+      body.app-mode #dashboard-tabs { margin: 24px 32px 48px 296px !important; max-width: 1040px; padding: 0; }
+      body.app-mode .app-nav { position: fixed; top: 80px; left: 0; bottom: 0; width: 264px; z-index: 900; flex-direction: column; justify-content: flex-start; gap: 6px; margin: 0; max-width: none; border-radius: 0; border: 0; border-right: 1px solid var(--border); background: var(--bg-surface); padding: 20px 16px; overflow-y: auto; }
+      body.app-mode .app-nav-btn { flex: none; justify-content: flex-start; padding: 0 16px; min-height: 50px; font-size: 1rem; gap: 14px; }
+      body.app-mode .app-nav-btn i { width: 22px; text-align: center; font-size: 1.1rem; }
+      body.app-mode .app-nav-btn:not(.active):hover { background: var(--bg-elevated); color: var(--text-primary); }
+      body.app-mode .side-user { display: flex; align-items: center; gap: 12px; padding: 4px 6px 18px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+      .side-avatar { width: 46px; height: 46px; flex: none; border-radius: 50%; background: var(--accent); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.2rem; }
+      .side-user strong { display: block; color: var(--text-primary); font-size: 1rem; overflow-wrap: anywhere; }
+      .side-user span { color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; }
+      body.app-mode .side-foot { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+      .side-foot .btn { width: 100%; min-height: 46px; justify-content: center; }
+      html[data-theme="dark"] .side-avatar { background: #C2410C; }
+    }
+
+    /* Phone and iPad, logged in: bottom app bar (phones already had it below 761px) */
+    @media (min-width: 761px) and (max-width: 1023px) {
+      body.app-mode { padding-bottom: 96px; }
+      .app-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 940; margin: 0; max-width: none; border-radius: 0; background: #FFFFFF; padding: 8px max(16px, calc((100% - 720px) / 2)) calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 16px rgba(0,0,0,0.10); border: 0; }
+      .app-nav-btn { flex-direction: column; gap: 4px; font-size: 0.85rem; min-height: 60px; }
+      .app-nav-btn i { font-size: 1.25rem; }
+      .app-nav-btn.active { background: var(--saffron-soft, #FFE3D3); color: var(--accent); }
+      html[data-theme="dark"] .app-nav { background: var(--bg-surface); }
+      html[data-theme="dark"] .app-nav-btn.active { background: #C2410C; color: #FFFFFF; }
+      body.app-mode #notif-box { right: 16px; left: 16px; top: auto; bottom: 100px; }
+    }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -469,7 +592,14 @@
     <div class="container nav-inner">
       <div class="logo" onclick="gsap.to(window, {scrollTo:0, duration:1})"><span style="color:inherit">Kamgar<span>Connect</span></span><small>औरंगाबाद • Aurangabad</small></div>
       <div style="display:flex; gap:20px; align-items:center;">
+        <nav class="nav-links" aria-label="Sections">
+          <a onclick="gsap.to(window, {scrollTo:{y:'#st-how', offsetY:90}, duration:0.8})">How it works</a>
+          <a onclick="gsap.to(window, {scrollTo:{y:'#st-work', offsetY:90}, duration:0.8})">Work types</a>
+          <a onclick="gsap.to(window, {scrollTo:{y:'#st-trust', offsetY:90}, duration:0.8})">Trust</a>
+          <a onclick="gsap.to(window, {scrollTo:{y:'#team-section', offsetY:90}, duration:0.8})">Our team</a>
+        </nav>
         <button class="btn nav-team-btn" onclick="gsap.to(window, {scrollTo:'#team-section', duration:1})" data-i18n="nav_team">Our Team</button>
+        <button class="btn btn-primary nav-join" onclick="handleFindWorkClick()"><i class="fas fa-user-plus"></i> Join / Log in</button>
         <div class="lang-switcher" style="display:flex; gap:8px;">
           <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('en')">EN</button>
           <button class="btn btn-outline" style="padding:4px 10px; font-size:0.7rem;" onclick="setLang('hi')">हिं</button>
@@ -492,6 +622,7 @@
   <section class="hero st-hero">
     <canvas id="hero-canvas"></canvas>
     <div class="hero-content">
+      <div class="hero-main">
       <div class="st-badge"><i class="fas fa-location-dot"></i> Aurangabad (Chhatrapati Sambhajinagar) &amp; Marathwada</div>
       <h1 class="glitch" data-text="Dignity, Not Chowks." data-i18n="hero_title">Dignity, Not Chowks.</h1>
       <p class="st-hi">चौक पर खड़े रहने की ज़रूरत नहीं, सम्मान से काम पाएं।</p>
@@ -504,10 +635,30 @@
         <span><i class="fas fa-handshake"></i> Direct contact, no middlemen / थेट संपर्क</span>
         <span><i class="fas fa-location-crosshairs"></i> GPS-based matching</span>
       </div>
+      </div>
+      <div class="st-hero-art" aria-hidden="true">
+        <div class="art-card">
+          <div class="art-top"><i class="fas fa-trowel-bricks"></i><div><strong>Mason · गवंडी</strong><span>Example job</span></div></div>
+          <div class="art-wage">₹800 <small>/ day · दिवस</small></div>
+          <div class="art-rows"><div><i class="fas fa-location-dot"></i> Waluj MIDC, Aurangabad</div><div><i class="fas fa-calendar-day"></i> Tomorrow, 9:00 AM</div><div><i class="fas fa-users"></i> 2 workers needed</div></div>
+          <div class="art-btn"><i class="fas fa-check"></i> Accept / स्वीकारा</div>
+          <div class="art-note">Workers see jobs like this after they register</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="st-section">
+  <section class="st-section" style="padding-bottom:0;">
+    <div class="container">
+      <div class="st-facts">
+        <div class="st-fact"><i class="fas fa-briefcase"></i><div><strong>8 work types</strong><span>Mason to driver • ८ प्रकारचे काम</span></div></div>
+        <div class="st-fact"><i class="fas fa-language"></i><div><strong>3 languages</strong><span>English • हिंदी • मराठी</span></div></div>
+        <div class="st-fact"><i class="fas fa-handshake"></i><div><strong>No middlemen</strong><span>Direct contact • थेट संपर्क</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="st-section" id="st-how">
     <div class="container">
       <div class="st-eyebrow">Simple process • सोपी पद्धत</div>
       <h2 class="st-title">How Kamgar Connect works</h2>
@@ -517,10 +668,30 @@
         <div class="st-step"><div class="ico"><i class="fas fa-handshake"></i></div><h3>2. Get hired / काम पाएं</h3><div class="hi">काम देने वाले सीधे आपसे संपर्क करेंगे</div><p>Tap START LOOKING when you are free. Employers near you can hire you and contact you directly.</p></div>
         <div class="st-step"><div class="ico"><i class="fas fa-indian-rupee-sign"></i></div><h3>3. Work &amp; get paid / मेहनताना</h3><div class="hi">सीधे नियोक्ता से भुगतान</div><p>Agree the wage with the employer and be paid directly in cash or UPI. No middleman in between.</p></div>
       </div>
+      <div class="st-how" style="margin-top:28px;">
+        <div class="st-how-col">
+          <h3><i class="fas fa-helmet-safety"></i> For workers</h3>
+          <div class="hi">कामगारांसाठी • कामगारों के लिए</div>
+          <ol>
+            <li><b>1</b><div><strong>Register in 1 minute</strong><span>Name, phone, your work and daily wage.</span></div></li>
+            <li><b>2</b><div><strong>Tap Start looking</strong><span>Employers near you can see you for 8 hours. Or accept a posted job.</span></div></li>
+            <li><b>3</b><div><strong>Confirm the booking, do the work</strong><span>Share the details with your family. Get paid directly.</span></div></li>
+          </ol>
+        </div>
+        <div class="st-how-col st-how-emp">
+          <h3><i class="fas fa-user-tie"></i> For employers</h3>
+          <div class="hi">काम देणाऱ्यांसाठी • काम देने वालों के लिए</div>
+          <ol>
+            <li><b>1</b><div><strong>Register free</strong><span>Your name, phone and location.</span></div></li>
+            <li><b>2</b><div><strong>Hire a worker or post a job</strong><span>Filter by work type and city, or search by phone number.</span></div></li>
+            <li><b>3</b><div><strong>The worker confirms</strong><span>After the work, give a rating and a written review.</span></div></li>
+          </ol>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="st-section st-cats-wrap">
+  <section class="st-section st-cats-wrap" id="st-work">
     <div class="container">
       <div class="st-eyebrow">In-demand skills • मागणी असलेले काम</div>
       <h2 class="st-title">Work categories in Aurangabad</h2>
@@ -535,6 +706,33 @@
         <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-paint-roller"></i></div><strong>Painters</strong><span>पेंटर / रंगारी</span></button>
         <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-truck"></i></div><strong>Drivers</strong><span>ड्रायव्हर</span></button>
       </div>
+    </div>
+  </section>
+
+  <section class="st-section" id="st-trust">
+    <div class="container">
+      <div class="st-eyebrow">Trust • भरोसा • विश्वास</div>
+      <h2 class="st-title">Why people trust Kamgar Connect</h2>
+      <p class="st-sub">Built for daily-wage work in Aurangabad.</p>
+      <div class="st-trust">
+        <div><i class="fas fa-handshake"></i><strong>Direct contact</strong><span>No contractor or middleman in between. थेट संपर्क.</span></div>
+        <div><i class="fas fa-circle-check"></i><strong>Worker confirms every booking</strong><span>Nothing is fixed until the worker says yes.</span></div>
+        <div><i class="fas fa-star"></i><strong>Ratings &amp; reviews</strong><span>Employers rate workers and write a short review after the work.</span></div>
+        <div><i class="fas fa-people-roof"></i><strong>Share with family</strong><span>Send the booking place and time to your family on WhatsApp.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="st-section" style="padding-top:0;">
+    <div class="container">
+      <div class="st-eyebrow">Your language • तुमची भाषा</div>
+      <h2 class="st-title">Use it in your language</h2>
+      <div class="st-langs">
+        <button class="st-lang" onclick="setLang('en')"><strong>English</strong><span>Find work near you</span></button>
+        <button class="st-lang" onclick="setLang('hi')"><strong>हिंदी</strong><span>अपने पास काम पाएं</span></button>
+        <button class="st-lang" onclick="setLang('mr')"><strong>मराठी</strong><span>जवळपास काम मिळवा</span></button>
+      </div>
+      <p class="st-listen-note"><i class="fas fa-volume-high"></i> Tap <b>Listen</b> on any screen to hear it read aloud. • ऐका बटण दाबा, स्क्रीन वाचून दाखवली जाईल.</p>
     </div>
   </section>
 
@@ -555,10 +753,12 @@
          </div>
       </div>
       <nav class="app-nav" id="app-nav">
+         <div class="side-user"><div class="side-avatar" id="side-avatar">K</div><div><strong id="side-name"></strong><span id="side-role"></span></div></div>
          <button class="app-nav-btn" id="nav-home" onclick="switchTab('home')"><i class="fas fa-house"></i><span data-i18n="nav_home">Home</span></button>
          <button class="app-nav-btn" id="nav-history" onclick="switchTab('history')"><i class="fas fa-clock-rotate-left"></i><span data-i18n="nav_history">History</span></button>
          <button class="app-nav-btn" id="nav-stats" onclick="switchTab('stats')"><i class="fas fa-chart-simple"></i><span data-i18n="nav_stats">Stats</span></button>
          <button class="app-nav-btn" id="nav-profile" onclick="switchTab('profile')"><i class="fas fa-user-pen"></i><span data-i18n="nav_profile">Profile</span></button>
+         <div class="side-foot"><button class="btn btn-outline app-logout" style="margin-top:0;" onclick="logout()"><i class="fas fa-right-from-bracket"></i> <span data-i18n="logout">Logout</span></button></div>
       </nav>
 
       <div id="pane-worker" style="display:none;">
@@ -645,6 +845,19 @@
     </div>
   </section>
 
+  <section class="st-section st-final-wrap">
+    <div class="container">
+      <div class="st-final">
+        <h2>Ready to start?</h2>
+        <p>Join free in 1 minute • १ मिनिटात मोफत नोंदणी</p>
+        <div class="st-cta">
+          <button class="btn btn-primary" onclick="handleFindWorkClick()"><i class="fas fa-helmet-safety"></i><span>I am a Worker<small>मैं कामगार हूँ / मी कामगार आहे</small></span></button>
+          <button class="btn st-employer" onclick="handleHireClick()"><i class="fas fa-user-tie"></i><span>I Need a Worker<small>मुझे कामगार चाहिए / मला कामगार हवा</small></span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <div class="secret-trigger pulse" onclick="openSecretPage()" title="Enter Secret Code"><i class="fas fa-lock"></i></div>
   <footer class="st-footer">
     <div class="container">
@@ -668,6 +881,16 @@
 
   <div class="modal" id="reg-modal">
     <div class="modal-content">
+       <aside class="reg-side">
+          <h3>Join Kamgar Connect</h3>
+          <p>Free. 1 minute. No middlemen.<br>मोफत • १ मिनिट • दलाल नाही</p>
+          <ul>
+             <li><i class="fas fa-check"></i><span>Direct contact<small>थेट संपर्क • सीधा संपर्क</small></span></li>
+             <li><i class="fas fa-check"></i><span>The worker confirms every booking<small>कामगार होकार देतो</small></span></li>
+             <li><i class="fas fa-check"></i><span>English, हिंदी or मराठी<small>Tap Listen to hear the form</small></span></li>
+          </ul>
+          <div class="reg-side-foot">Already registered? Enter your phone number to log in.<br>आधीच नोंदणी केली? फोन नंबर टाका.</div>
+       </aside>
        <button class="btn" style="position:absolute; top:20px; right:20px; background:none; color:white; font-size:2rem;" onclick="closeModal()">&times;</button>
        <h2 style="margin-bottom:12px;" data-i18n="reg_title">Join the Marketplace</h2>
        <button type="button" class="btn btn-outline listen-btn" onclick="listenHere('listen_reg')"><i class="fas fa-volume-high"></i> <span data-i18n="listen">Listen</span></button>
@@ -1654,6 +1877,10 @@
        const skill = localStorage.getItem('user_skill');
        document.getElementById('app-sub').innerText = type === 'Worker' ? skillName(skill) + ' · ' + city : city;
        document.getElementById('app-role').innerText = type === 'Worker' ? t('role_worker') : t('role_employer');
+       const fullName = localStorage.getItem('user_name') || '';
+       document.getElementById('side-name').innerText = fullName;
+       document.getElementById('side-avatar').innerText = (fullName.trim()[0] || 'K').toUpperCase();
+       document.getElementById('side-role').innerText = (type === 'Worker' ? t('role_worker') : t('role_employer')) + (city ? ' · ' + city : '');
        document.getElementById('app-switch-text').innerText = type === 'Worker' ? t('switch_to_emp') : t('switch_to_wk');
     }
 
