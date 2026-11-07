@@ -10,3 +10,6 @@ Same blocker as the service worker: push needs sw.js on https://kamgar.de/ plus 
 
 ## Not done: loading three.js (about 600 KB) only when needed
 Tried in stage 8; automated page loads then timed out in tests, so it was reverted (the 3D scene is already skipped in lite mode on slow phones). Worth retrying with a real slow phone: ask Claude "retry lazy three.js".
+
+## Seeding the real kamgar_demo database
+The script is ready and tested (qa-tools/test-demo-seed.js, 13/13), but I could not run it against Atlas: the MongoDB tool in this session is read-only, and Node on this PC can't resolve `mongodb+srv` addresses. Steps: 1) Atlas → Cluster0 → Connect → Drivers, copy the *standard* (mongodb://) connection string: https://cloud.mongodb.com ; 2) change the database name in it to `kamgar_demo`; 3) run `node scripts/demo-seed.js --uri "<that string>"` in `D:\kamgar connect\kamgarconnect\kamgar-connect`.

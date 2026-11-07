@@ -754,6 +754,14 @@
       body.printing-poster #poster-sheet { border: 0; }
       @page { size: A4; margin: 12mm; }
     }
+    /* ===== Accessibility: contrast in light mode ===== */
+    html:not([data-theme="dark"]) .btn-primary, html:not([data-theme="dark"]) .st-cta .btn-primary, html:not([data-theme="dark"]) .app-nav-btn.active,
+    html:not([data-theme="dark"]) .disc-views button.on, html:not([data-theme="dark"]) .dt-btn, html:not([data-theme="dark"]) .dt-big { background: #C2410C; }
+    html:not([data-theme="dark"]) .st-eyebrow, html:not([data-theme="dark"]) .st-step .hi, html:not([data-theme="dark"]) .st-how-col > .hi,
+    html:not([data-theme="dark"]) .logo small, html:not([data-theme="dark"]) .dt-who, html:not([data-theme="dark"]) .linkish { color: #A33800; }
+    html:not([data-theme="dark"]) .lang-switcher .btn { color: var(--text-primary); }
+    .team-card p { color: #FF8A4C !important; }
+    .avail-item input[type=checkbox] { width: 24px; height: 24px; accent-color: #C2410C; flex: none; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -1010,12 +1018,12 @@
 
          <div class="gps-row">
             <button class="btn btn-primary" onclick="findNearbyWorkers()"><i class="fas fa-location-arrow"></i> <span data-i18n="find_nearest">FIND NEAREST WORKER</span></button>
-            <select id="skill-filter" class="input-field" style="height:unset;" onchange="loadEmployerGrid()">
+            <select id="skill-filter" class="input-field" style="height:unset;" onchange="loadEmployerGrid()" aria-label="Work type">
                <option value="" data-i18n="all_types">ALL WORK TYPES</option>
                <option value="Mason" data-skill>Mason</option><option value="Electrician" data-skill>Electrician</option><option value="Plumber" data-skill>Plumber</option><option value="Domestic Help" data-skill>Domestic Help</option>
                <option value="Factory Worker" data-skill>Factory Worker</option><option value="Carpenter" data-skill>Carpenter</option><option value="Painter" data-skill>Painter</option><option value="Driver" data-skill>Driver</option>
             </select>
-            <select id="city-filter" class="input-field" style="height:unset;" onchange="loadEmployerGrid()">
+            <select id="city-filter" class="input-field" style="height:unset;" onchange="loadEmployerGrid()" aria-label="City">
                <option value="" data-i18n="all_cities">ALL CITIES</option>
                <option value="Aurangabad">Aurangabad</option><option value="Nagpur">Nagpur</option><option value="Pune">Pune</option><option value="Nashik">Nashik</option><option value="Mumbai">Mumbai</option>
             </select>
@@ -1024,7 +1032,7 @@
          <div class="recent-title" id="recent-title" style="display:none;"></div>
          <div class="recent-strip" id="recent-hired"></div>
          <div class="disc-bar">
-            <div class="disc-views" role="tablist">
+            <div class="disc-views" role="group" aria-label="View">
                <button type="button" id="view-list" class="on" onclick="setDiscView('list')"><i class="fas fa-list"></i> <span class="dl" data-en="List" data-hi="सूची" data-mr="यादी">List</span></button>
                <button type="button" id="view-map" onclick="setDiscView('map')"><i class="fas fa-map-location-dot"></i> <span class="dl" data-en="Map" data-hi="नक्शा" data-mr="नकाशा">Map</span></button>
                <button type="button" id="view-saved" onclick="setDiscView('saved')"><i class="fas fa-heart"></i> <span class="dl" data-en="Saved" data-hi="सेव किए" data-mr="सेव्ह केलेले">Saved</span></button>
@@ -1692,7 +1700,7 @@
           switchTab(localStorage.getItem('active_tab') || 'home');
        }
        appReady = true;
-       showLite(); setupManifest(); paintConsent(); paintTradeLinks();
+       showLite(); setupManifest(); paintConsent(); paintTradeLinks(); linkLabels();
        { const m = location.search.match(/[?&]trade=([a-z-]+)/); if (m) { if (!localStorage.getItem('user_id')) showTrade(m[1], false); } }
        if (/[?&]demo=1/.test(location.search)) openDemoTour();
        openReviewFromLink();
@@ -3115,6 +3123,16 @@
        document.body.classList.add('printing-poster');
        setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove('printing-poster'), 500); }, 100);
     }
+    // Every form label points at its field (screen readers read the label when the field gets focus)
+    function nameDayBoxes() { document.querySelectorAll('.avail-item input[type=checkbox]').forEach(c => { const s = c.parentElement.querySelector('span'); c.setAttribute('aria-label', (s ? s.innerText.trim() : '') || c.parentElement.innerText.trim() || c.id.replace('av-', '')); }); }
+    function linkLabels(root) {
+       nameDayBoxes();
+       (root || document).querySelectorAll('.input-grp').forEach(g => {
+          const l = g.querySelector('label'), f = g.querySelector('input:not([type=checkbox]):not([type=radio]), select, textarea');
+          if (l) { if (f) { if (f.id) { if (!l.htmlFor) l.htmlFor = f.id; } else if (!f.getAttribute('aria-label')) f.setAttribute('aria-label', l.innerText.trim()); } }
+       });
+    }
+    new MutationObserver(() => linkLabels()).observe(document.getElementById('profile-body') || document.body, { childList: true, subtree: true });
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
     function leaveJob(id) { if (confirm(t('give_back_q'))) jobAction(id, 'leave', t('given_back')); }
