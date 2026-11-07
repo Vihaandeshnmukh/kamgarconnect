@@ -27,7 +27,8 @@ const CallSchema = new mongoose.Schema({
     enum: ['initiated', 'ringing', 'in-progress', 'completed', 'failed', 'busy', 'no-answer', 'canceled'],
     default: 'initiated'
   },
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now },
+  isDemo: { type: Boolean } // only records made by scripts/demo-seed.js in the kamgar_demo database
 });
 
 // One booking that counts per worker per day, even for two requests at the same moment

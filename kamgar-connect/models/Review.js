@@ -11,7 +11,8 @@ const ReviewSchema = new mongoose.Schema({
   rating: { type: Number, required: true, min: 1, max: 5 },
   tags: [{ type: String, maxlength: 30 }],
   comment: { type: String, maxlength: 500 },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  isDemo: { type: Boolean } // only records made by scripts/demo-seed.js in the kamgar_demo database
 });
 
 ReviewSchema.index({ hireId: 1 }, { unique: true, partialFilterExpression: { hireId: { $type: 'objectId' } } });

@@ -33,7 +33,8 @@ const WorkerSchema = new mongoose.Schema({
   totalRatings: { type: Number, default: 0 },
   jobHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
   push_token: { type: String, default: null, select: false },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  isDemo: { type: Boolean } // only records made by scripts/demo-seed.js in the kamgar_demo database
 });
 
 WorkerSchema.index({ location: '2dsphere' });

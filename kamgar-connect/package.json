@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "demo:seed": "node scripts/demo-seed.js",
+    "demo:wipe": "node scripts/demo-seed.js --wipe"
   },
   "keywords": [
     "kamgar",

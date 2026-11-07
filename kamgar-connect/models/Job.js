@@ -23,6 +23,7 @@ const JobSchema = new mongoose.Schema({
   date: { type: String }, // Work date "YYYY-MM-DD" (India), optional
   location: { type: String, set: v => cleanText(v, 120) }, // Where to report, optional
   description: { type: String, set: v => cleanText(v, 300) }, // Short note from the employer, optional
+  isDemo: { type: Boolean }, // only demo-seed.js records (kamgar_demo database)
   splitFrom: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' } // One place taken from a job for several workers
 });
 
