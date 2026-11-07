@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Kamgar" />
   <meta name="description" content="Kamgar Connect: find daily-wage work or hire masons, plumbers, electricians, painters, carpenters, drivers, factory workers and domestic help in Aurangabad. English, हिंदी, मराठी." />
   <title>Kamgar Connect — India's GPS-Powered Labour Marketplace</title>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Kamgar Connect","url":"https://kamgar.de","areaServed":"Chhatrapati Sambhajinagar (Aurangabad), Maharashtra, India","description":"Free website connecting daily-wage workers and employers in Aurangabad, in English, Hindi and Marathi."},{"@type":"WebSite","name":"Kamgar Connect","url":"https://kamgar.de","inLanguage":["en","hi","mr"]}]}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -325,7 +326,7 @@
       .secret-trigger { bottom: 12px; left: 12px; right: auto; width: 50px; height: 50px; opacity: 1; z-index: 950; }
     }
     /* ── App screens (logged in): Home / History / Stats / Profile ── */
-    body.app-mode .st-hero, body.app-mode .st-section, body.app-mode .mission-section, body.app-mode #team-section,
+    body.app-mode #trade-page, body.app-mode .st-hero, body.app-mode .st-section, body.app-mode .mission-section, body.app-mode #team-section,
     body.app-mode .st-footer, body.app-mode .st-dock, body.app-mode .nav-team-btn, body.app-mode .nav-links, body.app-mode .nav-join { display: none !important; }
     body.app-mode #dashboard-tabs { margin: 24px auto 40px !important; }
     body.app-mode .tab-container { margin-top: 0; }
@@ -717,6 +718,42 @@
     body.app-mode .wake-card { bottom: 96px; }
     @media (min-width: 1024px) { body.app-mode .wake-card { bottom: 24px; } }
     html[data-lite="1"] .wake-spin { animation: wakespin 0.9s linear infinite !important; }
+    /* ===== Growth: trade pages, poster ===== */
+    .trade-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .trade-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text-primary); font-weight: 700; }
+    #trade-page { display: none; }
+    #trade-page.on { display: block; }
+    .tp-card { background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: 24px; padding: 26px; }
+    .tp-card h1 { font-family: 'Manrope', sans-serif; color: var(--navy); font-size: clamp(1.8rem, 5vw, 2.6rem); margin-bottom: 6px; }
+    .tp-hi { color: var(--accent); font-weight: 800; margin-bottom: 14px; }
+    .tp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .tp-grid h3 { font-family: 'Manrope', sans-serif; color: var(--text-primary); margin-bottom: 6px; }
+    .tp-grid ul { padding-left: 20px; color: var(--text-secondary); line-height: 1.7; }
+    .tp-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .tp-actions .btn { min-height: 52px; }
+    .act-wa-btn { background: #0E7A63 !important; color: #FFFFFF !important; border: 0 !important; }
+    @media (max-width: 768px) { .tp-grid { grid-template-columns: 1fr; } .tp-card { padding: 20px 16px; } }
+    #poster-modal .modal-content { max-width: 720px; }
+    .poster-opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+    .poster-opts label { display: flex; flex-direction: column; gap: 4px; font-weight: 800; font-size: 0.85rem; color: var(--text-secondary); }
+    @media (max-width: 600px) { .poster-opts { grid-template-columns: 1fr; } }
+    #poster-sheet { background: #FFFFFF; color: #111827; border-radius: 12px; padding: 28px; text-align: center; border: 2px solid #E5E7EB; }
+    #poster-sheet .ps-brand { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.6rem; color: #111827; }
+    #poster-sheet .ps-brand span { color: #C2410C; }
+    #poster-sheet h2 { font-family: 'Manrope', sans-serif; font-size: 2.1rem; line-height: 1.2; margin: 14px 0; color: #111827; padding: 0; }
+    #poster-sheet .ps-sub { font-size: 1.15rem; font-weight: 700; color: #374151; }
+    #poster-qr { display: inline-block; padding: 12px; background: #FFF; border: 3px solid #111827; border-radius: 12px; margin: 18px 0 10px; }
+    #poster-sheet ol { text-align: left; display: inline-block; font-size: 1.15rem; font-weight: 700; line-height: 1.9; margin: 8px 0; color: #111827; }
+    #poster-sheet .ps-url { font-size: 1.4rem; font-weight: 800; color: #C2410C; }
+    #poster-sheet .ps-free { margin-top: 10px; font-weight: 800; background: #FFEDD5; color: #7C2D12; display: inline-block; padding: 6px 14px; border-radius: 999px; }
+    @media print {
+      body.printing-poster > *:not(#poster-modal) { display: none !important; }
+      body.printing-poster #poster-modal { display: block !important; position: static; background: #FFF; padding: 0; backdrop-filter: none; }
+      body.printing-poster #poster-modal .modal-content { box-shadow: none; border: 0; padding: 0; max-width: none; background: #FFF; }
+      body.printing-poster #poster-modal .no-print { display: none !important; }
+      body.printing-poster #poster-sheet { border: 0; }
+      @page { size: A4; margin: 12mm; }
+    }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -857,6 +894,7 @@
   <section class="st-section st-cats-wrap" id="st-work">
     <div class="container">
       <div class="st-eyebrow">In-demand skills • मागणी असलेले काम</div>
+      <div id="trade-links-anchor"></div>
       <h2 class="st-title">Work categories in Aurangabad</h2>
       <p class="st-sub">Pick your trade when you register.</p>
       <div class="st-cats">
@@ -871,6 +909,8 @@
       </div>
     </div>
   </section>
+
+  <section class="st-section" id="trade-page" aria-live="polite"><div class="container"><div class="tp-card" id="trade-card"></div></div></section>
 
   <section class="st-section" id="st-trust">
     <div class="container">
@@ -1051,6 +1091,7 @@
       <div><strong>Kamgar Connect • कामगार कनेक्ट</strong><em>Dignity, Not Chowks | सम्मान, चौक नहीं</em></div>
       <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> Serving Chhatrapati Sambhajinagar (Aurangabad), Maharashtra</div>
       <div style="display:flex; gap:16px; flex-wrap:wrap;"><button class="linkish" onclick="openLegal('privacy')">Privacy policy (draft)</button><button class="linkish" onclick="openLegal('terms')">Terms (draft)</button></div>
+      <button class="btn btn-outline st-demo-btn" id="poster-open" onclick="openPoster()"><i class="fas fa-qrcode"></i> Poster for chowks</button>
       <button class="btn btn-outline st-demo-btn" id="demo-open" onclick="openDemoTour()"><i class="fas fa-circle-play"></i> Investor demo</button>
       <button class="btn btn-outline lite-btn" id="lite-btn-footer" onclick="toggleLite()"><i class="fas fa-feather"></i> <span class="lite-label">Lite mode</span></button>
     </div>
@@ -1064,6 +1105,18 @@
      <textarea id="report-note" class="input-field" rows="3" maxlength="300" style="width:100%;"></textarea>
      <p class="prof-hint" id="report-privacy"></p>
      <div class="hist-actions" style="margin-top:12px;"><button class="btn btn-primary" id="report-send" onclick="sendReport()"></button><button class="btn btn-outline" id="report-block" onclick="blockFromReport()"></button></div>
+  </div></div>
+  <div class="modal" id="poster-modal"><div class="modal-content">
+     <button class="btn no-print" style="position:absolute; top:20px; right:20px; background:none; font-size:2rem;" onclick="closeModal()" aria-label="Close">&times;</button>
+     <h2 class="no-print">Poster for chowks</h2>
+     <p class="prof-hint no-print">Print it, stick it where workers wait. The QR code opens kamgar.de.</p>
+     <div class="poster-opts no-print">
+        <label>Language<select id="ps-lang" class="input-field" onchange="drawPoster()"><option value="mr">मराठी</option><option value="hi">हिंदी</option><option value="en">English</option></select></label>
+        <label>Work type<select id="ps-trade" class="input-field" onchange="drawPoster()"><option value="">All work types</option></select></label>
+        <label>Area (optional)<input id="ps-area" class="input-field" maxlength="30" placeholder="e.g. Kranti Chowk" oninput="drawPoster()"></label>
+     </div>
+     <div id="poster-sheet"></div>
+     <div class="hist-actions no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="printPoster()"><i class="fas fa-print"></i> Print</button></div>
   </div></div>
   <div class="modal" id="legal-modal"><div class="modal-content" style="max-width:760px;">
      <button class="btn" style="position:absolute; top:20px; right:20px; background:none; font-size:2rem;" onclick="closeModal()" aria-label="Close">&times;</button>
@@ -1639,7 +1692,8 @@
           switchTab(localStorage.getItem('active_tab') || 'home');
        }
        appReady = true;
-       showLite(); setupManifest(); paintConsent();
+       showLite(); setupManifest(); paintConsent(); paintTradeLinks();
+       { const m = location.search.match(/[?&]trade=([a-z-]+)/); if (m) { if (!localStorage.getItem('user_id')) showTrade(m[1], false); } }
        if (/[?&]demo=1/.test(location.search)) openDemoTour();
        openReviewFromLink();
        let healthDone = false;
@@ -2640,7 +2694,7 @@
              const cancel = (j.status === 'pending' ? true : j.status === 'accepted') ? `<button class="btn btn-outline" onclick="cancelJob('${safeId(j._id)}', ${j.status === 'accepted' ? 'true' : 'false'})"><i class="fas fa-xmark"></i> ${esc(t('cancel_job'))}</button>` : '';
              return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
                 <div class="hist-meta">${esc(j.city)} · ${esc(Number(j.workerCount) || 1)} ${esc(t('workers_word', Number(j.workerCount) || 1))}${j.amount ? ' · &#8377;' + esc(Number(j.amount)) : ''}</div>${jobDetails(j)}${who}</div>
-                <div class="hist-actions">${contact}${done}${noShow}${offersBtn}${rate}${cancel}</div><div class="offers-box" id="offers-${safeId(j._id)}"></div></div>`;
+                <div class="hist-actions">${contact}${done}${noShow}${offersBtn}${j.status === 'pending' ? `<a class="btn act-wa-btn" href="https://wa.me/?text=${encodeURIComponent(jobShareText(j))}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> ${esc(LX({ en: 'Share', hi: 'शेयर', mr: 'शेअर' }))}</a>` : ''}${rate}${cancel}</div><div class="offers-box" id="offers-${safeId(j._id)}"></div></div>`;
           }).join('');
        } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
     }
@@ -2986,6 +3040,80 @@
     async function admClose(id) {
        try { await fetch(`${CONFIG.BACKEND_URL}/api/admin/reports/${id}/close`, { method: 'POST', headers: { Authorization: admPw() } }); } catch (e) {}
        loadAdmin();
+    }
+    // ===== Growth tools =====
+    const TRADES = {
+       mason: ['Mason', 'Masons', 'गवंडी / राजमिस्त्री', 'fa-trowel-bricks', ['Brick and block walls', 'Plastering and pointing', 'Tiling and flooring', 'Small repairs and compound walls']],
+       plumber: ['Plumber', 'Plumbers', 'प्लंबर / नलसाज', 'fa-faucet-drip', ['Taps, pipes and leaks', 'Bathroom and kitchen fittings', 'Water tanks and motors', 'Drain cleaning']],
+       electrician: ['Electrician', 'Electricians', 'इलेक्ट्रिशियन / वायरमन', 'fa-bolt', ['House wiring and switch boards', 'Fans, lights and inverters', 'Motor and pump connections', 'Fault finding and repairs']],
+       'domestic-help': ['Domestic Help', 'Domestic Help', 'घरकाम', 'fa-broom', ['Cleaning and washing', 'Cooking help', 'Care at home', 'Shifting and packing help']],
+       'factory-worker': ['Factory Worker', 'Factory Workers', 'फॅक्टरी कामगार', 'fa-industry', ['Helpers on production lines', 'Packing and loading', 'Machine helpers', 'Warehouse work (MIDC areas)']],
+       carpenter: ['Carpenter', 'Carpenters', 'सुतार / बढ़ई', 'fa-hammer', ['Doors, windows and frames', 'Furniture making and repair', 'Modular kitchen fitting', 'Shuttering work']],
+       painter: ['Painter', 'Painters', 'पेंटर / रंगारी', 'fa-paint-roller', ['Wall painting inside and outside', 'Putty and primer', 'Waterproofing coats', 'Grill and door painting']],
+       driver: ['Driver', 'Drivers', 'ड्रायव्हर', 'fa-truck', ['Car and tempo driving', 'Goods delivery', 'Daily or trip-based duty', 'Helper with loading']]
+    };
+    const slugOf = (skill) => Object.keys(TRADES).find(k => TRADES[k][0] === skill) || '';
+    function tradeUrl(slug) { return location.origin + location.pathname + '?trade=' + slug; }
+    function paintTradeLinks() {
+       const a = document.getElementById('trade-links-anchor'); if (!a) return;
+       const box = a.parentElement.querySelector('.trade-links') || document.createElement('div');
+       box.className = 'trade-links';
+       box.innerHTML = Object.keys(TRADES).map(k => '<a href="?trade=' + k + '" onclick="event.preventDefault(); showTrade(\'' + k + '\', true)">' + esc(TRADES[k][1]) + ' in Aurangabad</a>').join('');
+       const cats = a.parentElement.querySelector('.st-cats');
+       if (cats) cats.insertAdjacentElement('afterend', box);
+    }
+    function showTrade(slug, push) {
+       const T = TRADES[slug]; if (!T) return;
+       const [skill, plural, local, icon, tasks] = T;
+       document.title = plural + ' in Aurangabad | Kamgar Connect';
+       const md = document.querySelector('meta[name=description]');
+       if (md) md.setAttribute('content', 'Find ' + plural.toLowerCase() + ' in Aurangabad (Chhatrapati Sambhajinagar) or find ' + skill.toLowerCase() + ' work near you on Kamgar Connect. Free, direct contact, English, Hindi, Marathi.');
+       const share = plural + ' in Aurangabad - hire directly or find work on Kamgar Connect: ' + tradeUrl(slug);
+       document.getElementById('trade-card').innerHTML = '<div class="st-eyebrow"><i class="fas ' + icon + '"></i> Aurangabad • छत्रपती संभाजीनगर</div><h1>' + esc(plural) + ' in Aurangabad</h1><div class="tp-hi">' + esc(local) + '</div>'
+          + '<p class="st-sub" style="margin-bottom:0">Kamgar Connect helps you hire ' + esc(plural.toLowerCase()) + ' near you, or find ' + esc(skill.toLowerCase()) + ' work, without a middleman. It is free, and works in English, हिंदी and मराठी.</p>'
+          + '<div class="tp-grid"><div><h3>Typical ' + esc(skill.toLowerCase()) + ' work</h3><ul>' + tasks.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>'
+          + '<div><h3>How it works</h3><ul><li>Employers see ' + esc(plural.toLowerCase()) + ' who are looking for work today, with their daily wage, rating and reviews.</li><li>Book for a date and time; the worker confirms.</li><li>Agree the wage and pay the worker directly.</li><li>' + esc(plural) + ': register in one minute and tap START LOOKING when you are free.</li></ul></div></div>'
+          + '<div class="tp-actions"><button class="btn btn-primary" onclick="handleHireClick()"><i class="fas fa-user-tie"></i> Hire ' + esc(plural.toLowerCase()) + '</button><button class="btn st-employer" style="background:var(--navy); color:#FFF" onclick="handleFindWorkClick(); setTimeout(() => { const s = document.getElementById(\'reg-skill\'); if (s) s.value = \'' + skill + '\'; }, 50)"><i class="fas fa-helmet-safety"></i> I am a ' + esc(skill.toLowerCase()) + '</button>'
+          + '<a class="btn act-wa-btn" href="https://wa.me/?text=' + encodeURIComponent(share) + '" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Share on WhatsApp</a></div>';
+       document.getElementById('trade-page').classList.add('on');
+       if (push) { try { history.replaceState(null, '', '?trade=' + slug); } catch (e) {} }
+       try { gsap.to(window, { scrollTo: { y: '#trade-page', offsetY: 90 }, duration: isLite() ? 0 : 0.6 }); } catch (e) { document.getElementById('trade-page').scrollIntoView(); }
+    }
+    function jobShareText(j) {
+       return LX({ en: 'Work available: ' + skillName(j.jobType) + (j.workerCount > 1 ? ' (' + j.workerCount + ' workers)' : '') + (j.amount ? ', ₹' + j.amount + '/day' : '') + (j.date ? ', ' + fmtDay(j.date) : '') + ', ' + j.city + '. Register free and accept it on Kamgar Connect: https://kamgar.de',
+          hi: 'काम उपलब्ध: ' + skillName(j.jobType) + (j.amount ? ', ₹' + j.amount + '/दिन' : '') + (j.date ? ', ' + fmtDay(j.date) : '') + ', ' + j.city + '। Kamgar Connect पर मुफ़्त जुड़ें और स्वीकारें: https://kamgar.de',
+          mr: 'काम उपलब्ध: ' + skillName(j.jobType) + (j.amount ? ', ₹' + j.amount + '/दिवस' : '') + (j.date ? ', ' + fmtDay(j.date) : '') + ', ' + j.city + '. Kamgar Connect वर मोफत नोंदणी करा आणि स्वीकारा: https://kamgar.de' });
+    }
+    // Poster for chowks
+    const POSTER_TEXT = {
+       mr: { h: 'काम हवे आहे? चौकात थांबू नका.', s: 'मोबाईलवर काम शोधा - थेट मालकाशी संपर्क.', steps: ['QR स्कॅन करा किंवा kamgar.de उघडा', 'नाव, फोन आणि कामाचा प्रकार भरा', '"काम शोधायला सुरू करा" दाबा'], free: 'मोफत • दलाल नाही' },
+       hi: { h: 'काम चाहिए? चौक पर खड़े मत रहिए।', s: 'मोबाइल पर काम ढूँढें - सीधे मालिक से संपर्क।', steps: ['QR स्कैन करें या kamgar.de खोलें', 'नाम, फ़ोन और काम का प्रकार भरें', '"काम ढूँढना शुरू करें" दबाएँ'], free: 'मुफ़्त • कोई दलाल नहीं' },
+       en: { h: 'Need work? Don\'t wait at the chowk.', s: 'Find work on your phone - talk to employers directly.', steps: ['Scan the QR code or open kamgar.de', 'Fill in your name, phone and work type', 'Tap START LOOKING'], free: 'Free • No middlemen' }
+    };
+    function openPoster() {
+       const sel = document.getElementById('ps-trade');
+       if (sel.options.length < 2) sel.innerHTML += Object.keys(TRADES).map(k => '<option value="' + k + '">' + esc(TRADES[k][1]) + ' • ' + esc(TRADES[k][2]) + '</option>').join('');
+       document.getElementById('poster-modal').style.display = 'flex';
+       loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js').then(drawPoster).catch(() => drawPoster());
+       drawPoster();
+    }
+    function drawPoster() {
+       const lang = document.getElementById('ps-lang').value, slug = document.getElementById('ps-trade').value;
+       const area = (document.getElementById('ps-area').value || '').replace(/[^\p{L}\p{N} .,-]/gu, '').slice(0, 30);
+       const P = POSTER_TEXT[lang] || POSTER_TEXT.en;
+       const url = 'https://kamgar.de/' + (slug ? '?trade=' + slug : '');
+       const trade = slug ? TRADES[slug][lang === 'en' ? 1 : 2] : '';
+       document.getElementById('poster-sheet').innerHTML = '<div class="ps-brand">Kamgar<span>Connect</span></div>' + (trade ? '<div class="ps-sub" style="margin-top:8px">' + esc(trade) + '</div>' : '')
+          + '<h2>' + esc(P.h) + '</h2><div class="ps-sub">' + esc(P.s) + '</div><div id="poster-qr"></div>'
+          + '<div><ol>' + P.steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol></div><div class="ps-url">' + esc(url.replace('https://', '')) + '</div>'
+          + '<div class="ps-free">' + esc(P.free) + '</div>' + (area ? '<div class="ps-sub" style="margin-top:10px">' + esc(area) + ' • Aurangabad</div>' : '');
+       const q = document.getElementById('poster-qr');
+       if (window.QRCode) { try { new QRCode(q, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M }); } catch (e) { q.innerText = url; } }
+       else q.innerText = url;
+    }
+    function printPoster() {
+       document.body.classList.add('printing-poster');
+       setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove('printing-poster'), 500); }, 100);
     }
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
