@@ -424,6 +424,18 @@
     html[data-theme="dark"] .profile-dropdown { background: var(--bg-surface); }
     html[data-theme="dark"] .secret-input { color: var(--text-primary); }
     .theme-btn i { pointer-events: none; }
+    #notif-box { position: fixed; top: 60px; right: 40px; z-index: 200001; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    #notif-box .notif { position: relative; top: auto; right: auto; left: auto; pointer-events: auto; }
+    @media (max-width: 768px) { #notif-box { right: 16px; left: 16px; } #notif-box .notif { min-width: 0; } }
+    /* U10, U14: no profile menu when logged out; no floating lock inside the app (Backstage is in Profile) */
+    body:not(.app-mode) .profile-wrap { display: none; }
+    body.app-mode .secret-trigger { display: none !important; }
+    /* U9: readable buttons and badges (white on WhatsApp green was 1.9:1) */
+    .act-wa { background: #0E7A63; }
+    html[data-theme="dark"] .st-badge, html[data-theme="dark"] .st-mini span { color: #FFD9C2; }
+    html[data-theme="dark"] .btn-primary, html[data-theme="dark"] .app-nav-btn.active, html[data-theme="dark"] .act-call,
+    html[data-theme="dark"] .st-dock .d1 { background: #C2410C; color: #FFFFFF; }
+    html[data-theme="dark"] .app-nav-btn.active { color: #FFFFFF; }
     @media (max-width: 480px) {
       .navbar div:has(> .lang-switcher) { gap: 8px !important; }
       .lang-switcher { gap: 3px !important; }
@@ -673,12 +685,12 @@
           <div class="input-grp">
              <label data-i18n="label_name">Full Name</label>
              <input type="text" id="reg-name" class="input-field" placeholder="Vijay Kumar">
-             <div class="err-msg" id="err-name">Please enter your name</div>
+             <div class="err-msg" id="err-name" data-i18n="err_name">Please enter your name</div>
           </div>
           <div class="input-grp">
              <label data-i18n="label_phone">Phone Number</label>
              <input type="tel" id="reg-phone" class="input-field" placeholder="9876543210" maxlength="10">
-             <div class="err-msg" id="err-phone">Please enter 10 digit phone number</div>
+             <div class="err-msg" id="err-phone" data-i18n="err_phone">Please enter 10 digit phone number</div>
           </div>
           <div class="input-grp" id="loc-grp">
              <label data-i18n="loc_label">Location</label>
@@ -691,10 +703,10 @@
           <div class="input-grp" id="city-grp">
              <label data-i18n="label_city">City</label>
              <select id="reg-city" class="input-field">
-                <option value="">SELECT CITY</option>
+                <option value="" data-i18n="select_city">SELECT CITY</option>
                 <option>Aurangabad</option><option>Nagpur</option><option>Pune</option><option>Nashik</option><option>Mumbai</option>
              </select>
-             <div class="err-msg" id="err-city">Please select your city</div>
+             <div class="err-msg" id="err-city" data-i18n="err_city">Please select your city</div>
           </div>
 
           <div id="extra-worker">
@@ -705,32 +717,32 @@
                    <option value="Mason" data-skill>Mason</option><option value="Electrician" data-skill>Electrician</option><option value="Plumber" data-skill>Plumber</option><option value="Domestic Help" data-skill>Domestic Help</option>
                    <option value="Factory Worker" data-skill>Factory Worker</option><option value="Carpenter" data-skill>Carpenter</option><option value="Painter" data-skill>Painter</option><option value="Driver" data-skill>Driver</option>
                 </select>
-                <div class="err-msg" id="err-skill">Please select your skill</div>
+                <div class="err-msg" id="err-skill" data-i18n="err_skill">Please select your skill</div>
              </div>
              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                 <div class="input-grp">
                    <label data-i18n="label_exp">Experience (Years)</label>
                    <input type="number" id="reg-exp" class="input-field" value="1" min="0" max="60">
-                   <div class="err-msg" id="err-exp">Please enter experience</div>
+                   <div class="err-msg" id="err-exp" data-i18n="err_exp">Please enter experience</div>
                 </div>
                 <div class="input-grp">
                    <label data-i18n="label_salary">Daily Wage (&#8377;)</label>
                    <input type="number" id="reg-salary" class="input-field" value="600" min="100" max="5000">
-                   <div class="err-msg" id="err-salary">Please enter salary</div>
+                   <div class="err-msg" id="err-salary" data-i18n="err_salary">Please enter salary</div>
                 </div>
              </div>
              <label style="display:block; margin-bottom:5px; font-weight:700; color:var(--text-secondary); font-size:0.9rem;" data-i18n="availability">Availability</label>
              <div class="availability-grid">
                 <div class="avail-item" onclick="toggleAvail('24/7')"><input type="checkbox" id="av-24-7"> 24/7</div>
-                <div class="avail-item" onclick="toggleAvail('Mon')"><input type="checkbox" id="av-Mon"> Mon</div>
-                <div class="avail-item" onclick="toggleAvail('Tue')"><input type="checkbox" id="av-Tue"> Tue</div>
-                <div class="avail-item" onclick="toggleAvail('Wed')"><input type="checkbox" id="av-Wed"> Wed</div>
-                <div class="avail-item" onclick="toggleAvail('Thu')"><input type="checkbox" id="av-Thu"> Thu</div>
-                <div class="avail-item" onclick="toggleAvail('Fri')"><input type="checkbox" id="av-Fri"> Fri</div>
-                <div class="avail-item" onclick="toggleAvail('Sat')"><input type="checkbox" id="av-Sat"> Sat</div>
-                <div class="avail-item" onclick="toggleAvail('Sun')"><input type="checkbox" id="av-Sun"> Sun</div>
+                <div class="avail-item" onclick="toggleAvail('Mon')"><input type="checkbox" id="av-Mon"> <span data-day="Mon">Mon</span></div>
+                <div class="avail-item" onclick="toggleAvail('Tue')"><input type="checkbox" id="av-Tue"> <span data-day="Tue">Tue</span></div>
+                <div class="avail-item" onclick="toggleAvail('Wed')"><input type="checkbox" id="av-Wed"> <span data-day="Wed">Wed</span></div>
+                <div class="avail-item" onclick="toggleAvail('Thu')"><input type="checkbox" id="av-Thu"> <span data-day="Thu">Thu</span></div>
+                <div class="avail-item" onclick="toggleAvail('Fri')"><input type="checkbox" id="av-Fri"> <span data-day="Fri">Fri</span></div>
+                <div class="avail-item" onclick="toggleAvail('Sat')"><input type="checkbox" id="av-Sat"> <span data-day="Sat">Sat</span></div>
+                <div class="avail-item" onclick="toggleAvail('Sun')"><input type="checkbox" id="av-Sun"> <span data-day="Sun">Sun</span></div>
              </div>
-             <div class="err-msg" id="err-avail">Please select at least one day</div>
+             <div class="err-msg" id="err-avail" data-i18n="err_avail">Please select at least one day</div>
           </div>
 
           <div id="reg-backend-err" style="color:var(--red); margin-bottom:15px; font-weight:800; display:none;"></div>
@@ -750,24 +762,24 @@
         <div class="input-grp">
            <label data-i18n="job_location">Job Location</label>
            <input type="text" id="hire-loc" class="input-field" placeholder="Building No 5, Waluj MIDC">
-           <div class="err-msg" id="err-hire-loc">Please enter location</div>
+           <div class="err-msg" id="err-hire-loc" data-i18n="err_hire_loc">Please enter location</div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; align-items:end;">
            <div class="input-grp">
               <label data-i18n="work_date">Date of Work</label>
               <input type="date" id="hire-date" class="input-field">
-              <div class="err-msg" id="err-hire-date">Enter date</div>
+              <div class="err-msg" id="err-hire-date" data-i18n="err_hire_date">Enter date</div>
            </div>
            <div class="input-grp">
               <label data-i18n="report_time">Reporting Time</label>
               <input type="time" id="hire-time" class="input-field">
-              <div class="err-msg" id="err-hire-time">Enter time</div>
+              <div class="err-msg" id="err-hire-time" data-i18n="err_hire_time">Enter time</div>
            </div>
         </div>
         <div class="input-grp">
            <label data-i18n="employer_name">Employer Name</label>
            <input type="text" id="hire-emp-name" class="input-field">
-           <div class="err-msg" id="err-hire-name">Please enter your name</div>
+           <div class="err-msg" id="err-hire-name" data-i18n="err_name">Please enter your name</div>
         </div>
         <div class="input-grp">
            <label data-i18n="instructions">Special Instructions (Optional)</label>
@@ -904,7 +916,7 @@
           sel_worker: "I AM A WORKER", sel_employer: "I NEED A WORKER", label_skill: "Work type", select_skill: "SELECT WORK TYPE",
           label_exp: "Experience (Years)", label_salary: "Daily Wage (₹)", label_needed: "Worker Type Needed", select_type: "SELECT TYPE",
           label_count: "Number of Workers Needed", use_location: "USE MY CURRENT LOCATION", join: "JOIN PLATFORM",
-          welcome_worker: "You are registered! Employers can see you for the next 24 hours.", welcome_employer: "Welcome! Find the right worker below.",
+          welcome_worker: "You are registered! Employers can see you for the next 24 hours. After that, press START LOOKING whenever you want work.", welcome_employer: "Welcome! Find the right worker below.",
           network_problem: "Network problem: please check your connection and try again.",
           rate_title: "Rate the worker", rate_comment: "Comment (optional)", rate_submit: "SUBMIT RATING", rate_pick: "Please choose 1 to 5 stars.",
           rate_thanks: "Thank you! Your rating helps other employers.", rate_failed: "Could not save the rating.", rate_login: "Log in as the employer to rate this worker.",
@@ -949,6 +961,11 @@
           helped_ok: n => `${n} is registered. They can log in with their own phone number.`, already_registered: "This phone number is already registered as a worker.",
           listen_reg: "To join, choose: I am a worker, or I need a worker. Type your name and your 10 digit phone number. Workers also choose their city, work type and the days they can work. Then press Join. If you joined before, just type your phone number and press Join.",
           listen_home_wk: "Press Start looking to show employers you want work today. When an employer books you, it shows here with their phone number. Press Confirm to accept, or Decline if you cannot come. Below are open jobs in your city that you can take.",
+          err_name: "Please enter your name", err_phone: "Please enter a 10-digit phone number", err_city: "Please select your city", err_skill: "Please select your work type",
+          err_exp: "Please enter experience", err_salary: "Please enter the daily wage", err_avail: "Please select at least one day", err_hire_loc: "Please enter the job location",
+          err_hire_date: "Please choose a date", err_hire_time: "Please choose a time", select_city: "SELECT CITY",
+          own_number: "That is your own number. Enter the phone number of the person you are registering.",
+          booking_cancelled_by_emp: o => `${o.name} cancelled the booking for ${o.when}.`, job_cancelled_by_emp: o => `The ${o.type} job was cancelled by the employer.`,
           listen_home_emp: "Post a job so workers in your city can see it, or look at the workers below and press Hire now to book one for a day. After booking you can call or WhatsApp the worker. Your bookings are in History."
        },
        hi: {
@@ -968,7 +985,7 @@
           sel_worker: "मैं कामगार हूँ", sel_employer: "मुझे कामगार चाहिए", label_skill: "काम", select_skill: "काम चुनें",
           label_exp: "अनुभव (साल)", label_salary: "एक दिन की मज़दूरी (₹)", label_needed: "किस काम के लिए कामगार", select_type: "काम चुनें",
           label_count: "कितने कामगार चाहिए", use_location: "मेरी लोकेशन लें", join: "जुड़ें",
-          welcome_worker: "आपका रजिस्ट्रेशन हो गया! अगले 24 घंटे आप काम देने वालों को दिखेंगे।", welcome_employer: "स्वागत है! नीचे सही कामगार चुनें।",
+          welcome_worker: "आपका रजिस्ट्रेशन हो गया! अगले 24 घंटे आप काम देने वालों को दिखेंगे। उसके बाद जब भी काम चाहिए, काम ढूंढना शुरू करें दबाएँ।", welcome_employer: "स्वागत है! नीचे सही कामगार चुनें।",
           network_problem: "इंटरनेट की समस्या: कनेक्शन जांचें और फिर कोशिश करें।",
           rate_title: "कामगार को रेटिंग दें", rate_comment: "टिप्पणी (ज़रूरी नहीं)", rate_submit: "रेटिंग भेजें", rate_pick: "कृपया 1 से 5 स्टार चुनें।",
           rate_thanks: "धन्यवाद! आपकी रेटिंग दूसरों की मदद करती है।", rate_failed: "रेटिंग सेव नहीं हुई।", rate_login: "रेटिंग देने के लिए नियोक्ता के रूप में लॉगिन करें।",
@@ -1013,6 +1030,11 @@
           helped_ok: n => `${n} जुड़ गए। वे अपने फ़ोन नंबर से लॉगिन कर सकते हैं।`, already_registered: "यह नंबर पहले से कामगार के रूप में जुड़ा है।",
           listen_reg: "जुड़ने के लिए चुनें: मैं कामगार हूँ, या मुझे कामगार चाहिए। अपना नाम और 10 अंकों का फ़ोन नंबर लिखें। कामगार अपना शहर, काम और किन दिनों काम कर सकते हैं वह भी चुनें। फिर जुड़ें दबाएँ। अगर आप पहले से जुड़े हैं, तो बस फ़ोन नंबर लिखकर जुड़ें दबाएँ।",
           listen_home_wk: "आज काम चाहिए तो काम ढूंढना शुरू करें दबाएँ। जब कोई काम देने वाला आपको बुक करेगा, तो यहाँ उसका नाम और फ़ोन नंबर दिखेगा। आना है तो पक्का करें दबाएँ, नहीं आ सकते तो मना करें। नीचे आपके शहर के खुले काम हैं, आप उनमें से काम ले सकते हैं।",
+          err_name: "कृपया अपना नाम लिखें", err_phone: "कृपया 10 अंकों का फ़ोन नंबर लिखें", err_city: "कृपया अपना शहर चुनें", err_skill: "कृपया अपना काम चुनें",
+          err_exp: "कृपया अनुभव लिखें", err_salary: "कृपया एक दिन की मज़दूरी लिखें", err_avail: "कृपया कम से कम एक दिन चुनें", err_hire_loc: "कृपया काम की जगह लिखें",
+          err_hire_date: "कृपया तारीख चुनें", err_hire_time: "कृपया समय चुनें", select_city: "शहर चुनें",
+          own_number: "यह आपका अपना नंबर है। जिसे जोड़ रहे हैं उसका फ़ोन नंबर लिखें।",
+          booking_cancelled_by_emp: o => `${o.name} ने ${o.when} की बुकिंग रद्द कर दी।`, job_cancelled_by_emp: o => `${o.type} का काम काम देने वाले ने रद्द कर दिया।`,
           listen_home_emp: "काम डालें ताकि आपके शहर के कामगार देख सकें, या नीचे कामगार देखकर काम पर रखें दबाएँ और एक दिन के लिए बुक करें। बुकिंग के बाद आप कामगार को कॉल या WhatsApp कर सकते हैं। आपकी बुकिंग इतिहास में हैं।"
        },
        mr: {
@@ -1032,7 +1054,7 @@
           sel_worker: "मी कामगार आहे", sel_employer: "मला कामगार हवा", label_skill: "काम", select_skill: "काम निवडा",
           label_exp: "अनुभव (वर्षे)", label_salary: "एका दिवसाची मजुरी (₹)", label_needed: "कोणत्या कामासाठी कामगार", select_type: "काम निवडा",
           label_count: "किती कामगार हवे", use_location: "माझे लोकेशन वापरा", join: "सामील व्हा",
-          welcome_worker: "तुमची नोंदणी झाली! पुढचे 24 तास तुम्ही काम देणाऱ्यांना दिसाल.", welcome_employer: "स्वागत आहे! खाली योग्य कामगार निवडा.",
+          welcome_worker: "तुमची नोंदणी झाली! पुढचे 24 तास तुम्ही काम देणाऱ्यांना दिसाल. त्यानंतर काम हवे तेव्हा काम शोधणे सुरू करा दाबा.", welcome_employer: "स्वागत आहे! खाली योग्य कामगार निवडा.",
           network_problem: "इंटरनेट अडचण: कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.",
           rate_title: "कामगाराला रेटिंग द्या", rate_comment: "टिप्पणी (आवश्यक नाही)", rate_submit: "रेटिंग पाठवा", rate_pick: "कृपया 1 ते 5 स्टार निवडा.",
           rate_thanks: "धन्यवाद! तुमचे रेटिंग इतरांना मदत करते.", rate_failed: "रेटिंग सेव्ह झाले नाही.", rate_login: "रेटिंग देण्यासाठी एम्प्लॉयर म्हणून लॉगिन करा.",
@@ -1077,6 +1099,11 @@
           helped_ok: n => `${n} जोडले गेले. ते त्यांच्या फोन नंबरने लॉगिन करू शकतात.`, already_registered: "हा नंबर आधीच कामगार म्हणून नोंदलेला आहे.",
           listen_reg: "सामील होण्यासाठी निवडा: मी कामगार आहे, किंवा मला कामगार हवा. तुमचे नाव आणि 10 अंकी फोन नंबर लिहा. कामगारांनी आपले शहर, काम आणि कोणत्या दिवशी काम करू शकता ते निवडा. मग सामील व्हा दाबा. आधीच सामील असाल तर फक्त फोन नंबर लिहून सामील व्हा दाबा.",
           listen_home_wk: "आज काम हवे असेल तर काम शोधणे सुरू करा दाबा. कोणी काम देणारा तुम्हाला बुक करेल तेव्हा इथे त्याचे नाव आणि फोन नंबर दिसेल. यायचे असेल तर पक्के करा दाबा, जमत नसेल तर नकार द्या. खाली तुमच्या शहरातील उघडी कामे आहेत, त्यातील काम घेऊ शकता.",
+          err_name: "कृपया तुमचे नाव लिहा", err_phone: "कृपया 10 अंकी फोन नंबर लिहा", err_city: "कृपया तुमचे शहर निवडा", err_skill: "कृपया तुमचे काम निवडा",
+          err_exp: "कृपया अनुभव लिहा", err_salary: "कृपया एका दिवसाची मजुरी लिहा", err_avail: "कृपया किमान एक दिवस निवडा", err_hire_loc: "कृपया कामाची जागा लिहा",
+          err_hire_date: "कृपया तारीख निवडा", err_hire_time: "कृपया वेळ निवडा", select_city: "शहर निवडा",
+          own_number: "हा तुमचाच नंबर आहे. ज्यांना जोडत आहात त्यांचा फोन नंबर लिहा.",
+          booking_cancelled_by_emp: o => `${o.name} यांनी ${o.when} ची बुकिंग रद्द केली.`, job_cancelled_by_emp: o => `${o.type} चे काम काम देणाऱ्याने रद्द केले.`,
           listen_home_emp: "काम टाका म्हणजे तुमच्या शहरातील कामगार पाहू शकतील, किंवा खाली कामगार पाहून कामावर घ्या दाबा आणि एका दिवसासाठी बुक करा. बुकिंगनंतर कामगाराला कॉल किंवा WhatsApp करू शकता. तुमच्या बुकिंग इतिहासमध्ये आहेत."
        }
     };
@@ -1124,8 +1151,12 @@
        document.getElementById('rate-stars').innerHTML = [1, 2, 3, 4, 5].map(n => `<button type="button" class="${n <= reviewRating ? 'on' : ''}" onclick="setRating(${n})" aria-label="${n}">&#9733;</button>`).join('');
     }
     function setRating(n) { reviewRating = n; drawStars(); }
+    let reviewBusy = false;
     async function submitReview() {
        if (!reviewRating) { showNotif(t('rate_pick'), 'red'); return; }
+       if (reviewBusy) return;
+       reviewBusy = true;
+       setTimeout(() => { reviewBusy = false; }, 1500);
        try {
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/reviews`, { method: 'POST', headers: authHeaders({'Content-Type':'application/json'}),
              body: JSON.stringify({ workerId: reviewTarget.workerId, jobId: reviewTarget.jobId, hireId: reviewTarget.hireId, rating: reviewRating, comment: document.getElementById('review-comment').value }) });
@@ -1189,11 +1220,19 @@
        const label = dark ? t('theme_light') : t('theme_dark');
        b.setAttribute('aria-label', label); b.title = label;
     }
+    try {
+       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (ev) => {
+          if (localStorage.getItem('theme')) return;
+          document.documentElement.setAttribute('data-theme', ev.matches ? 'dark' : 'light');
+          showThemeButton();
+       });
+    } catch (e) {}
     function toggleTheme() {
        const next = currentTheme() === 'dark' ? 'light' : 'dark';
        document.documentElement.setAttribute('data-theme', next);
        try { localStorage.setItem('theme', next); } catch (e) {}
        showThemeButton();
+       if (localStorage.getItem('user_id')) updateAvailabilityUI();
     }
 
     function setLang(l) {
@@ -1204,13 +1243,16 @@
           if (text) el.innerText = text;
        });
        document.querySelectorAll('option[data-skill]').forEach(o => { o.innerText = skillName(o.value); });
+       document.querySelectorAll('[data-day]').forEach(s => { s.innerText = dayName(s.getAttribute('data-day')); });
        showThemeButton();
        // Logged in: redraw the dashboard in the new language
        if (appReady) {
           if (localStorage.getItem('user_id')) {
              updateAvailabilityUI();
              updateAppHeader();
-             switchTab(localStorage.getItem('active_tab') || 'home');
+             updateProfileUI();
+             if ((localStorage.getItem('active_tab') || 'home') === 'profile' ? !!profileData : false) relabelProfile();
+             else switchTab(localStorage.getItem('active_tab') || 'home');
           }
        }
     }
@@ -1355,7 +1397,7 @@
        const btn = document.getElementById('reg-btn-text');
        const ldr = document.getElementById('reg-loader');
        const showError = (msg) => {
-          document.getElementById('reg-backend-err').innerText = msg;
+          document.getElementById('reg-backend-err').innerText = trMsg(msg);
           document.getElementById('reg-backend-err').style.display = 'block';
        };
        if (helpRegisterMode) { await helpRegister(name, phone, city, showError); return; }
@@ -1411,7 +1453,8 @@
     function typePicker() { const w = document.querySelector('.select-type-worker'); return w ? w.parentElement : null; }
     function openHelpRegister() {
        selectType('Worker');
-       ['reg-name', 'reg-phone'].forEach(id => { document.getElementById(id).value = ''; });
+       ['reg-name', 'reg-phone', 'reg-skill', 'reg-exp', 'reg-salary'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+       document.querySelectorAll('#extra-worker input[type="checkbox"]').forEach(c => { c.checked = false; });
        document.getElementById('reg-city').value = CITY_LIST.includes(localStorage.getItem('user_city')) ? localStorage.getItem('user_city') : '';
        resetErrors();
        openModal();
@@ -1429,6 +1472,7 @@
        ['reg-name', 'reg-phone'].forEach(id => { document.getElementById(id).value = ''; });
     }
     async function helpRegister(name, phone, city, showError) {
+       if (phone === localStorage.getItem('user_phone')) { showError(t('own_number')); return; }
        if (!signupFieldsOk(name, city)) return;
        const btn = document.getElementById('reg-btn-text'), ldr = document.getElementById('reg-loader');
        btn.style.display = 'none'; ldr.style.display = 'block';
@@ -1735,7 +1779,15 @@
        try {
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/me/history`, { headers: authHeaders() });
           if (!res.ok) return;
-          const items = (await res.json()).filter(h => h.canDecline);
+          const allItems = await res.json();
+          const items = allItems.filter(h => h.canDecline);
+          // Bookings that were active last time and are now cancelled by the employer
+          let wasActive = [];
+          try { wasActive = JSON.parse(localStorage.getItem('active_bookings') || '[]'); } catch (e) {}
+          localStorage.setItem('active_bookings', JSON.stringify(items.map(h => String(h.hireId))));
+          if (!quiet) allItems.filter(h => h.status === 'cancelled' ? wasActive.includes(String(h.hireId)) : false).forEach(h =>
+             showNotif(t('booking_cancelled_by_emp', { name: h.employer ? h.employer.name : '', when: whenText(h.date, h.time, h.bookedAt) }), 'red'));
+          checkCancelledJobs(quiet);
           const first = localStorage.getItem('seen_bookings') === null;
           const seen = new Set(seenBookings());
           const fresh = items.filter(h => !seen.has(String(h.hireId)));
@@ -1748,6 +1800,20 @@
           if (localStorage.getItem('active_tab') === 'home') loadWorkerStatus();
           if (localStorage.getItem('active_tab') === 'history') loadHistory();
        } catch (e) { /* offline: try again next minute */ }
+    }
+    async function checkCancelledJobs(quiet) {
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs`, { headers: authHeaders() });
+          if (!res.ok) return;
+          const jobs = await res.json();
+          let had = [];
+          try { had = JSON.parse(localStorage.getItem('taken_jobs') || '[]'); } catch (e) {}
+          localStorage.setItem('taken_jobs', JSON.stringify(jobs.filter(j => j.status === 'accepted').map(j => String(j._id))));
+          if (quiet) return;
+          const gone = jobs.filter(j => j.status === 'cancelled' ? had.includes(String(j._id)) : false);
+          gone.forEach(j => showNotif(t('job_cancelled_by_emp', { type: skillName(j.jobType) }), 'red'));
+          if (gone.length) { if (localStorage.getItem('active_tab') === 'home') loadMyJobs(); }
+       } catch (e) {}
     }
     function startBookingPoll() {
        if (bookingPoll) return;
@@ -1893,6 +1959,16 @@
           `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>` +
           `<button type="button" class="btn" style="width:100%; margin-top:8px; opacity:0.55; font-size:0.8rem;" onclick="openSecretPage()"><i class="fas fa-lock"></i> Backstage</button>`;
     }
+    // Redraw the profile form in the new language without losing what was typed
+    function relabelProfile() {
+       const box = document.getElementById('profile-body');
+       const vals = {};
+       box.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => { vals[el.id] = el.value; });
+       const days = [...box.querySelectorAll('input[name="pf-day"]')].filter(c => c.checked).map(c => c.value);
+       renderProfile();
+       Object.entries(vals).forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.value = v; });
+       box.querySelectorAll('input[name="pf-day"]').forEach(c => { c.checked = days.includes(c.value); });
+    }
     function profileGPS() {
        getGPS('pf-loc-status', (coords, city) => {
           profileLoc = coords;
@@ -1988,7 +2064,7 @@
           if (!res.ok) throw new Error();
           const jobs = await res.json();
           if (isWorker) {
-             const mine = jobs.filter(j => j.status === 'accepted' || j.status === 'completed').slice(0, 10);
+             const mine = jobs.filter(j => ['accepted', 'completed', 'cancelled'].includes(j.status)).slice(0, 10);
              document.getElementById('wk-jobs-wrap').style.display = mine.length ? 'block' : 'none';
              list.innerHTML = mine.map(j => {
                 const e = j.employer || {};
@@ -2077,7 +2153,11 @@
        document.getElementById('review-modal').style.display = 'flex';
     }
 
+    let acceptBusy = false;
     async function acceptJob(id) {
+       if (acceptBusy) return;
+       acceptBusy = true;
+       document.querySelectorAll('.job-accept-btn').forEach(b => { b.disabled = true; });
        showNotif(t('job_processing'), "green");
        try {
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/accept`, {method:'PUT', headers: authHeaders()});
@@ -2086,6 +2166,7 @@
           showNotif(t('job_accepted'), "green");
           loadCityJobs(); loadMyJobs();
        } catch (e) { showNotif(t('job_failed'), "red"); }
+       finally { acceptBusy = false; document.querySelectorAll('.job-accept-btn').forEach(b => { b.disabled = false; }); }
     }
 
     async function loadEmployerGrid() {
@@ -2223,7 +2304,7 @@
           btnText.innerText = t('stop_looking'); startTimerLoop();
        } else {
           barWrap.style.display = 'none'; countdown.style.display = 'none';
-          btn.classList.remove('pulse'); btn.style.background = 'var(--accent)';
+          btn.classList.remove('pulse'); btn.style.background = currentTheme() === 'dark' ? '#C2410C' : 'var(--accent)';
           btnText.innerText = t('start_looking');
           if (timerInt) clearInterval(timerInt);
        }
@@ -2232,7 +2313,8 @@
     function startTimerLoop() {
        if (timerInt) clearInterval(timerInt);
        const until = new Date(localStorage.getItem('availableUntil'));
-       const startTime = new Date(localStorage.getItem('liveStartTime') || new Date().getTime());
+       const started = Number(localStorage.getItem('liveStartTime'));
+       const startTime = new Date(started > 0 ? started : Date.now());
        const totalDuration = until - startTime;
        timerInt = setInterval(() => {
           const now = new Date();
@@ -2353,7 +2435,7 @@
        trigger.style.background = type === 'Worker' ? 'var(--accent)' : 'var(--accent-blue)';
        document.getElementById('prof-details').innerHTML = `
           <div style="font-weight:900;">${esc(name)}</div>
-          <div style="font-size:0.7rem; opacity:0.5;">${esc(type)} | ${esc(localStorage.getItem('user_phone'))}</div>
+          <div style="font-size:0.7rem; opacity:0.5;">${esc(type === 'Worker' ? t('role_worker') : t('role_employer'))} | ${esc(localStorage.getItem('user_phone'))}</div>
           <div style="font-size:0.75rem; margin-top:5px; color:var(--accent);">${esc(skillName(localStorage.getItem('user_skill')))}</div>
           <div style="font-size:0.75rem; color:var(--text-secondary);">${esc(localStorage.getItem('user_city'))}</div>
        `;
@@ -2374,10 +2456,43 @@
        document.body.style.paddingTop='0';
     }
 
+    // The server answers in English: its common messages, in the chosen language
+    const SERVER_MSGS = {
+       'This worker is already booked for that day': ['इस कामगार की उस दिन पहले से बुकिंग है', 'या कामगाराची त्या दिवशी आधीच बुकिंग आहे'],
+       'You have already booked this worker for that day': ['आपने उस दिन के लिए इस कामगार को पहले ही बुक किया है', 'तुम्ही त्या दिवसासाठी या कामगाराला आधीच बुक केले आहे'],
+       "You can't hire yourself": ['आप खुद को काम पर नहीं रख सकते', 'तुम्ही स्वतःला कामावर घेऊ शकत नाही'],
+       'Please choose today or a future date': ['कृपया आज की या आगे की तारीख चुनें', 'कृपया आजची किंवा पुढची तारीख निवडा'],
+       'You can book at most 14 days ahead': ['ज़्यादा से ज़्यादा 14 दिन आगे तक बुक कर सकते हैं', 'जास्तीत जास्त 14 दिवस पुढे बुक करू शकता'],
+       'That time has already passed today': ['आज का यह समय निकल चुका है', 'आजची ही वेळ निघून गेली आहे'],
+       'Please choose a reporting time': ['कृपया पहुंचने का समय चुनें', 'कृपया पोहोचण्याची वेळ निवडा'],
+       'You can book at most 10 workers for one day': ['एक दिन के लिए ज़्यादा से ज़्यादा 10 कामगार बुक कर सकते हैं', 'एका दिवसासाठी जास्तीत जास्त 10 कामगार बुक करू शकता'],
+       'This worker is not available': ['यह कामगार अभी उपलब्ध नहीं है', 'हा कामगार आता उपलब्ध नाही'],
+       'Please enter a valid 10-digit phone number': ['कृपया सही 10 अंकों का फ़ोन नंबर लिखें', 'कृपया योग्य 10 अंकी फोन नंबर लिहा'],
+       'Please enter your name (letters only)': ['कृपया अपना नाम लिखें (सिर्फ़ अक्षर)', 'कृपया तुमचे नाव लिहा (फक्त अक्षरे)'],
+       'Daily wage must be between 100 and 5000': ['एक दिन की मज़दूरी 100 से 5000 के बीच होनी चाहिए', 'एका दिवसाची मजुरी 100 ते 5000 दरम्यान हवी'],
+       'Experience must be 0-60 years': ['अनुभव 0 से 60 साल होना चाहिए', 'अनुभव 0 ते 60 वर्षे हवा'],
+       'Too many attempts. Please try again in a few minutes.': ['बहुत बार कोशिश हुई। कुछ मिनट बाद फिर कोशिश करें।', 'खूप वेळा प्रयत्न झाले. काही मिनिटांनी पुन्हा प्रयत्न करा.'],
+       'Job already accepted': ['यह काम किसी और ने ले लिया', 'हे काम दुसऱ्याने घेतले'],
+       'You already took a place in this job': ['आपने इस काम में पहले ही जगह ले ली है', 'तुम्ही या कामात आधीच जागा घेतली आहे'],
+       'This job has already been rated': ['इस काम की रेटिंग पहले ही दी जा चुकी है', 'या कामाचे रेटिंग आधीच दिले आहे'],
+       'You can rate a worker once they confirmed the booking and the work day has come': ['कामगार के बुकिंग पक्की करने और काम का दिन आने पर ही रेटिंग दे सकते हैं', 'कामगाराने बुकिंग पक्की केल्यावर आणि कामाचा दिवस आल्यावरच रेटिंग देऊ शकता'],
+       'You are booked today. You can go live again after this booking.': ['आज आपकी बुकिंग है। यह बुकिंग खत्म होने के बाद फिर लाइव हो सकते हैं।', 'आज तुमची बुकिंग आहे. ही बुकिंग संपल्यावर पुन्हा लाइव्ह होऊ शकता.'],
+       'This booking has been rated and can no longer be cancelled': ['इस बुकिंग की रेटिंग हो चुकी है, अब रद्द नहीं हो सकती', 'या बुकिंगचे रेटिंग झाले आहे, आता रद्द करता येणार नाही'],
+       'This booking is over or already cancelled': ['यह बुकिंग खत्म हो गई या पहले ही रद्द है', 'ही बुकिंग संपली आहे किंवा आधीच रद्द आहे'],
+       'User already exists': ['यह नंबर पहले से जुड़ा है', 'हा नंबर आधीच नोंदलेला आहे']
+    };
+    function trMsg(m) {
+       const row = SERVER_MSGS[m];
+       if (!row) return m;
+       return currentLang === 'hi' ? row[0] : (currentLang === 'mr' ? row[1] : m);
+    }
+
     function showNotif(m, color) {
        const b = document.getElementById('notif-box');
        const d = document.createElement('div');
-       d.className = 'notif'; d.innerText = m;
+       d.className = 'notif'; d.innerText = trMsg(m);
+       // At most 3 messages on screen: the oldest goes
+       while (b.children.length >= 3) b.removeChild(b.firstChild);
        d.style.borderRightColor = color === 'green' ? 'var(--green)' : 'var(--red)';
        b.appendChild(d);
        setTimeout(() => d.classList.add('active'), 10);
