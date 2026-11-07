@@ -14,6 +14,7 @@ const { requireRole } = require('../middleware/roles');
 const Call = require('../models/Call');
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
+const Job = require('../models/Job');
 const { cleanText, cleanName } = require('../utils/sanitize');
 const { ACTIVE, istDate, endOfDay, bookingDateError, activeKey } = require('../utils/bookings');
 
@@ -65,6 +66,10 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     }
     // The worker sees the employer's real (registered) name, not one typed into the form
     const employerName = employer ? employer.name : 'Employer';
+    if (await Call.exists({ receiverId: worker._id, callerId: req.user.id, callType: 'assign', 'assignmentData.date': date, 'assignmentData.workerResponse': 'declined' })) {
+      return res.status(409).json({ success: false, msg: 'This worker turned down your booking for that day' });
+    }
+    if (await Job.exists({ workerId: worker._id, date, status: 'accepted' })) return res.status(409).json({ success: false, msg: 'This worker is already booked for that day' });
     const mineThatDay = await Call.countDocuments({ callerId: req.user.id, callType: 'assign', 'assignmentData.date': date, 'assignmentData.workerResponse': ACTIVE });
     if (mineThatDay >= MAX_BOOKINGS_PER_DAY) return res.status(429).json({ success: false, msg: `You can book at most ${MAX_BOOKINGS_PER_DAY} workers for one day` });
 
@@ -91,6 +96,12 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     }).save(); } catch (e) {
       if (e.code === 11000) return res.status(409).json({ success: false, msg: 'This worker is already booked for that day' });
       throw e;
+    }
+    // Requests sent at the same moment can all pass the count above: re-check and undo this one if over
+    const nowThatDay = await Call.countDocuments({ callerId: req.user.id, callType: 'assign', 'assignmentData.date': date, 'assignmentData.workerResponse': ACTIVE });
+    if (nowThatDay > MAX_BOOKINGS_PER_DAY) {
+      await Call.deleteOne({ _id: hire._id });
+      return res.status(429).json({ success: false, msg: `You can book at most ${MAX_BOOKINGS_PER_DAY} workers for one day` });
     }
 
     // Work is today: off the search list until the end of the day (nobody else can book them)

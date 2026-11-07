@@ -64,6 +64,7 @@ const setupSockets = (socketServer) => {
     console.log('⚡ Socket client connected:', socket.id);
 
     socket.on('join-city', (city) => {
+      if (!require('./utils/sanitize').CITIES.includes(city)) return;
       socket.join(city);
       console.log(`Socket ${socket.id} joined city: ${city}`);
     });

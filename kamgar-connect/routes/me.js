@@ -14,7 +14,7 @@ const Job = require('../models/Job');
 const Review = require('../models/Review');
 const { cleanName, isValidName, cleanText, CITIES, SKILLS, parseLocation, nearestCity, toPoint } = require('../utils/sanitize');
 const mongoose = require('mongoose');
-const { ACTIVE, istDate, freeWorkerFromBooking } = require('../utils/bookings');
+const { ACTIVE, istDate, freeWorkerFromBooking, activateTodaysBookings } = require('../utils/bookings');
 
 // What a booking looks like to both sides: its state and what can still be done with it
 const bookingState = (h) => {
@@ -24,7 +24,9 @@ const bookingState = (h) => {
   const today = istDate(0);
   const upcoming = active ? (a.date ? a.date >= today : false) : false;
   // Rating needs the worker's confirmation (the proof the work was agreed) and the work day to have come
-  return { status, active, upcoming, workDayCome: status === 'confirmed' ? (a.date ? a.date <= today : true) : false, happened: active ? (a.date ? a.date <= today : true) : false };
+  const dayCome = a.date ? a.date <= today : true;
+  // "happened": the worker confirmed and the day has come (unconfirmed bookings are not counted as work)
+  return { status, active, upcoming, workDayCome: status === 'confirmed' ? dayCome : false, happened: status === 'confirmed' ? dayCome : false };
 };
 
 router.use(auth);
@@ -72,6 +74,7 @@ const findMe = (req) => Model(req).findById(req.user.id).select('+email +googleI
 
 router.get('/', async (req, res) => {
   try {
+    await activateTodaysBookings();
     const me = await findMe(req);
     if (!me) return res.status(404).json({ msg: 'Account not found' });
     res.json(ownProfile(me, req.user.role));
@@ -164,7 +167,7 @@ router.get('/history', async (req, res) => {
           location: h.assignmentData && h.assignmentData.location,
           rated: rated.has(String(h._id)),
           status: bookingState(h).status,
-          canCancel: bookingState(h).upcoming,
+          canCancel: bookingState(h).upcoming ? !rated.has(String(h._id)) : false,
           canRate: bookingState(h).workDayCome ? !rated.has(String(h._id)) : false,
           worker: w ? {
             _id: w._id, name: w.name, skill: w.skill, phone: w.phone, city: w.city,
@@ -176,6 +179,7 @@ router.get('/history', async (req, res) => {
       }));
     }
     const ids = [...new Set(hires.map(h => String(h.callerId)))];
+    const ratedW = new Set((await Review.find({ hireId: { $in: hires.map(h => h._id) } }).select('hireId')).map(r => String(r.hireId)));
     const employers = await Employer.find({ _id: { $in: ids } }).select('name phone city companyName');
     const byId = Object.fromEntries(employers.map(e => [String(e._id), e]));
     res.json(hires.map(h => {
@@ -188,7 +192,7 @@ router.get('/history', async (req, res) => {
         location: h.assignmentData && h.assignmentData.location,
         instructions: h.assignmentData && h.assignmentData.instructions,
         status: bookingState(h).status,
-        canDecline: bookingState(h).upcoming,
+        canDecline: bookingState(h).upcoming ? !ratedW.has(String(h._id)) : false,
         canConfirm: bookingState(h).upcoming ? bookingState(h).status === 'pending' : false,
         employer: e ? { name: (h.assignmentData && h.assignmentData.employerName) || e.name, phone: e.phone, city: e.city, companyName: e.companyName || '' } : null
       };
@@ -213,6 +217,7 @@ const lastMonths = (n) => {
 
 router.get('/stats', async (req, res) => {
   try {
+    await activateTodaysBookings();
     const me = await Model(req).findById(req.user.id);
     if (!me) return res.status(404).json({ msg: 'Account not found' });
     const all = await hiresFor(req);
@@ -240,7 +245,7 @@ router.get('/stats', async (req, res) => {
       const [bookedNow, ratingsGiven, jobsPosted] = await Promise.all([
         Worker.countDocuments({ hiredBy: req.user.id, hiredUntil: { $gt: now } }),
         Review.countDocuments({ employerId: req.user.id }),
-        Job.countDocuments({ employerId: req.user.id, status: { $ne: 'cancelled' } })
+        Job.countDocuments({ employerId: req.user.id, status: { $ne: 'cancelled' }, splitFrom: { $exists: false } })
       ]);
       return res.json({
         role: 'employer',
@@ -291,11 +296,14 @@ async function endBooking(req, res, newStatus) {
     const hire = await Call.findOne({ _id: hireId, [mineField]: req.user.id, callType: 'assign' });
     if (!hire) return res.status(404).json({ msg: 'Booking not found' });
     if (!bookingState(hire).upcoming) return res.status(409).json({ msg: 'This booking is over or already cancelled' });
-    if (newStatus === 'confirmed') { if (hire.assignmentData.workerResponse !== 'pending') return res.status(409).json({ msg: 'This booking is already confirmed' }); }
     if (newStatus !== 'confirmed') { if (await Review.exists({ hireId: hire._id })) return res.status(409).json({ msg: 'This booking has been rated and can no longer be cancelled' }); }
-    hire.assignmentData.workerResponse = newStatus;
-    if (newStatus !== 'confirmed') hire.assignmentData.activeKey = undefined;
-    await hire.save();
+    // One change at a time: confirm only a pending booking; decline/cancel only one that still counts
+    const from = newStatus === 'confirmed' ? 'pending' : { $in: ['pending', 'confirmed'] };
+    const set = newStatus === 'confirmed' ? { $set: { 'assignmentData.workerResponse': 'confirmed' } }
+      : { $set: { 'assignmentData.workerResponse': newStatus }, $unset: { 'assignmentData.activeKey': 1 } };
+    const updated = await Call.findOneAndUpdate({ _id: hire._id, 'assignmentData.workerResponse': from }, set, { new: true });
+    if (!updated) return res.status(409).json({ msg: newStatus === 'confirmed' ? 'This booking is already confirmed or cancelled' : 'This booking is over or already cancelled' });
+    Object.assign(hire, { assignmentData: updated.assignmentData });
     // Booked for today by this employer and it ended: free the worker now
     if (newStatus !== 'confirmed') await freeWorkerFromBooking(hire);
     res.json({ ok: true, status: newStatus });

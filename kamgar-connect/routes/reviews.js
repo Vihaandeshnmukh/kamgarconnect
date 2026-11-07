@@ -23,7 +23,7 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
     if (!mongoose.isValidObjectId(workerId) || !rating) {
       return res.status(400).json({ success: false, msg: 'Worker ID and rating are required' });
     }
-    if (!Number.isInteger(Number(rating)) || Number(rating) < 1 || Number(rating) > 5) {
+    if (!(typeof rating === 'number' || typeof rating === 'string') || !Number.isInteger(Number(rating)) || Number(rating) < 1 || Number(rating) > 5) {
       return res.status(400).json({ success: false, msg: 'Rating must be between 1 and 5' });
     }
     // Exactly one of jobId / hireId, and it must be a real id
@@ -53,13 +53,21 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
       hireId: byJob ? undefined : hireId,
       employerId: req.user.id,
       rating: Number(rating),
-      tags: Array.isArray(tags) ? tags.slice(0, 6).map(t => cleanText(t, 30)) : [],
-      comment: cleanText(comment || '', 500)
+      tags: Array.isArray(tags) ? tags.filter(t => typeof t === 'string').slice(0, 6).map(t => cleanText(t, 30)) : [],
+      comment: typeof comment === 'string' ? cleanText(comment, 500) : ''
     });
 
     try { await review.save(); } catch (e) {
       if (e.code === 11000) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
       throw e;
+    }
+    // A cancel sent at the same moment may have won: a cancelled booking keeps no rating
+    if (!byJob) {
+      const still = await Call.exists({ _id: hireId, 'assignmentData.workerResponse': 'confirmed' });
+      if (!still) {
+        await Review.deleteOne({ _id: review._id });
+        return res.status(409).json({ success: false, msg: 'This booking is over or already cancelled' });
+      }
     }
 
     // Worker rating = average of each employer's LATEST rating, so one employer who books

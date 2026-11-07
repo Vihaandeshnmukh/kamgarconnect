@@ -10,10 +10,10 @@ const JobSchema = new mongoose.Schema({
   jobType: { type: String, required: true }, // e.g. Mason, Plumber
   city: { type: String, required: true },
   workerCount: { type: Number, default: 1 },
-  status: { 
-    type: String, 
-    enum: ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'], 
-    default: 'pending' 
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'in-progress', 'completed', 'cancelled'],
+    default: 'pending'
   },
   postedAt: { type: Date, default: Date.now },
   acceptedAt: { type: Date },
@@ -25,6 +25,9 @@ const JobSchema = new mongoose.Schema({
   description: { type: String, set: v => cleanText(v, 300) }, // Short note from the employer, optional
   splitFrom: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' } // One place taken from a job for several workers
 });
+
+// A worker holds at most one place of a job for several workers, even for requests at the same moment
+JobSchema.index({ splitFrom: 1, workerId: 1 }, { unique: true, partialFilterExpression: { splitFrom: { $type: 'objectId' }, workerId: { $type: 'objectId' } } });
 
 module.exports = mongoose.model('Job', JobSchema);
 

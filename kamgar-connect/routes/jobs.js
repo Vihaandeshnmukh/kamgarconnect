@@ -24,7 +24,10 @@ router.param('id', (req, res, next, id) => {
 function jobError({ jobType, city, workerCount, amount, date, location, description }) {
   if (!SKILLS.includes(jobType)) return 'Please choose a worker type';
   if (!CITIES.includes(city)) return 'Please choose a city';
-  if (workerCount !== undefined && !(Number.isInteger(Number(workerCount)) && workerCount >= 1 && workerCount <= 500)) return 'Number of workers must be 1-500';
+  if (workerCount !== undefined) {
+    const n = typeof workerCount === 'number' ? workerCount : (typeof workerCount === 'string' ? (/^\d+$/.test(workerCount.trim()) ? Number(workerCount) : NaN) : NaN);
+    if (!(Number.isInteger(n) && n >= 1 && n <= 500)) return 'Number of workers must be 1-500';
+  }
   if (amount !== undefined && amount !== null && amount !== '') {
     const n = typeof amount === 'number' ? amount : (typeof amount === 'string' ? (/^\d+$/.test(amount.trim()) ? Number(amount) : NaN) : NaN);
     if (!(n >= 1 && n <= 100000)) return 'Daily wage must be a number from 1 to 100000';
@@ -73,7 +76,7 @@ router.post('/', auth, async (req, res) => {
     await Employer.updateOne({ _id: req.user.id }, { $push: { jobsPosted: job._id } });
 
     // Emit Socket.IO event to all matching workers in that city
-    if (req.io) req.io.to(job.city).emit('new-job', job);
+    if (req.io) req.io.to(job.city).emit('new-job', { _id: job._id, jobType: job.jobType, city: job.city, workerCount: job.workerCount, amount: job.amount, date: job.date });
 
     res.status(201).json(job);
   } catch (err) {
@@ -141,6 +144,7 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (!worker || !employer) return res.status(404).json({ msg: 'Account not found' });
     if (worker.phone === employer.phone) return res.status(400).json({ msg: 'You cannot take your own job' });
     if (job.date && job.date < istDate(0)) return res.status(400).json({ msg: 'This job date has passed' });
+    if (job.date) { if (await Call.exists({ receiverId: worker._id, callType: 'assign', 'assignmentData.date': job.date, 'assignmentData.workerResponse': { $nin: ['declined', 'cancelled'] } })) return res.status(400).json({ msg: 'You already have a booking on that day' }); }
 
     // A job for several workers: this worker takes one place (a job of its own, linked by
     // splitFrom) and the rest stays open
@@ -149,11 +153,26 @@ router.put('/:id/accept', auth, async (req, res) => {
       split = await Job.findOneAndUpdate({ _id: job._id, status: 'pending', workerCount: { $gt: 1 } }, { $inc: { workerCount: -1 } }, { new: true });
     }
     if (split) {
-      job = await new Job({
-        employerId: job.employerId, jobType: job.jobType, city: job.city, workerCount: 1, amount: job.amount,
-        date: job.date, location: job.location, description: job.description, postedAt: job.postedAt,
-        splitFrom: job._id, status: 'accepted', workerId: worker._id, acceptedAt: Date.now()
-      }).save();
+      try {
+        job = await new Job({
+          employerId: job.employerId, jobType: job.jobType, city: job.city, workerCount: 1, amount: job.amount,
+          date: job.date, location: job.location, description: job.description, postedAt: job.postedAt,
+          splitFrom: job._id, status: 'accepted', workerId: worker._id, acceptedAt: Date.now()
+        }).save();
+      } catch (e) {
+        await Job.updateOne({ _id: job._id }, { $inc: { workerCount: 1 } });
+        if (e.code === 11000) return res.status(400).json({ msg: 'You already took a place in this job' });
+        throw e;
+      }
+      // Requests at the same moment (or before the database rule is built): keep only the first place
+      const mine = await Job.find({ splitFrom: job.splitFrom, workerId: worker._id }).sort({ _id: 1 }).select('_id');
+      if (mine.length > 1) {
+        if (String(mine[0]._id) !== String(job._id)) {
+          await Job.deleteOne({ _id: job._id });
+          await Job.updateOne({ _id: job.splitFrom }, { $inc: { workerCount: 1 } });
+          return res.status(400).json({ msg: 'You already took a place in this job' });
+        }
+      }
     } else {
       // Only one worker gets it, even when two press Accept at the same moment
       const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now() } }, { new: true });
@@ -205,6 +224,7 @@ router.put('/:id/complete', auth, async (req, res) => {
     if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status === 'completed') return res.status(400).json({ msg: 'Already completed' });
     if (job.status !== 'accepted') return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
+    if (job.date) { if (job.date > istDate(0)) return res.status(400).json({ msg: 'A job can be marked done on or after its work date' }); }
     if (!job.workerId) return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
 
     job.status = 'completed';
@@ -239,10 +259,9 @@ router.put('/:id/cancel', auth, async (req, res) => {
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
-    if (!['pending', 'accepted'].includes(job.status)) return res.status(400).json({ msg: 'This job is already finished or cancelled' });
-    job.status = 'cancelled';
-    await job.save();
-    res.json(job);
+    const done = await Job.findOneAndUpdate({ _id: job._id, status: { $in: ['pending', 'accepted'] } }, { $set: { status: 'cancelled' } }, { new: true });
+    if (!done) return res.status(400).json({ msg: 'This job is already finished or cancelled' });
+    res.json(done);
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }
@@ -256,18 +275,21 @@ router.put('/:id/leave', auth, async (req, res) => {
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (String(job.workerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status !== 'accepted') return res.status(400).json({ msg: 'This job can no longer be given back' });
-    await Worker.updateOne({ _id: req.user.id }, { $pull: { jobHistory: job._id } });
-    // One place of a job for several workers: give the place back to that job if it is still open
+    // One place of a job for several workers: remove the place (only one request can) and give it back if the job is still open
     if (job.splitFrom) {
+      const removed = await Job.findOneAndDelete({ _id: job._id, workerId: req.user.id, status: 'accepted' });
+      if (!removed) return res.status(400).json({ msg: 'This job can no longer be given back' });
+      await Worker.updateOne({ _id: req.user.id }, { $pull: { jobHistory: job._id } });
       const parent = await Job.findOneAndUpdate({ _id: job.splitFrom, status: 'pending' }, { $inc: { workerCount: 1 } }, { new: true });
-      if (parent) { await Job.deleteOne({ _id: job._id }); return res.json(parent); }
+      if (parent) return res.json(parent);
+      // The job was cancelled or filled meanwhile: the place does not come back
+      return res.json({ ...removed.toObject(), status: 'cancelled' });
     }
-    job.status = 'pending';
-    job.workerId = undefined;
-    job.acceptedAt = undefined;
-    await job.save();
+    const reopened = await Job.findOneAndUpdate({ _id: job._id, workerId: req.user.id, status: 'accepted' },
+      { $set: { status: 'pending' }, $unset: { workerId: 1, acceptedAt: 1 } }, { new: true });
+    if (!reopened) return res.status(400).json({ msg: 'This job can no longer be given back' });
     await Worker.updateOne({ _id: req.user.id }, { $pull: { jobHistory: job._id } });
-    res.json(job);
+    res.json(reopened);
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }

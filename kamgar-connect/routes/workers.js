@@ -184,6 +184,8 @@ router.put('/:id/go-live', auth, requireRole('worker'), requireSelf(), async (re
 
 router.put('/:id/go-offline', auth, requireRole('worker'), requireSelf(), async (req, res) => {
     try {
+        // Chose to be offline: an ending booking must not put them back live
+        await Call.updateMany({ receiverId: req.params.id, 'assignmentData.date': istDate(0) }, { $unset: { 'assignmentData.prevAvailableUntil': 1 } });
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
             { isLooking: false, availableUntil: null },
@@ -199,6 +201,7 @@ router.put('/:id/go-offline', auth, requireRole('worker'), requireSelf(), async 
 // PUT /api/workers/:id/withdraw - worker removes themselves from search results (reversible)
 router.put('/:id/withdraw', auth, requireRole('worker'), requireSelf(), async (req, res) => {
     try {
+        await Call.updateMany({ receiverId: req.params.id, 'assignmentData.date': istDate(0) }, { $unset: { 'assignmentData.prevAvailableUntil': 1 } });
         const worker = await Worker.findByIdAndUpdate(
             req.params.id,
             { isWithdrawn: true, isLooking: false, availableUntil: null },
@@ -240,6 +243,7 @@ router.put('/:id/release', auth, requireRole('employer'), async (req, res) => {
         if (String(target.hiredBy) !== req.user.id) return res.status(403).json({ msg: 'Only the employer who hired this worker can release them' });
         const todays = await Call.find({ receiverId: req.params.id, callerId: req.user.id, callType: 'assign', 'assignmentData.date': istDate(0), 'assignmentData.workerResponse': ACTIVE });
         for (const c of todays) {
+            if (await require('../models/Review').exists({ hireId: c._id })) continue;
             c.assignmentData.workerResponse = 'cancelled';
             c.assignmentData.activeKey = undefined;
             await c.save();
