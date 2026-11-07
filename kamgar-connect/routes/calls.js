@@ -89,6 +89,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
         time: cleanText(time, 20),
         employerName,
         instructions: typeof req.body.instructions === 'string' ? cleanText(req.body.instructions, 300) : '',
+        wage: Number(worker.expectedSalary) || undefined,
         workerResponse: 'pending',
         activeKey: activeKey(worker._id, date),
         ...(isToday ? (wasLive ? { prevAvailableUntil: worker.availableUntil } : {}) : {})

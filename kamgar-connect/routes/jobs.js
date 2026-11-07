@@ -177,9 +177,20 @@ router.put('/:id/accept', auth, async (req, res) => {
       // Only one worker gets it, even when two press Accept at the same moment
       const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now() } }, { new: true });
       if (!taken) return res.status(400).json({ msg: 'Job already accepted' });
+      if (await Job.exists({ splitFrom: job._id, workerId: worker._id })) {
+        await Job.updateOne({ _id: job._id, workerId: worker._id }, { $set: { status: 'pending' }, $unset: { workerId: 1, acceptedAt: 1 } });
+        return res.status(400).json({ msg: 'You already took a place in this job' });
+      }
       Object.assign(job, { workerId: taken.workerId, status: taken.status, acceptedAt: taken.acceptedAt });
     }
 
+    if (job.date) {
+      if (await Call.exists({ receiverId: worker._id, callType: 'assign', 'assignmentData.date': job.date, 'assignmentData.workerResponse': { $nin: ['declined', 'cancelled'] } })) {
+        if (job.splitFrom) { await Job.deleteOne({ _id: job._id }); await Job.updateOne({ _id: job.splitFrom }, { $inc: { workerCount: 1 } }); }
+        else await Job.updateOne({ _id: job._id }, { $set: { status: 'pending' }, $unset: { workerId: 1, acceptedAt: 1 } });
+        return res.status(400).json({ msg: 'You already have a booking on that day' });
+      }
+    }
     worker.jobHistory.push(job.id);
     await worker.save();
 
@@ -225,6 +236,7 @@ router.put('/:id/complete', auth, async (req, res) => {
     if (job.status === 'completed') return res.status(400).json({ msg: 'Already completed' });
     if (job.status !== 'accepted') return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
     if (job.date) { if (job.date > istDate(0)) return res.status(400).json({ msg: 'A job can be marked done on or after its work date' }); }
+    if (!job.date) { if (Date.now() - new Date(job.acceptedAt || 0).getTime() < 2 * 3600 * 1000) return res.status(400).json({ msg: 'A job can be marked done 2 hours after a worker took it' }); }
     if (!job.workerId) return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
 
     job.status = 'completed';
@@ -275,6 +287,7 @@ router.put('/:id/leave', auth, async (req, res) => {
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (String(job.workerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status !== 'accepted') return res.status(400).json({ msg: 'This job can no longer be given back' });
+    if (job.date) { if (job.date < istDate(0)) return res.status(400).json({ msg: 'This job can no longer be given back' }); }
     // One place of a job for several workers: remove the place (only one request can) and give it back if the job is still open
     if (job.splitFrom) {
       const removed = await Job.findOneAndDelete({ _id: job._id, workerId: req.user.id, status: 'accepted' });
@@ -282,8 +295,12 @@ router.put('/:id/leave', auth, async (req, res) => {
       await Worker.updateOne({ _id: req.user.id }, { $pull: { jobHistory: job._id } });
       const parent = await Job.findOneAndUpdate({ _id: job.splitFrom, status: 'pending' }, { $inc: { workerCount: 1 } }, { new: true });
       if (parent) return res.json(parent);
-      // The job was cancelled or filled meanwhile: the place does not come back
-      return res.json({ ...removed.toObject(), status: 'cancelled' });
+      // The rest was filled meanwhile: the place opens again as a job of its own (not if the job was cancelled)
+      const parentNow = await Job.findById(job.splitFrom).select('status');
+      if (parentNow ? parentNow.status === 'cancelled' : true) return res.json({ ...removed.toObject(), status: 'cancelled' });
+      const again = await new Job({ employerId: removed.employerId, jobType: removed.jobType, city: removed.city, workerCount: 1, amount: removed.amount,
+        date: removed.date, location: removed.location, description: removed.description, postedAt: removed.postedAt }).save();
+      return res.json(again);
     }
     const reopened = await Job.findOneAndUpdate({ _id: job._id, workerId: req.user.id, status: 'accepted' },
       { $set: { status: 'pending' }, $unset: { workerId: 1, acceptedAt: 1 } }, { new: true });

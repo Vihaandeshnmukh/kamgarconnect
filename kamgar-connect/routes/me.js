@@ -240,7 +240,7 @@ router.get('/stats', async (req, res) => {
         const w = skillOf[String(h.receiverId)];
         if (!w) return;
         bySkill[w.skill] = (bySkill[w.skill] || 0) + 1;
-        estSpend += Number(w.expectedSalary) || 0;
+        estSpend += Number(h.assignmentData && h.assignmentData.wage) || Number(w.expectedSalary) || 0;
       });
       const [bookedNow, ratingsGiven, jobsPosted] = await Promise.all([
         Worker.countDocuments({ hiredBy: req.user.id, hiredUntil: { $gt: now } }),
@@ -273,7 +273,8 @@ router.get('/stats', async (req, res) => {
       rating: me.rating || 0,
       totalRatings: me.totalRatings || 0,
       dailyWage: me.expectedSalary || null,
-      estimatedEarnings: hires.length * (Number(me.expectedSalary) || 0),
+      estimatedEarnings: hires.reduce((sum, h) => sum + (Number(h.assignmentData && h.assignmentData.wage) || Number(me.expectedSalary) || 0), 0)
+        + (await Job.find({ workerId: req.user.id, status: 'completed' }).select('amount')).reduce((s2, j) => s2 + (Number(j.amount) || 0), 0),
       isLive: Boolean(me.isLooking && me.availableUntil > now),
       bookedNow: Boolean(me.hiredUntil > now),
       upcoming,
