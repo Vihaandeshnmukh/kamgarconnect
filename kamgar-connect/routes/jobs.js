@@ -11,6 +11,7 @@ const Call = require('../models/Call');
 const Review = require('../models/Review');
 const { sendPushNotification } = require('../utils/notifications');
 const mongoose = require('mongoose');
+const { notify } = require('../utils/inbox');
 const { CITIES, SKILLS, cleanText } = require('../utils/sanitize');
 const { istDate, isDay } = require('../utils/bookings');
 
@@ -144,7 +145,7 @@ router.post('/:id/offers', auth, async (req, res) => {
     if (mine ? mine.status === 'accepted' : false) return res.status(400).json({ msg: 'Your offer was already accepted - accept the job now' });
     await Job.updateOne({ _id: job._id }, { $pull: { offers: { workerId: worker._id } } });
     await Job.updateOne({ _id: job._id, status: 'pending' }, { $push: { offers: { workerId: worker._id, amount, status: 'pending', at: new Date() } } });
-    if (req.io) req.io.to('user-' + job.employerId).emit('job-offer', { jobId: job._id, worker: worker.name, amount });
+    notify(req.io, job.employerId, 'employer', 'offer_new', { name: worker.name, jobType: job.jobType, amount });
     res.status(201).json({ ok: true, amount, status: 'pending' });
   } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
@@ -175,7 +176,7 @@ router.put('/:id/offers/:offerId', auth, async (req, res) => {
     const status = decision === 'accept' ? 'accepted' : 'declined';
     const r = await Job.updateOne({ _id: job._id, offers: { $elemMatch: { _id: offer._id, status: 'pending' } } }, { $set: { 'offers.$.status': status } });
     if (!r.modifiedCount) return res.status(400).json({ msg: 'You already answered this offer' });
-    if (req.io) req.io.to('user-' + offer.workerId).emit('offer-answered', { jobId: job._id, status, amount: offer.amount });
+    notify(req.io, offer.workerId, 'worker', status === 'accepted' ? 'offer_accepted' : 'offer_declined', { jobType: job.jobType, amount: offer.amount });
     res.json({ ok: true, status });
   } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
@@ -284,6 +285,7 @@ router.put('/:id/accept', auth, async (req, res) => {
         { jobId: job.id, workerId: worker.id }
       );
     }
+    notify(req.io, employer._id, 'employer', 'job_taken', { name: worker.name, jobType: job.jobType, date: job.date, amount: job.amount });
 
     res.json(job);
   } catch (err) {
@@ -310,6 +312,7 @@ router.put('/:id/complete', auth, async (req, res) => {
     const finished = await Job.findOneAndUpdate({ _id: job._id, status: { $in: ['accepted', 'in-progress'] } }, { $set: { status: 'completed', completedAt: Date.now() } }, { new: true });
     if (!finished) return res.status(400).json({ msg: 'Already completed' });
     await Worker.updateOne({ _id: job.workerId }, { $inc: { jobsDone: 1 } });
+    notify(req.io, job.workerId, 'worker', 'job_done', { jobType: job.jobType, date: job.date });
     return res.json(finished);
 
     res.json(job);
@@ -329,7 +332,7 @@ router.put('/:id/start', auth, async (req, res) => {
     if (job.date) { if (job.date > istDate(0)) return res.status(400).json({ msg: 'You can start on the work day' }); }
     const started = await Job.findOneAndUpdate({ _id: job._id, workerId: req.user.id, status: 'accepted' }, { $set: { status: 'in-progress', startedAt: Date.now() } }, { new: true });
     if (!started) return res.status(400).json({ msg: 'This job can not be started' });
-    if (req.io) req.io.to('user-' + job.employerId).emit('job-started', { jobId: job._id });
+    { const w = await Worker.findById(req.user.id).select('name'); notify(req.io, job.employerId, 'employer', 'job_started', { name: w ? w.name : '', jobType: job.jobType }); }
     const o = started.toObject(); delete o.offers; res.json(o);
   } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
@@ -347,6 +350,7 @@ router.put('/:id/no-show', auth, async (req, res) => {
     const done = await Job.findOneAndUpdate({ _id: job._id, status: { $in: ['accepted', 'in-progress'] } }, { $set: { status: 'cancelled', noShow: true } }, { new: true });
     if (!done) return res.status(400).json({ msg: 'This job is already finished or cancelled' });
     await Worker.updateOne({ _id: job.workerId }, { $inc: { noShows: 1 } });
+    notify(req.io, job.workerId, 'worker', 'job_noshow', { jobType: job.jobType, date: job.date });
     res.json(done);
   } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
@@ -374,6 +378,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
     if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     const done = await Job.findOneAndUpdate({ _id: job._id, status: { $in: ['pending', 'accepted'] } }, { $set: { status: 'cancelled' } }, { new: true });
     if (!done) return res.status(400).json({ msg: 'This job is already finished or cancelled' });
+    if (done.workerId) notify(req.io, done.workerId, 'worker', 'job_cancelled', { jobType: done.jobType, date: done.date });
     res.json(done);
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });

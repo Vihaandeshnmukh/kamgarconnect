@@ -653,6 +653,23 @@
     html[data-theme="dark"] .offer-tag.ok, html[data-theme="dark"] .rel-tag { background: #14352A; color: #86EFAC; }
     html[data-theme="dark"] .offer-tag.bad { background: #3B1717; color: #FCA5A5; }
     html[data-theme="dark"] .rel-tag.low { background: #3A2A0A; color: #FCD34D; }
+    /* ===== Inbox ===== */
+    .inbox-wrap { position: relative; display: inline-flex; }
+    .inbox-btn { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text-primary); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .inbox-badge { position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: #DC2626; color: #FFFFFF; font-size: 0.75rem; font-weight: 800; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg-surface); }
+    .inbox-badge.on { display: flex; }
+    #inbox-panel { position: fixed; z-index: 200400; top: 90px; right: 16px; width: min(420px, calc(100vw - 32px)); max-height: 70vh; overflow-y: auto; background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); padding: 14px; display: none; }
+    #inbox-panel.open { display: block; }
+    .inbox-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .inbox-head h3 { font-family: 'Manrope', sans-serif; color: var(--text-primary); font-size: 1.2rem; }
+    .inbox-item { display: grid; grid-template-columns: 40px 1fr; gap: 10px; padding: 10px 6px; border-top: 1px solid var(--border); }
+    .inbox-item .ic { width: 40px; height: 40px; border-radius: 12px; background: var(--saffron-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; }
+    .inbox-item.unread .txt { font-weight: 800; }
+    .inbox-item .txt { color: var(--text-primary); }
+    .inbox-item small { display: block; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+    .inbox-empty { color: var(--text-secondary); font-weight: 600; padding: 18px 6px; text-align: center; }
+    .app-head-right .inbox-row { display: flex; gap: 10px; align-items: center; }
+    @media (max-width: 760px) { #inbox-panel { top: 76px; max-height: calc(100vh - 180px); } }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -847,7 +864,8 @@
       <div class="app-head">
          <div><div class="app-hello" id="app-hello"></div><div class="app-sub" id="app-sub"></div></div>
          <div class="app-head-right">
-            <span class="app-role" id="app-role"></span>
+            <span class="inbox-row"><span class="app-role" id="app-role"></span>
+            <span class="inbox-wrap"><button type="button" class="inbox-btn" id="inbox-btn" onclick="toggleInbox()" aria-label="Messages"><i class="fas fa-bell"></i></button><span class="inbox-badge" id="inbox-badge"></span></span></span>
             <button class="btn btn-outline app-switch" id="app-switch" onclick="switchRole()"><i class="fas fa-right-left"></i> <span id="app-switch-text"></span></button>
          </div>
       </div>
@@ -986,6 +1004,7 @@
       <button class="btn btn-outline lite-btn" id="lite-btn-footer" onclick="toggleLite()"><i class="fas fa-feather"></i> <span class="lite-label">Lite mode</span></button>
     </div>
   </footer>
+  <div id="inbox-panel" role="dialog" aria-label="Messages"></div>
   <div id="demo-tour" role="dialog" aria-modal="true" aria-label="Investor demo"><div class="dt-card" id="demo-card"></div></div>
   <div class="st-dock"><a class="d2" href="#" onclick="handleFindWorkClick(); return false;"><i class="fas fa-user-plus"></i> Register</a></div>
 
@@ -2024,6 +2043,7 @@
     // Logged in: the page becomes the app (marketing sections hidden)
     function enterAppMode() {
        document.body.classList.add('app-mode');
+       startInbox();
        updateAppHeader();
     }
     function updateAppHeader() {
@@ -2656,6 +2676,71 @@
           if (typeof loadHistory === 'function') loadHistory();
        } catch (e) { showNotif(t('network_problem'), 'red'); }
     }
+    // ===== Inbox =====
+    const INBOX_TEXT = {
+       booking_new: ['fa-calendar-plus', d => ({ en: d.name + ' wants to book you for ' + fmtWhen(d), hi: d.name + ' आपको ' + fmtWhen(d) + ' के लिए बुक करना चाहते हैं', mr: d.name + ' तुम्हाला ' + fmtWhen(d) + ' साठी बुक करू इच्छितात' })],
+       booking_confirmed: ['fa-circle-check', d => ({ en: d.name + ' confirmed the booking for ' + fmtWhen(d), hi: d.name + ' ने ' + fmtWhen(d) + ' की बुकिंग पक्की की', mr: d.name + ' यांनी ' + fmtWhen(d) + ' ची बुकिंग पक्की केली' })],
+       booking_declined: ['fa-circle-xmark', d => ({ en: d.name + ' cannot come on ' + fmtWhen(d), hi: d.name + ' ' + fmtWhen(d) + ' को नहीं आ सकते', mr: d.name + ' ' + fmtWhen(d) + ' ला येऊ शकत नाहीत' })],
+       booking_cancelled: ['fa-ban', d => ({ en: d.name + ' cancelled the booking for ' + fmtWhen(d), hi: d.name + ' ने ' + fmtWhen(d) + ' की बुकिंग रद्द की', mr: d.name + ' यांनी ' + fmtWhen(d) + ' ची बुकिंग रद्द केली' })],
+       booking_noshow: ['fa-user-slash', d => ({ en: d.name + ' reported that you did not come on ' + fmtWhen(d), hi: d.name + ' ने बताया कि आप ' + fmtWhen(d) + ' को नहीं आए', mr: d.name + ' यांनी कळवले की तुम्ही ' + fmtWhen(d) + ' ला आला नाहीत' })],
+       job_taken: ['fa-handshake', d => ({ en: d.name + ' took your ' + skillName(d.jobType) + ' job', hi: d.name + ' ने आपकी ' + skillName(d.jobType) + ' नौकरी ली', mr: d.name + ' यांनी तुमचे ' + skillName(d.jobType) + ' काम घेतले' })],
+       job_started: ['fa-person-digging', d => ({ en: d.name + ' started work (' + skillName(d.jobType) + ')', hi: d.name + ' ने काम शुरू किया', mr: d.name + ' यांनी काम सुरू केले' })],
+       job_done: ['fa-flag-checkered', d => ({ en: 'Your ' + skillName(d.jobType) + ' job was marked done', hi: 'आपकी ' + skillName(d.jobType) + ' नौकरी पूरी हुई', mr: 'तुमचे ' + skillName(d.jobType) + ' काम पूर्ण झाले' })],
+       job_noshow: ['fa-user-slash', d => ({ en: 'The employer reported you did not come (' + skillName(d.jobType) + ')', hi: 'मालिक ने बताया कि आप नहीं आए', mr: 'मालकाने कळवले की तुम्ही आला नाहीत' })],
+       job_cancelled: ['fa-ban', d => ({ en: 'The employer cancelled the ' + skillName(d.jobType) + ' job', hi: 'मालिक ने ' + skillName(d.jobType) + ' नौकरी रद्द की', mr: 'मालकाने ' + skillName(d.jobType) + ' काम रद्द केले' })],
+       offer_new: ['fa-indian-rupee-sign', d => ({ en: d.name + ' asks ₹' + d.amount + ' for your ' + skillName(d.jobType) + ' job', hi: d.name + ' आपकी ' + skillName(d.jobType) + ' नौकरी के लिए ₹' + d.amount + ' माँगते हैं', mr: d.name + ' तुमच्या ' + skillName(d.jobType) + ' कामासाठी ₹' + d.amount + ' मागतात' })],
+       offer_accepted: ['fa-circle-check', d => ({ en: 'Your ₹' + d.amount + ' was accepted. Open Home and tap Accept job.', hi: 'आपके ₹' + d.amount + ' मान लिए। होम खोलकर नौकरी स्वीकारें।', mr: 'तुमचे ₹' + d.amount + ' मान्य. होम उघडून काम स्वीकारा.' })],
+       offer_declined: ['fa-circle-xmark', d => ({ en: 'Your ₹' + d.amount + ' was declined', hi: 'आपके ₹' + d.amount + ' नहीं माने', mr: 'तुमचे ₹' + d.amount + ' नाकारले' })],
+       review_new: ['fa-star', d => ({ en: 'You got a ' + d.rating + '★ rating', hi: 'आपको ' + d.rating + '★ रेटिंग मिली', mr: 'तुम्हाला ' + d.rating + '★ रेटिंग मिळाली' })]
+    };
+    function fmtWhen(d) { return d.date ? whenText(d.date, d.time) : ''; }
+    function ago(iso) {
+       const m = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+       if (m < 60) return LX({ en: m + ' min ago', hi: m + ' मिनट पहले', mr: m + ' मिनिटांपूर्वी' });
+       const h = Math.round(m / 60); if (h < 24) return LX({ en: h + ' h ago', hi: h + ' घंटे पहले', mr: h + ' तासांपूर्वी' });
+       return LX({ en: Math.round(h / 24) + ' days ago', hi: Math.round(h / 24) + ' दिन पहले', mr: Math.round(h / 24) + ' दिवसांपूर्वी' });
+    }
+    let inboxItems = [], inboxTimer = null;
+    async function loadInbox() {
+       if (!localStorage.getItem('auth_token')) return;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/inbox`, { headers: authHeaders() });
+          if (!r.ok) return;
+          const d = await r.json();
+          inboxItems = d.items || [];
+          const b = document.getElementById('inbox-badge');
+          b.innerText = d.unread > 9 ? '9+' : String(d.unread);
+          b.classList.toggle('on', d.unread > 0);
+          document.getElementById('inbox-btn').setAttribute('aria-label', LX({ en: 'Messages', hi: 'संदेश', mr: 'संदेश' }) + (d.unread ? ' (' + d.unread + ')' : ''));
+          if (document.getElementById('inbox-panel').classList.contains('open')) drawInbox();
+       } catch (e) {}
+    }
+    function drawInbox() {
+       const rows = inboxItems.map(n => {
+          const def = INBOX_TEXT[n.type]; if (!def) return '';
+          let txt = ''; try { txt = LX(def[1](n.data || {})); } catch (e) { txt = n.type; }
+          return '<div class="inbox-item' + (n.read ? '' : ' unread') + '"><span class="ic"><i class="fas ' + def[0] + '"></i></span><span><span class="txt">' + esc(txt) + '</span><small>' + esc(ago(n.createdAt)) + '</small></span></div>';
+       }).join('');
+       document.getElementById('inbox-panel').innerHTML = '<div class="inbox-head"><h3><i class="fas fa-bell"></i> ' + esc(LX({ en: 'Messages', hi: 'संदेश', mr: 'संदेश' })) + '</h3><button class="dt-close" onclick="toggleInbox()" aria-label="Close">&times;</button></div>'
+          + (rows || '<div class="inbox-empty">' + esc(LX({ en: 'No messages yet', hi: 'अभी कोई संदेश नहीं', mr: 'अजून संदेश नाहीत' })) + '</div>');
+    }
+    async function toggleInbox() {
+       const panel = document.getElementById('inbox-panel');
+       if (panel.classList.contains('open')) { panel.classList.remove('open'); return; }
+       drawInbox(); panel.classList.add('open');
+       if (inboxItems.some(n => !n.read)) {
+          try { await fetch(`${CONFIG.BACKEND_URL}/api/me/inbox/read`, { method: 'POST', headers: authHeaders() }); } catch (e) {}
+          document.getElementById('inbox-badge').classList.remove('on');
+          setTimeout(() => { inboxItems.forEach(n => { n.read = true; }); }, 1500);
+       }
+    }
+    function startInbox() {
+       loadInbox();
+       if (inboxTimer) clearInterval(inboxTimer);
+       inboxTimer = setInterval(loadInbox, 60000);
+    }
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadInbox(); });
+    document.addEventListener('click', e => { const p = document.getElementById('inbox-panel'); if (p) { if (p.classList.contains('open')) { if (!p.contains(e.target)) { if (!e.target.closest('#inbox-btn')) p.classList.remove('open'); } } } });
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
     function leaveJob(id) { if (confirm(t('give_back_q'))) jobAction(id, 'leave', t('given_back')); }

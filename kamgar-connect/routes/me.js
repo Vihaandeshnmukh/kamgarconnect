@@ -14,6 +14,8 @@ const Job = require('../models/Job');
 const Review = require('../models/Review');
 const { cleanName, isValidName, cleanText, CITIES, SKILLS, parseLocation, nearestCity, toPoint } = require('../utils/sanitize');
 const mongoose = require('mongoose');
+const { notify } = require('../utils/inbox');
+const Notification = require('../models/Notification');
 const { ACTIVE, istDate, freeWorkerFromBooking, activateTodaysBookings, workStarted } = require('../utils/bookings');
 
 // What a booking looks like to both sides: its state and what can still be done with it
@@ -310,6 +312,11 @@ async function endBooking(req, res, newStatus) {
     Object.assign(hire, { assignmentData: updated.assignmentData });
     // Booked for today by this employer and it ended: free the worker now
     if (newStatus !== 'confirmed') await freeWorkerFromBooking(hire);
+    { // tell the other side
+      const a = hire.assignmentData || {};
+      if (newStatus === 'cancelled') notify(req.io, hire.receiverId, 'worker', 'booking_cancelled', { name: a.employerName, date: a.date, time: a.time });
+      else { const w = await Worker.findById(hire.receiverId).select('name'); notify(req.io, hire.callerId, 'employer', newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_declined', { name: w ? w.name : '', date: a.date, time: a.time }); }
+    }
     res.json({ ok: true, status: newStatus });
   } catch (err) {
     console.error('Booking update error:', err.message);
@@ -336,10 +343,32 @@ router.post('/bookings/:hireId/no-show', async (req, res) => {
     const updated = await Call.findOneAndUpdate({ _id: hire._id, 'assignmentData.noShow': { $ne: true } }, { $set: { 'assignmentData.noShow': true } }, { new: true });
     if (!updated) return res.status(409).json({ msg: 'Already reported' });
     await Worker.updateOne({ _id: hire.receiverId }, { $inc: { noShows: 1 } });
+    notify(req.io, hire.receiverId, 'worker', 'booking_noshow', { name: a.employerName, date: a.date });
     res.json({ ok: true, noShow: true });
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }
+});
+
+// ===== In-app inbox =====
+// GET /api/me/inbox - newest 50 messages and how many are unread
+router.get('/inbox', async (req, res) => {
+  try {
+    const [items, unread] = await Promise.all([
+      Notification.find({ userId: req.user.id }).sort({ createdAt: -1 }).limit(50).select('type data read createdAt'),
+      Notification.countDocuments({ userId: req.user.id, read: false })
+    ]);
+    res.json({ unread, items });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+// POST /api/me/inbox/read - mark all as read (or one, with ?id=)
+router.post('/inbox/read', async (req, res) => {
+  try {
+    const q = { userId: req.user.id, read: false };
+    if (typeof req.query.id === 'string') { if (!mongoose.isValidObjectId(req.query.id)) return res.status(400).json({ msg: 'Invalid id' }); q._id = req.query.id; }
+    const r = await Notification.updateMany(q, { $set: { read: true } });
+    res.json({ ok: true, marked: r.modifiedCount });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
 });
 
 module.exports = router;

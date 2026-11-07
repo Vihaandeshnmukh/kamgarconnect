@@ -4,3 +4,6 @@ Each item: what is blocked and the exact steps for you.
 ## Service worker (offline app) - not possible from a single WordPress page
 A real installable/offline app needs a file `sw.js` served from https://kamgar.de/sw.js. WordPress block templates can't serve files.
 Steps if you want it later: 1) WordPress admin → Plugins → Add New → install a free plugin such as "PWA" (https://wordpress.org/plugins/pwa/) or upload sw.js to the site root with your host's File Manager (Hostinger: https://hpanel.hostinger.com/ → Websites → File Manager → public_html). 2) Tell Claude, and the page will register it.
+
+## Web push notifications
+Same blocker as the service worker: push needs sw.js on https://kamgar.de/ plus VAPID keys (free) stored on Render. Steps: 1) do the service-worker step above; 2) on Render add environment variables VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY (Claude can generate them, free): https://dashboard.render.com/web/srv-dbfkordg1s2s7386lq5g/env ; 3) ask Claude to wire the existing inbox to web push.

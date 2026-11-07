@@ -7,6 +7,7 @@
 // worker no longer rings them. The full calling system is archived on the git
 // branch archive/voice-system (tag voice-system-v1).
 const express = require('express');
+const { notify } = require('../utils/inbox');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
@@ -123,6 +124,7 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
       });
     }
 
+    notify(req.io, worker._id, 'worker', 'booking_new', { name: employerName, date, time });
     // The employer gets the worker's number to contact them directly
     res.json({ success: true, msg: 'Worker booked', callRecordId: hire._id, phone: worker.phone });
   } catch (err) {

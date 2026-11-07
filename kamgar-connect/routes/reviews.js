@@ -2,6 +2,7 @@
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const express = require('express');
+const { notify } = require('../utils/inbox');
 const router = express.Router();
 const Review = require('../models/Review');
 const Worker = require('../models/Worker');
@@ -84,6 +85,7 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
     const agg = perEmployer[0] || { avg: 0, n: 0 };
     await Worker.updateOne({ _id: workerId }, { $set: { rating: agg.avg, totalRatings: agg.n } });
 
+    notify(req.io, workerId, 'worker', 'review_new', { rating: Number(rating) });
     res.status(201).json({ success: true, review });
   } catch (err) {
     console.error('Review Save Error:', err.message);
