@@ -8,3 +8,5 @@ One line each: what I chose and why.
 - Demo phone numbers start with 1 (100000xxxx workers, 100001xxxx employers): no Indian mobile number starts with 1.
 - Investor demo on the staging page is a client-side guided tour with demo data that never calls the server, because the staging page uses the production API and demo data must never reach production.
 - Seed script only deletes records with isDemo: true and refuses any database not named exactly kamgar_demo.
+- Stage 2: the Stitch redesign approved earlier tonight is the base; added dark-by-default (brief asks for orange on dark), automatic lite mode, and a browser-made manifest. No service worker (needs a file on kamgar.de; logged in BLOCKED.md).
+- Stage 1 backend deploy: the browser was signed in to Render, so I used Manual Deploy → Deploy latest commit (your brief allows tested additive backend changes to go live). Stages that change only the page don't need a server deploy.

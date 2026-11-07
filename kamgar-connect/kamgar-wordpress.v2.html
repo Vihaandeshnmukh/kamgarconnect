@@ -2,7 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0E1116" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kamgar" />
+  <meta name="description" content="Kamgar Connect: find daily-wage work or hire masons, plumbers, electricians, painters, carpenters, drivers, factory workers and domestic help in Aurangabad. English, हिंदी, मराठी." />
   <title>Kamgar Connect — India's GPS-Powered Labour Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -595,6 +601,15 @@
     html[data-theme="dark"] .dt-pill { background: #14352A; color: #86EFAC; }
     html[data-theme="dark"] .dt-pill.wait { background: #3A2A0A; color: #FCD34D; }
     html[data-theme="dark"] .dt-btn, html[data-theme="dark"] .dt-big, html[data-theme="dark"] .dt-row .av { background: #C2410C; }
+    /* ===== Lite mode (slow connections / low-end phones) ===== */
+    html[data-lite="1"] #hero-canvas { display: none !important; }
+    html[data-lite="1"] *, html[data-lite="1"] *::before, html[data-lite="1"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    html[data-lite="1"] .navbar, html[data-lite="1"] .modal, html[data-lite="1"] #demo-tour, html[data-lite="1"] #secret-page { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    html[data-lite="1"] #main-live-btn, html[data-lite="1"] .st-hero-art .art-card { box-shadow: none !important; }
+    .lite-btn { min-height: 44px; border-radius: 12px; font-weight: 800; }
+    .lite-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 16px; background: var(--bg-surface); }
+    .lite-row strong { display: block; color: var(--text-primary); }
+    .lite-row span { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -609,8 +624,18 @@
     (function () {
       try {
         var t = localStorage.getItem('theme');
-        if (t !== 'dark') { if (t !== 'light') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+        if (t !== 'light') t = 'dark';
         document.documentElement.setAttribute('data-theme', t);
+        // Lite mode: saved choice first, otherwise detect a slow connection or a low-end phone
+        var lite = localStorage.getItem('lite');
+        if (lite !== '1') { if (lite !== '0') {
+          var c = navigator.connection || {};
+          var slow = c.saveData === true || /(^|-)2g$|^3g$/.test(c.effectiveType || '');
+          var weak = (navigator.deviceMemory || 8) <= 2 || (navigator.hardwareConcurrency || 8) <= 2;
+          var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          lite = (slow || weak || still) ? '1' : '0';
+        } }
+        document.documentElement.setAttribute('data-lite', lite);
       } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
     })();
   </script>
@@ -863,6 +888,7 @@
       <div id="pane-profile" style="display:none;">
          <h3 class="pane-title" data-i18n="profile_title">My profile</h3>
          <form id="profile-form" class="prof-card" onsubmit="saveProfile(event)"><div id="profile-body"></div></form>
+         <div class="lite-row"><div><strong><i class="fas fa-feather"></i> Lite mode</strong><span>Faster on slow internet and older phones</span></div><button type="button" class="btn btn-outline lite-btn" id="lite-btn" onclick="toggleLite()"><span class="lite-label">Off</span></button></div>
       </div>
     </div>
   </section>
@@ -895,6 +921,7 @@
       <div><strong>Kamgar Connect • कामगार कनेक्ट</strong><em>Dignity, Not Chowks | सम्मान, चौक नहीं</em></div>
       <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> Serving Chhatrapati Sambhajinagar (Aurangabad), Maharashtra</div>
       <button class="btn btn-outline st-demo-btn" id="demo-open" onclick="openDemoTour()"><i class="fas fa-circle-play"></i> Investor demo</button>
+      <button class="btn btn-outline lite-btn" id="lite-btn-footer" onclick="toggleLite()"><i class="fas fa-feather"></i> <span class="lite-label">Lite mode</span></button>
     </div>
   </footer>
   <div id="demo-tour" role="dialog" aria-modal="true" aria-label="Investor demo"><div class="dt-card" id="demo-card"></div></div>
@@ -1464,6 +1491,7 @@
           switchTab(localStorage.getItem('active_tab') || 'home');
        }
        appReady = true;
+       showLite(); setupManifest();
        if (/[?&]demo=1/.test(location.search)) openDemoTour();
        openReviewFromLink();
        let healthDone = false;
@@ -1532,11 +1560,43 @@
     }
 
     function initThree() {
+       if (isLite()) return;
        try { initThreeScene(); } catch (e) { console.log('3D background unavailable'); }
+    }
+    function isLite() { return document.documentElement.getAttribute('data-lite') === '1'; }
+    function showLite() {
+       const on = isLite();
+       document.querySelectorAll('.lite-label').forEach(el => { el.innerText = el.closest('#lite-btn') ? (on ? 'On' : 'Off') : (on ? 'Lite mode: on' : 'Lite mode: off'); });
+    }
+    function toggleLite() {
+       const next = isLite() ? '0' : '1';
+       document.documentElement.setAttribute('data-lite', next);
+       try { localStorage.setItem('lite', next); } catch (e) {}
+       showLite();
+       const canv = document.getElementById('hero-canvas');
+       if (next === '0') { if (canv) { if (!canv.dataset.started) initThree(); } }
+    }
+    // Installable app: manifest made here (WordPress serves only this page), icon drawn on a canvas
+    function setupManifest() {
+       try {
+          const c = document.createElement('canvas'); c.width = c.height = 512;
+          const g = c.getContext('2d');
+          g.fillStyle = '#FF5C00'; g.beginPath(); g.roundRect ? g.roundRect(0, 0, 512, 512, 110) : g.rect(0, 0, 512, 512); g.fill();
+          g.fillStyle = '#FFFFFF'; g.font = 'bold 330px Manrope, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('K', 256, 280);
+          const icon = c.toDataURL('image/png');
+          const here = location.origin + location.pathname;
+          const m = { name: 'Kamgar Connect', short_name: 'Kamgar', start_url: here, scope: location.origin + '/', display: 'standalone', background_color: '#0E1116', theme_color: '#0E1116',
+             description: 'Daily-wage work and workers in Aurangabad', icons: [{ src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: icon, sizes: '192x192', type: 'image/png' }] };
+          const link = document.createElement('link'); link.rel = 'manifest';
+          link.href = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
+          document.head.appendChild(link);
+          const apple = document.createElement('link'); apple.rel = 'apple-touch-icon'; apple.href = icon; document.head.appendChild(apple);
+       } catch (e) {}
     }
     function initThreeScene() {
        if (typeof THREE === 'undefined') return;
        const canv = document.getElementById('hero-canvas');
+       canv.dataset.started = '1';
        const scene = new THREE.Scene();
        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
        const renderer = new THREE.WebGLRenderer({canvas: canv, alpha:true});
