@@ -106,6 +106,7 @@ router.get('/', auth, async (req, res) => {
     const byE = Object.fromEntries(es.map(e => [String(e._id), e]));
     res.json(jobs.map(j => {
       const e = byE[String(j.employerId)];
+      delete j.offers;
       return { ...j, employer: e ? { name: e.name, phone: e.phone, companyName: e.companyName || '' } : null };
     }));
   } catch (err) {
@@ -114,12 +115,77 @@ router.get('/', auth, async (req, res) => {
 });
 
 // GET /api/jobs/:id - full details for the employer and worker of the job; others see an open job's basics
+// ===== Wage counter-offers =====
+const wage = (v) => { const n = typeof v === 'number' ? v : (typeof v === 'string' ? (/^\d+$/.test(v.trim()) ? Number(v) : NaN) : NaN); return Number.isInteger(n) ? (n >= 1 ? (n <= 100000 ? n : null) : null) : null; };
+// The worker's own offers and what the employer said
+router.get('/offers/mine', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'worker') return res.status(403).json({ msg: 'Not authorized' });
+    const jobs = await Job.find({ 'offers.workerId': req.user.id }).sort({ postedAt: -1 }).limit(50);
+    res.json(jobs.map(j => { const o = j.offers.find(x => String(x.workerId) === req.user.id); return { jobId: j._id, jobType: j.jobType, city: j.city, date: j.date, jobAmount: j.amount, jobStatus: j.status, amount: o.amount, status: o.status, at: o.at }; }));
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+// A worker offers a different daily wage for an open job (replaces their earlier offer)
+router.post('/:id/offers', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'worker') return res.status(403).json({ msg: 'Not authorized' });
+    const amount = wage(req.body ? req.body.amount : undefined);
+    if (amount === null) return res.status(400).json({ msg: 'Daily wage must be a number from 1 to 100000' });
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (job.status !== 'pending') return res.status(400).json({ msg: 'This job is no longer open' });
+    if (job.date) { if (job.date < istDate(0)) return res.status(400).json({ msg: 'This job date has passed' }); }
+    const [worker, employer] = await Promise.all([Worker.findById(req.user.id).select('name phone skill'), Employer.findById(job.employerId).select('phone')]);
+    if (!worker) return res.status(404).json({ msg: 'Account not found' });
+    if (employer ? employer.phone === worker.phone : false) return res.status(400).json({ msg: 'You cannot make an offer on your own job' });
+    const others = (job.offers || []).filter(o => String(o.workerId) !== req.user.id);
+    if (others.length >= 30) return res.status(400).json({ msg: 'This job already has many offers' });
+    const mine = (job.offers || []).find(o => String(o.workerId) === req.user.id);
+    if (mine ? mine.status === 'accepted' : false) return res.status(400).json({ msg: 'Your offer was already accepted - accept the job now' });
+    await Job.updateOne({ _id: job._id }, { $pull: { offers: { workerId: worker._id } } });
+    await Job.updateOne({ _id: job._id, status: 'pending' }, { $push: { offers: { workerId: worker._id, amount, status: 'pending', at: new Date() } } });
+    if (req.io) req.io.to('user-' + job.employerId).emit('job-offer', { jobId: job._id, worker: worker.name, amount });
+    res.status(201).json({ ok: true, amount, status: 'pending' });
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+// The employer sees the offers on their job
+router.get('/:id/offers', auth, async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (req.user.role !== 'employer' ? true : String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
+    const ws = await Worker.find({ _id: { $in: (job.offers || []).map(o => o.workerId) } }).select('name phone skill rating totalRatings experience');
+    const byId = Object.fromEntries(ws.map(w => [String(w._id), w]));
+    res.json((job.offers || []).filter(o => byId[String(o.workerId)]).map(o => { const w = byId[String(o.workerId)]; return { _id: o._id, amount: o.amount, status: o.status, at: o.at, worker: { _id: w._id, name: w.name, phone: w.phone, skill: w.skill, rating: w.rating, totalRatings: w.totalRatings, experience: w.experience } }; }));
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+// The employer accepts or declines one offer
+router.put('/:id/offers/:offerId', auth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.offerId)) return res.status(400).json({ msg: 'Invalid offer id' });
+    const decision = req.body ? req.body.decision : '';
+    if (!['accept', 'decline'].includes(decision)) return res.status(400).json({ msg: 'Choose accept or decline' });
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (req.user.role !== 'employer' ? true : String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
+    if (job.status !== 'pending') return res.status(400).json({ msg: 'This job is no longer open' });
+    const offer = (job.offers || []).find(o => String(o._id) === req.params.offerId);
+    if (!offer) return res.status(404).json({ msg: 'Offer not found' });
+    if (offer.status !== 'pending') return res.status(400).json({ msg: 'You already answered this offer' });
+    const status = decision === 'accept' ? 'accepted' : 'declined';
+    const r = await Job.updateOne({ _id: job._id, offers: { $elemMatch: { _id: offer._id, status: 'pending' } } }, { $set: { 'offers.$.status': status } });
+    if (!r.modifiedCount) return res.status(400).json({ msg: 'You already answered this offer' });
+    if (req.io) req.io.to('user-' + offer.workerId).emit('offer-answered', { jobId: job._id, status, amount: offer.amount });
+    res.json({ ok: true, status });
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+
 router.get('/:id', auth, async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     const involved = [String(job.employerId), String(job.workerId)].includes(req.user.id);
-    if (involved) return res.json(job);
+    if (involved) { const o = job.toObject(); if (String(job.employerId) !== req.user.id) delete o.offers; return res.json(o); }
     if (job.status !== 'pending') return res.status(404).json({ msg: 'Job not found' });
     res.json(await Job.findById(job._id).select(OPEN_JOB_FIELDS));
   } catch (err) {
@@ -148,6 +214,8 @@ router.put('/:id/accept', auth, async (req, res) => {
 
     // A job for several workers: this worker takes one place (a job of its own, linked by
     // splitFrom) and the rest stays open
+    const myOffer = (job.offers || []).find(o => String(o.workerId) === String(worker._id) ? o.status === 'accepted' : false);
+    const myAmount = myOffer ? myOffer.amount : job.amount;
     let split = null;
     if ((job.workerCount || 1) > 1) {
       split = await Job.findOneAndUpdate({ _id: job._id, status: 'pending', workerCount: { $gt: 1 } }, { $inc: { workerCount: -1 } }, { new: true });
@@ -155,7 +223,7 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (split) {
       try {
         job = await new Job({
-          employerId: job.employerId, jobType: job.jobType, city: job.city, workerCount: 1, amount: job.amount,
+          employerId: job.employerId, jobType: job.jobType, city: job.city, workerCount: 1, amount: myAmount,
           date: job.date, location: job.location, description: job.description, postedAt: job.postedAt,
           splitFrom: job._id, status: 'accepted', workerId: worker._id, acceptedAt: Date.now()
         }).save();
@@ -175,13 +243,13 @@ router.put('/:id/accept', auth, async (req, res) => {
       }
     } else {
       // Only one worker gets it, even when two press Accept at the same moment
-      const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now() } }, { new: true });
+      const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now(), ...(myOffer ? { amount: myAmount } : {}) } }, { new: true });
       if (!taken) return res.status(400).json({ msg: 'Job already accepted' });
       if (await Job.exists({ splitFrom: job._id, workerId: worker._id })) {
         await Job.updateOne({ _id: job._id, workerId: worker._id }, { $set: { status: 'pending' }, $unset: { workerId: 1, acceptedAt: 1 } });
         return res.status(400).json({ msg: 'You already took a place in this job' });
       }
-      Object.assign(job, { workerId: taken.workerId, status: taken.status, acceptedAt: taken.acceptedAt });
+      Object.assign(job, { workerId: taken.workerId, status: taken.status, acceptedAt: taken.acceptedAt, amount: taken.amount });
     }
 
     if (job.date) {
@@ -234,20 +302,53 @@ router.put('/:id/complete', auth, async (req, res) => {
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status === 'completed') return res.status(400).json({ msg: 'Already completed' });
-    if (job.status !== 'accepted') return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
+    if (!['accepted', 'in-progress'].includes(job.status)) return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
     if (job.date) { if (job.date > istDate(0)) return res.status(400).json({ msg: 'A job can be marked done on or after its work date' }); }
     if (!job.date) { if (Date.now() - new Date(job.acceptedAt || 0).getTime() < 2 * 3600 * 1000) return res.status(400).json({ msg: 'A job can be marked done 2 hours after a worker took it' }); }
     if (!job.workerId) return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
 
-    job.status = 'completed';
-    job.completedAt = Date.now();
-    await job.save();
+    const finished = await Job.findOneAndUpdate({ _id: job._id, status: { $in: ['accepted', 'in-progress'] } }, { $set: { status: 'completed', completedAt: Date.now() } }, { new: true });
+    if (!finished) return res.status(400).json({ msg: 'Already completed' });
+    await Worker.updateOne({ _id: job.workerId }, { $inc: { jobsDone: 1 } });
+    return res.json(finished);
 
     res.json(job);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server Error' });
   }
+});
+
+// PUT /api/jobs/:id/start - the worker who took the job says the work has started (on or after the work date)
+router.put('/:id/start', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'worker') return res.status(403).json({ msg: 'Not authorized' });
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (String(job.workerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
+    if (job.date) { if (job.date > istDate(0)) return res.status(400).json({ msg: 'You can start on the work day' }); }
+    const started = await Job.findOneAndUpdate({ _id: job._id, workerId: req.user.id, status: 'accepted' }, { $set: { status: 'in-progress', startedAt: Date.now() } }, { new: true });
+    if (!started) return res.status(400).json({ msg: 'This job can not be started' });
+    if (req.io) req.io.to('user-' + job.employerId).emit('job-started', { jobId: job._id });
+    const o = started.toObject(); delete o.offers; res.json(o);
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+
+// PUT /api/jobs/:id/no-show - the employer reports that the worker did not come (on or after the work date)
+router.put('/:id/no-show', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
+    const job = await Job.findById(req.params.id);
+    if (!job) return res.status(404).json({ msg: 'Job not found' });
+    if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
+    if (!job.workerId) return res.status(400).json({ msg: 'No worker took this job' });
+    if (job.date) { if (job.date > istDate(0)) return res.status(400).json({ msg: 'You can report this on or after the work day' }); }
+    if (!job.date) { if (Date.now() - new Date(job.acceptedAt || 0).getTime() < 2 * 3600 * 1000) return res.status(400).json({ msg: 'You can report this 2 hours after the worker took the job' }); }
+    const done = await Job.findOneAndUpdate({ _id: job._id, status: { $in: ['accepted', 'in-progress'] } }, { $set: { status: 'cancelled', noShow: true } }, { new: true });
+    if (!done) return res.status(400).json({ msg: 'This job is already finished or cancelled' });
+    await Worker.updateOne({ _id: job.workerId }, { $inc: { noShows: 1 } });
+    res.json(done);
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 // GET /api/jobs/available/:city

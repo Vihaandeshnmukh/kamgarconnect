@@ -13,3 +13,5 @@ One line each: what I chose and why.
 - Stage 3 map: privacy rule wins over a pin-per-worker map. The server sends only the nearest named area of Aurangabad (16 areas) and a distance rounded up to 0.5 km, to logged-in employers only; the map shows how many workers are near each area centre. Worker GPS positions are never sent.
 - Saved workers are stored on the employer (favorites, max 100); recently hired comes from the employer's own bookings.
 - Leaflet + OpenStreetMap tiles load only when the employer opens Map (keeps the page light).
+- Stage 4: "in progress" = the worker taps Start work on the work day. A no-show (employer, after the work time) cancels the job and adds 1 to the worker's noShows. Reliability = finished / (finished + no-shows), shown only after 3 such events so one bad day doesn't brand a new worker. Rated bookings count as finished.
+- Counter-offers: one offer per worker per job; the employer accepts or declines; an accepted offer's wage is used when that worker then takes the job (the job itself is not reassigned automatically, so the worker still confirms by accepting). Other workers never see offers.

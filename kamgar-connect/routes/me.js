@@ -168,7 +168,10 @@ router.get('/history', async (req, res) => {
           rated: rated.has(String(h._id)),
           status: bookingState(h).status,
           canCancel: bookingState(h).upcoming ? !rated.has(String(h._id)) : false,
-          canRate: bookingState(h).workDayCome ? !rated.has(String(h._id)) : false,
+          canRate: bookingState(h).workDayCome ? !(rated.has(String(h._id)) || (h.assignmentData || {}).noShow) : false,
+          noShow: Boolean((h.assignmentData || {}).noShow),
+          // The employer can report "did not come" once the work time has passed (confirmed, not rated, not reported)
+          canNoShow: req.user.role === 'employer' ? Boolean(h.assignmentData && h.assignmentData.workerResponse === 'confirmed' && !h.assignmentData.noShow && !rated.has(String(h._id)) && workStarted(h.assignmentData.date, h.assignmentData.time)) : false,
           worker: w ? {
             _id: w._id, name: w.name, skill: w.skill, phone: w.phone, city: w.city,
             rating: w.rating, totalRatings: w.totalRatings, expectedSalary: w.expectedSalary,
@@ -316,5 +319,27 @@ async function endBooking(req, res, newStatus) {
 router.post('/bookings/:hireId/decline', (req, res) => req.user.role === 'worker' ? endBooking(req, res, 'declined') : res.status(403).json({ msg: 'Not authorized' }));
 router.post('/bookings/:hireId/confirm', (req, res) => req.user.role === 'worker' ? endBooking(req, res, 'confirmed') : res.status(403).json({ msg: 'Not authorized' }));
 router.post('/bookings/:hireId/cancel', (req, res) => req.user.role === 'employer' ? endBooking(req, res, 'cancelled') : res.status(403).json({ msg: 'Not authorized' }));
+
+// POST /api/me/bookings/:hireId/no-show (employer): the worker confirmed but did not come.
+// Allowed once the work has started; counts against the worker's reliability; can't be undone here.
+router.post('/bookings/:hireId/no-show', async (req, res) => {
+  try {
+    if (req.user.role !== 'employer') return res.status(403).json({ msg: 'Not authorized' });
+    const { hireId } = req.params;
+    if (!mongoose.isValidObjectId(hireId)) return res.status(400).json({ msg: 'Invalid booking id' });
+    const hire = await Call.findOne({ _id: hireId, callerId: req.user.id, callType: 'assign' });
+    if (!hire) return res.status(404).json({ msg: 'Booking not found' });
+    const a = hire.assignmentData || {};
+    if (a.workerResponse !== 'confirmed') return res.status(409).json({ msg: 'Only a confirmed booking can be reported' });
+    if (!workStarted(a.date, a.time)) return res.status(409).json({ msg: 'You can report this after the work time' });
+    if (await Review.exists({ hireId: hire._id })) return res.status(409).json({ msg: 'You already rated this booking' });
+    const updated = await Call.findOneAndUpdate({ _id: hire._id, 'assignmentData.noShow': { $ne: true } }, { $set: { 'assignmentData.noShow': true } }, { new: true });
+    if (!updated) return res.status(409).json({ msg: 'Already reported' });
+    await Worker.updateOne({ _id: hire.receiverId }, { $inc: { noShows: 1 } });
+    res.json({ ok: true, noShow: true });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
 
 module.exports = router;

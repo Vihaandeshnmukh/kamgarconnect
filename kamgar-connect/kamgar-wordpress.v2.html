@@ -638,6 +638,21 @@
     html[data-theme="dark"] .area-pin, html[data-theme="dark"] .disc-views button.on, html[data-theme="dark"] .recent-chip .av { background: #C2410C; }
     @media (max-width: 900px) { .disc-filters { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 480px) { .disc-views { width: 100%; } .disc-views button { flex: 1; justify-content: center; padding: 0 8px; } .disc-more { width: 100%; } }
+    /* ===== Job lifecycle ===== */
+    .offer-form { display: none; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
+    .offer-form.open { display: flex; }
+    .offer-form input { flex: 1; min-width: 110px; min-height: 48px; }
+    .offer-form .btn, .offer-open { min-height: 44px; }
+    .offer-tag { display: inline-block; margin-top: 8px; font-weight: 800; font-size: 0.85rem; padding: 4px 10px; border-radius: 999px; background: var(--bg-elevated); color: var(--text-primary); }
+    .offer-tag.ok { background: #DCFCE7; color: #166534; } .offer-tag.bad { background: #FEE2E2; color: #991B1B; }
+    .offers-box { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+    .offer-row b { color: var(--text-primary); }
+    .rel-tag { display: inline-block; margin-top: 6px; font-size: 0.82rem; font-weight: 800; color: #166534; background: #DCFCE7; border-radius: 999px; padding: 3px 10px; }
+    .rel-tag.low { color: #92400E; background: #FEF3C7; }
+    html[data-theme="dark"] .offer-tag.ok, html[data-theme="dark"] .rel-tag { background: #14352A; color: #86EFAC; }
+    html[data-theme="dark"] .offer-tag.bad { background: #3B1717; color: #FCA5A5; }
+    html[data-theme="dark"] .rel-tag.low { background: #3A2A0A; color: #FCD34D; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -2127,7 +2142,9 @@
        const again = w.availableNow ? `<button class="btn btn-outline" onclick="openHireModal('${id}', event)"><i class="fas fa-rotate-right"></i> ${esc(t('hire_again'))}</button>` : '';
        const rate = h.rated ? `<span class="hist-tag">&#9733; ${esc(t('rated'))}</span>`
           : (h.canRate ? `<button class="btn btn-outline" onclick="openRateHire('${safeId(h.hireId)}', '${id}')"><i class="fas fa-star"></i> ${esc(t('rate'))}</button>` : '');
-       const cancel = h.canCancel ? `<button class="btn btn-outline" onclick="endBooking('${safeId(h.hireId)}', 'cancel')"><i class="fas fa-xmark"></i> ${esc(t('cancel_booking'))}</button>` : '';
+       const cancel = (h.canCancel ? `<button class="btn btn-outline" onclick="endBooking('${safeId(h.hireId)}', 'cancel')"><i class="fas fa-xmark"></i> ${esc(t('cancel_booking'))}</button>` : '')
+          + (h.canNoShow ? `<button class="btn btn-outline" onclick="reportNoShowBooking('${safeId(h.hireId)}')"><i class="fas fa-user-slash"></i> ${esc(LX({ en: 'Did not come', hi: 'नहीं आए', mr: 'आले नाहीत' }))}</button>` : '')
+          + (h.noShow ? `<span class="hist-tag bad">${esc(LX({ en: 'Did not come', hi: 'नहीं आए', mr: 'आले नाहीत' }))}</span>` : '');
        return `<div class="hist-card">
           <div class="hist-main">
              <div class="hist-name">${esc(w.name)}${tag}${statusTag(h)}</div>
@@ -2438,6 +2455,7 @@
           const res = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/available/${encodeURIComponent(city)}${skill ? '?skill=' + encodeURIComponent(skill) : ''}`);
           if (!res.ok) throw new Error();
           const jobs = await res.json();
+          await loadMyOffers();
           if (jobs.length === 0) { list.innerHTML = `<p style="grid-column:1/-1; text-align:center; opacity:0.5;">${esc(t('no_jobs'))}</p>`; return; }
           list.innerHTML = jobs.map(j => `
              <div class="card-front" style="height:auto;">
@@ -2448,6 +2466,9 @@
                    <span style="font-weight:900;">${j.amount ? '&#8377;' + esc(Number(j.amount)) : ''}</span>
                    <button class="btn btn-primary job-accept-btn" style="padding:6px 12px; font-size:0.75rem;" onclick="acceptJob('${safeId(j._id)}')">${esc(t('accept_job'))}</button>
                 </div>
+                ${offerStatusTag(j)}
+                <button type="button" class="btn btn-outline offer-open" style="margin-top:10px; width:100%;" onclick="document.getElementById('of-${safeId(j._id)}').classList.toggle('open')"><i class="fas fa-indian-rupee-sign"></i> ${esc(LX({ en: 'Ask for a different wage', hi: 'अलग मज़दूरी माँगें', mr: 'वेगळी मजुरी मागा' }))}</button>
+                <div class="offer-form" id="of-${safeId(j._id)}"><input type="number" inputmode="numeric" min="1" max="100000" class="input-field" id="of-amt-${safeId(j._id)}" placeholder="₹ ${esc(Number(j.amount) || '')}" aria-label="Daily wage"><button type="button" class="btn btn-primary" onclick="sendOffer('${safeId(j._id)}')">${esc(LX({ en: 'Send', hi: 'भेजें', mr: 'पाठवा' }))}</button></div>
              </div>
           `).join('');
        } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('jobs_error'))}</p>`; }
@@ -2463,6 +2484,8 @@
     }
     function localToday() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
     function jobStatusTag(j) {
+       if (j.noShow) return `<span class="hist-tag bad">${esc(LX({ en: 'Did not come', hi: 'नहीं आए', mr: 'आले नाहीत' }))}</span>`;
+       if (j.status === 'in-progress') return `<span class="hist-tag ok">${esc(LX({ en: 'Working', hi: 'काम चालू', mr: 'काम चालू' }))}</span>`;
        const map = { pending: ['st_open', ''], accepted: ['st_taken', 'ok'], completed: ['st_done', 'ok'], cancelled: ['st_cancelled', 'bad'] };
        const m = map[j.status] || map.pending;
        return `<span class="hist-tag ${m[1]}">${esc(t(m[0]))}</span>`;
@@ -2479,15 +2502,17 @@
           if (!res.ok) throw new Error();
           const jobs = await res.json();
           if (isWorker) {
-             const mine = jobs.filter(j => ['accepted', 'completed', 'cancelled'].includes(j.status)).slice(0, 10);
+             const mine = jobs.filter(j => ['accepted', 'in-progress', 'completed', 'cancelled'].includes(j.status)).slice(0, 10);
              document.getElementById('wk-jobs-wrap').style.display = mine.length ? 'block' : 'none';
              list.innerHTML = mine.map(j => {
                 const e = j.employer || {};
                 const company = e.companyName ? ' · ' + esc(e.companyName) : '';
                 const back = j.status === 'accepted' ? `<button class="btn btn-outline" onclick="leaveJob('${safeId(j._id)}')"><i class="fas fa-rotate-left"></i> ${esc(t('give_back'))}</button>` : '';
+                const workDay = j.date ? j.date <= localToday() : true;
+                const start = (j.status === 'accepted' ? workDay : false) ? `<button class="btn btn-primary" onclick="startJob('${safeId(j._id)}')"><i class="fas fa-person-digging"></i> ${esc(LX({ en: 'Start work', hi: 'काम शुरू', mr: 'काम सुरू' }))}</button>` : '';
                 return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
                    <div class="hist-meta">${esc(t('posted_by', e.name || ''))}${company} · ${esc(j.city)}${j.amount ? ' · &#8377;' + esc(Number(j.amount)) : ''}</div>${jobDetails(j)}</div>
-                   <div class="hist-actions">${contactButtons(e.phone)}${back}</div></div>`;
+                   <div class="hist-actions">${start}${contactButtons(e.phone)}${back}</div></div>`;
              }).join('');
              return;
           }
@@ -2497,14 +2522,18 @@
              const w = j.worker;
              if (w) workerCache[safeId(w._id)] = w;
              const who = w ? `<div class="hist-meta"><i class="fas fa-user"></i> ${esc(t('taken_by', w.name))}</div>` : '';
-             const contact = w ? (j.status === 'accepted' ? contactButtons(w.phone) : '') : '';
+             const taken = ['accepted', 'in-progress'].includes(j.status);
+             const contact = w ? (taken ? contactButtons(w.phone) : '') : '';
              const dayCame = j.date ? j.date <= localToday() : true;
-             const done = (j.status === 'accepted' ? dayCame : false) ? `<button class="btn btn-primary" onclick="completeJob('${safeId(j._id)}')"><i class="fas fa-check"></i> ${esc(t('mark_done'))}</button>` : '';
+             const noShow = (taken ? dayCame : false) ? `<button class="btn btn-outline" onclick="reportNoShowJob('${safeId(j._id)}')"><i class="fas fa-user-slash"></i> ${esc(LX({ en: 'Did not come', hi: 'नहीं आए', mr: 'आले नाहीत' }))}</button>` : '';
+             const pendingOffers = (j.offers || []).filter(o => o.status === 'pending').length;
+             const offersBtn = (j.status === 'pending' ? (j.offers || []).length > 0 : false) ? `<button class="btn btn-outline" onclick="showOffers('${safeId(j._id)}')"><i class="fas fa-indian-rupee-sign"></i> ${esc(LX({ en: 'Wage offers', hi: 'मज़दूरी के ऑफ़र', mr: 'मजुरीचे प्रस्ताव' }))}${pendingOffers ? ' (' + pendingOffers + ')' : ''}</button>` : '';
+             const done = (taken ? dayCame : false) ? `<button class="btn btn-primary" onclick="completeJob('${safeId(j._id)}')"><i class="fas fa-check"></i> ${esc(t('mark_done'))}</button>` : '';
              const rate = (j.status === 'completed' ? (w ? !j.rated : false) : false) ? `<button class="btn btn-outline" onclick="openRateJob('${safeId(j._id)}', '${safeId(w._id)}')"><i class="fas fa-star"></i> ${esc(t('rate'))}</button>` : (j.rated ? `<span class="hist-tag">&#9733; ${esc(t('rated'))}</span>` : '');
              const cancel = (j.status === 'pending' ? true : j.status === 'accepted') ? `<button class="btn btn-outline" onclick="cancelJob('${safeId(j._id)}', ${j.status === 'accepted' ? 'true' : 'false'})"><i class="fas fa-xmark"></i> ${esc(t('cancel_job'))}</button>` : '';
              return `<div class="hist-card"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
                 <div class="hist-meta">${esc(j.city)} · ${esc(Number(j.workerCount) || 1)} ${esc(t('workers_word', Number(j.workerCount) || 1))}${j.amount ? ' · &#8377;' + esc(Number(j.amount)) : ''}</div>${jobDetails(j)}${who}</div>
-                <div class="hist-actions">${contact}${done}${rate}${cancel}</div></div>`;
+                <div class="hist-actions">${contact}${done}${noShow}${offersBtn}${rate}${cancel}</div><div class="offers-box" id="offers-${safeId(j._id)}"></div></div>`;
           }).join('');
        } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
     }
@@ -2554,6 +2583,78 @@
           loadMyJobs();
           if (localStorage.getItem('user_type') === 'Worker') loadCityJobs();
        } catch (err) { showNotif(t('network_problem'), 'red'); }
+    }
+    // ===== Job lifecycle =====
+    let myOffers = {};
+    async function loadMyOffers() {
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/offers/mine`, { headers: authHeaders() });
+          myOffers = r.ok ? Object.fromEntries((await r.json()).map(o => [String(o.jobId), o])) : {};
+       } catch (e) { myOffers = {}; }
+    }
+    function offerStatusTag(j) {
+       const o = myOffers[String(j._id)];
+       if (!o) return '';
+       const txt = o.status === 'accepted' ? LX({ en: 'Your ₹' + o.amount + ' was accepted - tap Accept job', hi: 'आपके ₹' + o.amount + ' मान लिए - नौकरी स्वीकारें', mr: 'तुमचे ₹' + o.amount + ' मान्य - काम स्वीकारा' })
+          : o.status === 'declined' ? LX({ en: 'Your ₹' + o.amount + ' was declined', hi: 'आपके ₹' + o.amount + ' नहीं माने', mr: 'तुमचे ₹' + o.amount + ' नाकारले' })
+          : LX({ en: 'You asked ₹' + o.amount + ' - waiting', hi: 'आपने ₹' + o.amount + ' माँगे - इंतज़ार', mr: 'तुम्ही ₹' + o.amount + ' मागितले - वाट पाहा' });
+       return '<div class="offer-tag ' + (o.status === 'accepted' ? 'ok' : (o.status === 'declined' ? 'bad' : '')) + '">' + esc(txt) + '</div>';
+    }
+    async function sendOffer(id) {
+       const el = document.getElementById('of-amt-' + id);
+       const amount = Number(el ? el.value : 0);
+       if (!(amount >= 1)) { showNotif(LX({ en: 'Write the daily wage you want', hi: 'अपनी मज़दूरी लिखें', mr: 'तुमची मजुरी लिहा' }), 'red'); return; }
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/offers`, { method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ amount }) });
+          if (sessionExpired(r)) return;
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) { showNotif(d.msg || t('update_failed'), 'red'); return; }
+          showNotif(LX({ en: 'Sent. The employer will answer.', hi: 'भेज दिया। मालिक जवाब देंगे।', mr: 'पाठवले. मालक उत्तर देतील.' }), 'green');
+          loadCityJobs();
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+    async function showOffers(id) {
+       const box = document.getElementById('offers-' + id);
+       if (!box) return;
+       if (box.dataset.open === '1') { box.innerHTML = ''; box.dataset.open = ''; return; }
+       box.dataset.open = '1'; box.innerHTML = LOADER;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${id}/offers`, { headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          const list = await r.json();
+          box.innerHTML = list.map(o => {
+             const w = o.worker; workerCache[safeId(w._id)] = w;
+             const rating = w.totalRatings > 0 ? ' · ' + esc(Number(w.rating).toFixed(1)) + ' ★' : '';
+             const act = o.status === 'pending'
+                ? `<span class="hist-actions"><button class="btn btn-primary" onclick="answerOffer('${id}', '${safeId(o._id)}', 'accept')">${esc(LX({ en: 'Accept', hi: 'मानें', mr: 'मान्य' }))}</button><button class="btn btn-outline" onclick="answerOffer('${id}', '${safeId(o._id)}', 'decline')">${esc(LX({ en: 'Decline', hi: 'मना करें', mr: 'नाकारा' }))}</button></span>`
+                : `<span class="offer-tag ${o.status === 'accepted' ? 'ok' : 'bad'}">${esc(o.status === 'accepted' ? LX({ en: 'Accepted', hi: 'माना', mr: 'मान्य' }) : LX({ en: 'Declined', hi: 'मना किया', mr: 'नाकारले' }))}</span>`;
+             return `<div class="offer-row"><span><b>${esc(w.name)}</b> · ${esc(skillName(w.skill))}${rating}<br>₹${esc(Number(o.amount))} / ${esc(t('day'))}</span>${act}</div>`;
+          }).join('') || '<p class="hist-meta">' + esc(LX({ en: 'No offers yet', hi: 'अभी कोई ऑफ़र नहीं', mr: 'अजून प्रस्ताव नाही' })) + '</p>';
+       } catch (e) { box.innerHTML = '<p>' + esc(t('load_error')) + '</p>'; }
+    }
+    async function answerOffer(jobId, offerId, decision) {
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/jobs/${jobId}/offers/${offerId}`, { method: 'PUT', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify({ decision }) });
+          if (sessionExpired(r)) return;
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) { showNotif(d.msg || t('update_failed'), 'red'); return; }
+          showNotif(decision === 'accept' ? LX({ en: 'Accepted. The worker can now take the job at this wage.', hi: 'मान लिया। कामगार इस मज़दूरी पर नौकरी ले सकता है।', mr: 'मान्य. कामगार या मजुरीवर काम घेऊ शकतो.' }) : LX({ en: 'Declined', hi: 'मना किया', mr: 'नाकारले' }), 'green');
+          const box = document.getElementById('offers-' + jobId); if (box) box.dataset.open = '';
+          await loadMyJobs(); showOffers(jobId);
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+    function startJob(id) { jobAction(id, 'start', LX({ en: 'Work started. Good luck!', hi: 'काम शुरू हुआ।', mr: 'काम सुरू झाले.' })); }
+    function reportNoShowJob(id) { if (confirm(LX({ en: 'Report that the worker did not come? This lowers their reliability.', hi: 'क्या कामगार नहीं आया? इससे उसकी भरोसेमंदी घटेगी।', mr: 'कामगार आला नाही? यामुळे त्याची विश्वासार्हता कमी होईल.' }))) jobAction(id, 'no-show', LX({ en: 'Reported', hi: 'दर्ज किया', mr: 'नोंदवले' })); }
+    async function reportNoShowBooking(hireId) {
+       if (!confirm(LX({ en: 'Report that the worker did not come? This lowers their reliability.', hi: 'क्या कामगार नहीं आया? इससे उसकी भरोसेमंदी घटेगी।', mr: 'कामगार आला नाही? यामुळे त्याची विश्वासार्हता कमी होईल.' }))) return;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/bookings/${hireId}/no-show`, { method: 'POST', headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) { showNotif(d.msg || t('update_failed'), 'red'); return; }
+          showNotif(LX({ en: 'Reported', hi: 'दर्ज किया', mr: 'नोंदवले' }), 'green');
+          if (typeof loadHistory === 'function') loadHistory();
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
     }
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
@@ -2635,6 +2736,7 @@
                    <div style="margin-top:20px; font-weight:800; color:var(--green);">&#8377;${esc(Number(w.expectedSalary) || 600)} / ${esc(t('day'))}</div>
                    <div style="font-size:0.8rem; margin-top:8px;">${rating}</div>
                    ${whereLine(w)}
+                   ${w.reliability != null ? `<span class="rel-tag${w.reliability < 80 ? ' low' : ''}"><i class="fas fa-shield-halved"></i> ${esc(LX({ en: 'Reliable', hi: 'भरोसेमंद', mr: 'विश्वासू' }))} ${esc(Number(w.reliability))}%</span>` : ''}
                    ${phone}
                    <button class="btn btn-primary" style="margin-top:auto; height:45px;" onclick="openHireModal('${id}', event)">${esc(t('hire_now'))}</button>
                 </div>

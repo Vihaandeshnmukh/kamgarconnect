@@ -45,6 +45,7 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
       return res.status(403).json({ success: false, msg: 'You can rate a worker once they confirmed the booking and the work day has come' });
     }
     if (!byJob) { if (!workStarted(worked.assignmentData.date, worked.assignmentData.time)) return res.status(403).json({ success: false, msg: 'You can rate a worker after the work has started' }); }
+    if (!byJob) { if (worked.assignmentData.noShow) return res.status(409).json({ success: false, msg: 'You reported that this worker did not come' }); }
     const already = await Review.exists(byJob ? { jobId } : { hireId });
     if (already) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
 
@@ -62,6 +63,7 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
       if (e.code === 11000) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
       throw e;
     }
+    if (!byJob) await Worker.updateOne({ _id: workerId }, { $inc: { jobsDone: 1 } });
     // A cancel sent at the same moment may have won: a cancelled booking keeps no rating
     if (!byJob) {
       const still = await Call.exists({ _id: hireId, 'assignmentData.workerResponse': 'confirmed' });

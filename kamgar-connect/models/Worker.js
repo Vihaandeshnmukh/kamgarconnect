@@ -31,6 +31,8 @@ const WorkerSchema = new mongoose.Schema({
   isAvailable: { type: Boolean, default: true },
   rating: { type: Number, default: 0 },
   totalRatings: { type: Number, default: 0 },
+  jobsDone: { type: Number, default: 0 }, // finished jobs and rated bookings (for the reliability score)
+  noShows: { type: Number, default: 0 }, // times an employer reported the worker did not come
   jobHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
   push_token: { type: String, default: null, select: false },
   createdAt: { type: Date, default: Date.now },

@@ -18,6 +18,7 @@ const CallSchema = new mongoose.Schema({
     employerName: String,
     instructions: String,
     workerResponse: { type: String, enum: ['pending', 'confirmed', 'declined', 'cancelled'], default: 'pending' },
+    noShow: Boolean, // the employer reported the worker did not come
     prevAvailableUntil: Date,
     wage: Number, // the worker's daily wage when booked (for stats) // the worker was live until then when the booking started (put back if it ends early)
     activeKey: String // "<workerId>:<date>" while the booking counts; removed when it ends (unique)

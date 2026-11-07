@@ -57,6 +57,8 @@ const publicWorker = (w, viewer) => {
         rating: w.rating,
         totalRatings: w.totalRatings,
         isLooking: w.isLooking,
+        // Reliability: share of finished work vs. reported no-shows, once there are at least 3 of them
+        reliability: ((w.jobsDone || 0) + (w.noShows || 0)) >= 3 ? Math.round(100 * (w.jobsDone || 0) / ((w.jobsDone || 0) + (w.noShows || 0))) : null,
         availableUntil: w.availableUntil,
         hiredUntil: w.hiredUntil,
         ...(showPhone ? { phone: w.phone } : {}),

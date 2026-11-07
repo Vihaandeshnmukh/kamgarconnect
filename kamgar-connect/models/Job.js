@@ -24,7 +24,11 @@ const JobSchema = new mongoose.Schema({
   location: { type: String, set: v => cleanText(v, 120) }, // Where to report, optional
   description: { type: String, set: v => cleanText(v, 300) }, // Short note from the employer, optional
   isDemo: { type: Boolean }, // only demo-seed.js records (kamgar_demo database)
-  splitFrom: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' } // One place taken from a job for several workers
+  splitFrom: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' }, // One place taken from a job for several workers
+  startedAt: { type: Date }, // the worker tapped Start work
+  noShow: { type: Boolean }, // the employer reported the worker did not come (job then cancelled)
+  // Wage counter-offers from workers on an open job (one per worker; the employer accepts or declines)
+  offers: [{ workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker' }, amount: Number, status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' }, at: { type: Date, default: Date.now } }]
 });
 
 // A worker holds at most one place of a job for several workers, even for requests at the same moment
