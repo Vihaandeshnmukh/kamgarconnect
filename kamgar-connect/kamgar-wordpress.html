@@ -526,14 +526,14 @@
       <h2 class="st-title">Work categories in Aurangabad</h2>
       <p class="st-sub">Pick your trade when you register.</p>
       <div class="st-cats">
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-trowel-bricks"></i></div><strong>Masons</strong><span>गवंडी / राजमिस्त्री</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-faucet-drip"></i></div><strong>Plumbers</strong><span>प्लंबर / नलसाज</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-bolt"></i></div><strong>Electricians</strong><span>इलेक्ट्रिशियन</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-broom"></i></div><strong>Domestic Help</strong><span>घरकाम</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-industry"></i></div><strong>Factory Workers</strong><span>फॅक्टरी कामगार</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-hammer"></i></div><strong>Carpenters</strong><span>सुतार / बढ़ई</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-paint-roller"></i></div><strong>Painters</strong><span>पेंटर / रंगारी</span></button>
-        <button class="st-cat" onclick="handleFindWorkClick()"><div class="ico"><i class="fas fa-truck"></i></div><strong>Drivers</strong><span>ड्रायव्हर</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-trowel-bricks"></i></div><strong>Masons</strong><span>गवंडी / राजमिस्त्री</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-faucet-drip"></i></div><strong>Plumbers</strong><span>प्लंबर / नलसाज</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-bolt"></i></div><strong>Electricians</strong><span>इलेक्ट्रिशियन</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-broom"></i></div><strong>Domestic Help</strong><span>घरकाम</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-industry"></i></div><strong>Factory Workers</strong><span>फॅक्टरी कामगार</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-hammer"></i></div><strong>Carpenters</strong><span>सुतार / बढ़ई</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-paint-roller"></i></div><strong>Painters</strong><span>पेंटर / रंगारी</span></button>
+        <button class="st-cat" onclick="handleHireClick()"><div class="ico"><i class="fas fa-truck"></i></div><strong>Drivers</strong><span>ड्रायव्हर</span></button>
       </div>
     </div>
   </section>
@@ -568,6 +568,7 @@
             <button class="btn btn-primary" id="main-live-btn" onclick="handleTogglePress()" style="padding:25px 60px; font-size:1.5rem; border-radius:20px;">
                <i class="fas fa-search"></i> <span id="live-btn-text">START LOOKING</span>
             </button>
+            <div id="live-status" style="margin:0 0 18px; font-weight:800; font-size:1.05rem;"></div>
             <div id="countdown-wrap" style="display:none; margin-top:30px; font-weight:800; font-size:2.2rem; color:var(--accent);">
                <span id="timer-val">00:00:00</span>
             </div>
@@ -873,7 +874,7 @@
           btn_worker: "मैं कामगार हूँ", btn_employer: "मुझे कामगार चाहिए",
           mission_title: "हमारा मिशन", mission_text: "कामगार कनेक्ट उन मजदूरों के लिए बनाया गया है जिन्हें हर दूसरे प्लेटफॉर्म ने नजरअंदाज कर दिया है। दिहाड़ी मजदूर जो हर सुबह काम की गारंटी के बिना चौकों पर खड़े होते हैं।",
           vid_title_1: "कामगार अक्सर घंटों चौक पर इंतजार करते थे...", vid_title_2: "मदद ढूँढना अक्सर तनावपूर्ण होता था...",
-          tab_worker: "कामगार व्यू", tab_employer: "नियोक्ता व्यू", logout: "लॉगआउट", reg_title: "मार्केटप्लेस से जुड़ें",
+          tab_worker: "कामगार व्यू", tab_employer: "नियोक्ता व्यू", logout: "लॉगआउट", reg_title: "कामगार कनेक्ट से जुड़ें",
           label_name: "पूरा नाम", label_phone: "फोन नंबर", label_city: "शहर", available_jobs: "आपके शहर में उपलब्ध काम"
        },
        mr: {
@@ -882,7 +883,7 @@
           btn_worker: "मी कामगार आहे", btn_employer: "मला कामगार हवा आहे",
           mission_title: "आमचे ध्येय", mission_text: "कामगार कनेक्ट त्या कामगारांसाठी बनवले गेले आहे ज्यांना प्रत्येक इतर प्लॅटफॉर्मने दुर्लक्षित केले आहे। रोजंदारी कामगार जे दररोज सकाळी चौकात काम मिळण्याच्या हमीशिवाय उभे असतात।",
           vid_title_1: "कामगार अनेकदा चौकात तासनतास वाट पाहायचे...", vid_title_2: "मदत मिळवणे अनेकदा तणावपूर्ण असायचे...",
-          tab_worker: "कामगार व्यू", tab_employer: "एम्प्लॉयर व्यू", logout: "लॉगआउट", reg_title: "मार्केटप्लेसमध्ये सामील व्हा",
+          tab_worker: "कामगार व्यू", tab_employer: "एम्प्लॉयर व्यू", logout: "लॉगआउट", reg_title: "कामगार कनेक्टमध्ये सामील व्हा",
           label_name: "पूर्ण नाव", label_phone: "फोन नंबर", label_city: "शहर", available_jobs: "तुमच्या शहरातील उपलब्ध कामे"
        }
     };
@@ -966,6 +967,9 @@
           err_hire_date: "Please choose a date", err_hire_time: "Please choose a time", select_city: "SELECT CITY",
           own_number: "That is your own number. Enter the phone number of the person you are registering.",
           booking_cancelled_by_emp: o => `${o.name} cancelled the booking for ${o.when}.`, job_cancelled_by_emp: o => `The ${o.type} job was cancelled by the employer.`,
+          visible_now: "✓ Employers can see you now", hidden_now: "Employers can't see you right now. Tap START LOOKING when you want work.",
+          request_sent: "Request sent", waiting_tag: "Waiting for reply", waiting_box: n => `${n} still has to confirm. When they do, History shows "Confirmed".`,
+          today_word: "Today", tomorrow_word: "Tomorrow", map: "Map",
           listen_home_emp: "Post a job so workers in your city can see it, or look at the workers below and press Hire now to book one for a day. After booking you can call or WhatsApp the worker. Your bookings are in History."
        },
        hi: {
@@ -977,7 +981,7 @@
           hire_now: "काम पर रखें", full_profile: "पूरी जानकारी", exp: "अनुभव", years: "साल", city: "शहर", availability: "उपलब्धता",
           not_specified: "नहीं बताया", previous_jobs: "पिछले काम", day: "दिन", rating: "रेटिंग", new_worker: "कामगार कनेक्ट पर नया", phone: "फ़ोन",
           no_jobs: "अभी कोई काम नहीं। लाइव रहें, काम देने वाले आपको ढूंढ सकेंगे।", jobs_error: "काम लोड नहीं हो सके।", accept_job: "काम स्वीकारें", workers_word: "कामगार",
-          going_live: "लाइव हो रहे हैं...", going_offline: "ऑफ़लाइन हो रहे हैं...", status_failed: "स्थिति नहीं बदली। इंटरनेट जांचें।",
+          going_live: "लाइव हो रहे हैं...", going_offline: "आपको छिपा रहे हैं...", status_failed: "स्थिति नहीं बदली। इंटरनेट जांचें।",
           hidden_msg: "आप खोज से छिपे हैं। फिर से दिखने के लिए काम ढूंढना शुरू करें दबाएं।", update_failed: "बदलाव नहीं हुआ। इंटरनेट जांचें।",
           hire_title: "काम पर रखें:", job_location: "काम की जगह", work_date: "काम की तारीख", report_time: "पहुंचने का समय", employer_name: "नियोक्ता का नाम",
           instructions: "खास निर्देश (ज़रूरी नहीं)", confirm_hire: "पक्का करें", hire_failed: "काम पर रखना नहीं हुआ। फिर कोशिश करें।",
@@ -997,7 +1001,7 @@
           booked_now: "आपने बुक किया है", deleted_account: "खाता हटाया गया", load_error_generic: "लोड नहीं हुआ। फिर कोशिश करें।",
           stats_title: "आपके आंकड़े", st_total_hires: "कुल बुकिंग", st_unique_workers: "अलग-अलग कामगार", st_this_month: "इस महीने", st_booked_now: "अभी बुक",
           st_spend: "अनुमानित खर्च", st_ratings_given: "दी गई रेटिंग", st_times_hired: "कितनी बार काम मिला", st_employers: "काम देने वाले", st_rating: "आपकी रेटिंग",
-          st_earnings: "अनुमानित कमाई", st_status: "स्थिति", status_live: "लाइव", status_booked: "बुक", status_offline: "ऑफ़लाइन",
+          st_earnings: "अनुमानित कमाई", st_status: "स्थिति", status_live: "लाइव", status_booked: "बुक", status_offline: "छिपे हुए",
           st_last6: "पिछले 6 महीने की बुकिंग", st_by_skill: "काम के हिसाब से बुकिंग", st_est_note: "अनुमान एक दिन की मज़दूरी से लगाया गया है।",
           profile_title: "मेरी प्रोफ़ाइल", phone_locked: "फ़ोन नंबर ही आपका लॉगिन है, इसलिए यहाँ नहीं बदल सकते।", loc_label: "लोकेशन",
           loc_saved: "लोकेशन सेव है", loc_none: "अभी कोई लोकेशन नहीं", loc_update: "मेरी लोकेशन अपडेट करें", loc_getting: "लोकेशन ली जा रही है...",
@@ -1035,6 +1039,9 @@
           err_hire_date: "कृपया तारीख चुनें", err_hire_time: "कृपया समय चुनें", select_city: "शहर चुनें",
           own_number: "यह आपका अपना नंबर है। जिसे जोड़ रहे हैं उसका फ़ोन नंबर लिखें।",
           booking_cancelled_by_emp: o => `${o.name} ने ${o.when} की बुकिंग रद्द कर दी।`, job_cancelled_by_emp: o => `${o.type} का काम काम देने वाले ने रद्द कर दिया।`,
+          visible_now: "✓ काम देने वाले अभी आपको देख सकते हैं", hidden_now: "अभी काम देने वाले आपको नहीं देख सकते। काम चाहिए तो काम ढूंढना शुरू करें दबाएँ।",
+          request_sent: "अनुरोध भेजा गया", waiting_tag: "जवाब का इंतज़ार", waiting_box: n => `${n} को अभी पक्का करना है। पक्का करने पर इतिहास में "पक्का" दिखेगा।`,
+          today_word: "आज", tomorrow_word: "कल", map: "नक्शा",
           listen_home_emp: "काम डालें ताकि आपके शहर के कामगार देख सकें, या नीचे कामगार देखकर काम पर रखें दबाएँ और एक दिन के लिए बुक करें। बुकिंग के बाद आप कामगार को कॉल या WhatsApp कर सकते हैं। आपकी बुकिंग इतिहास में हैं।"
        },
        mr: {
@@ -1046,7 +1053,7 @@
           hire_now: "कामावर घ्या", full_profile: "पूर्ण माहिती", exp: "अनुभव", years: "वर्षे", city: "शहर", availability: "उपलब्धता",
           not_specified: "सांगितले नाही", previous_jobs: "मागील कामे", day: "दिवस", rating: "रेटिंग", new_worker: "कामगार कनेक्टवर नवीन", phone: "फोन",
           no_jobs: "आता काम नाही. लाइव्ह रहा, काम देणारे तुम्हाला शोधू शकतील.", jobs_error: "कामे लोड झाली नाहीत.", accept_job: "काम स्वीकारा", workers_word: "कामगार",
-          going_live: "लाइव्ह होत आहे...", going_offline: "ऑफलाइन होत आहे...", status_failed: "स्थिती बदलली नाही. इंटरनेट तपासा.",
+          going_live: "लाइव्ह होत आहे...", going_offline: "तुम्हाला लपवत आहे...", status_failed: "स्थिती बदलली नाही. इंटरनेट तपासा.",
           hidden_msg: "तुम्ही शोधातून लपलेले आहात. पुन्हा दिसण्यासाठी काम शोधणे सुरू करा दाबा.", update_failed: "बदल झाला नाही. इंटरनेट तपासा.",
           hire_title: "कामावर घ्या:", job_location: "कामाची जागा", work_date: "कामाची तारीख", report_time: "पोहोचण्याची वेळ", employer_name: "एम्प्लॉयरचे नाव",
           instructions: "विशेष सूचना (आवश्यक नाही)", confirm_hire: "पक्के करा", hire_failed: "कामावर घेता आले नाही. पुन्हा प्रयत्न करा.",
@@ -1066,7 +1073,7 @@
           booked_now: "तुम्ही बुक केले आहे", deleted_account: "खाते काढले", load_error_generic: "लोड झाले नाही. पुन्हा प्रयत्न करा.",
           stats_title: "तुमचे आकडे", st_total_hires: "एकूण बुकिंग", st_unique_workers: "वेगवेगळे कामगार", st_this_month: "या महिन्यात", st_booked_now: "आता बुक",
           st_spend: "अंदाजे खर्च", st_ratings_given: "दिलेली रेटिंग", st_times_hired: "किती वेळा काम मिळाले", st_employers: "काम देणारे", st_rating: "तुमचे रेटिंग",
-          st_earnings: "अंदाजे कमाई", st_status: "स्थिती", status_live: "लाइव्ह", status_booked: "बुक", status_offline: "ऑफलाइन",
+          st_earnings: "अंदाजे कमाई", st_status: "स्थिती", status_live: "लाइव्ह", status_booked: "बुक", status_offline: "लपलेले",
           st_last6: "मागील 6 महिन्यांतील बुकिंग", st_by_skill: "कामानुसार बुकिंग", st_est_note: "अंदाज एका दिवसाच्या मजुरीवरून काढला आहे.",
           profile_title: "माझी प्रोफाइल", phone_locked: "फोन नंबर हेच तुमचे लॉगिन आहे, म्हणून इथे बदलता येत नाही.", loc_label: "लोकेशन",
           loc_saved: "लोकेशन सेव्ह आहे", loc_none: "अजून लोकेशन नाही", loc_update: "माझे लोकेशन अपडेट करा", loc_getting: "लोकेशन घेत आहे...",
@@ -1104,6 +1111,9 @@
           err_hire_date: "कृपया तारीख निवडा", err_hire_time: "कृपया वेळ निवडा", select_city: "शहर निवडा",
           own_number: "हा तुमचाच नंबर आहे. ज्यांना जोडत आहात त्यांचा फोन नंबर लिहा.",
           booking_cancelled_by_emp: o => `${o.name} यांनी ${o.when} ची बुकिंग रद्द केली.`, job_cancelled_by_emp: o => `${o.type} चे काम काम देणाऱ्याने रद्द केले.`,
+          visible_now: "✓ काम देणारे आता तुम्हाला पाहू शकतात", hidden_now: "आता काम देणारे तुम्हाला पाहू शकत नाहीत. काम हवे असेल तर काम शोधणे सुरू करा दाबा.",
+          request_sent: "विनंती पाठवली", waiting_tag: "उत्तराची वाट", waiting_box: n => `${n} यांना अजून पक्के करायचे आहे. पक्के केल्यावर इतिहासात "पक्के" दिसेल.`,
+          today_word: "आज", tomorrow_word: "उद्या", map: "नकाशा",
           listen_home_emp: "काम टाका म्हणजे तुमच्या शहरातील कामगार पाहू शकतील, किंवा खाली कामगार पाहून कामावर घ्या दाबा आणि एका दिवसासाठी बुक करा. बुकिंगनंतर कामगाराला कॉल किंवा WhatsApp करू शकता. तुमच्या बुकिंग इतिहासमध्ये आहेत."
        }
     };
@@ -1685,7 +1695,25 @@
               `<a class="act-wa" href="https://wa.me/91${phone}${esc(text)}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> ${esc(t('whatsapp'))}</a>`;
     }
     // "8 Nov 2026 · 09:00"
-    function whenText(date, time, fallback) { return fmtDay(date, fallback) + (time ? ' · ' + time : ''); }
+    function niceDay(date, fallback) {
+       const today = localToday();
+       const tm = new Date(Date.now() + 86400000); tm.setMinutes(tm.getMinutes() - tm.getTimezoneOffset());
+       if (date === today) return t('today_word');
+       if (date === tm.toISOString().slice(0, 10)) return t('tomorrow_word');
+       const d = /^\d{4}-\d{2}-\d{2}$/.test(String(date)) ? new Date(date + 'T00:00:00') : new Date(fallback);
+       if (isNaN(d.getTime())) return '';
+       return d.toLocaleDateString(LOCALES[currentLang] || 'en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
+    function time12(time) {
+       const m = /^(\d{1,2}):(\d{2})/.exec(String(time || ''));
+       if (!m) return time || '';
+       const d = new Date(); d.setHours(Number(m[1]), Number(m[2]), 0, 0);
+       return d.toLocaleTimeString(LOCALES[currentLang] || 'en-IN', { hour: 'numeric', minute: '2-digit' });
+    }
+    function whenText(date, time, fallback) { return niceDay(date, fallback) + (time ? ' · ' + time12(time) : ''); }
+    function mapLink(place) {
+       return place ? ` <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}" target="_blank" rel="noopener" style="font-weight:800;">${esc(t('map'))}</a>` : '';
+    }
     // The WhatsApp message an employer sends a worker they booked
     function bookingMessage(workerName, date, time, where) {
        return t('wa_book_msg', { name: String(workerName || '').split(' ')[0], when: whenText(date, time), where: where || '', emp: localStorage.getItem('user_name') || '' });
@@ -1710,8 +1738,8 @@
        } catch (e) { list.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>`; }
     }
     function histWhen(h) {
-       return `<i class="fas fa-calendar-day"></i> ${esc(fmtDay(h.date, h.bookedAt))}${h.time ? ' · ' + esc(h.time) : ''}` +
-              (h.location ? `<br><i class="fas fa-location-dot"></i> ${esc(h.location)}` : '');
+       return `<i class="fas fa-calendar-day"></i> ${esc(whenText(h.date, h.time, h.bookedAt))}` +
+              (h.location ? `<br><i class="fas fa-location-dot"></i> ${esc(h.location)}${mapLink(h.location)}` : '');
     }
     function histWorkerCard(h) {
        const w = h.worker;
@@ -1747,6 +1775,7 @@
     }
     function statusTag(h) {
        if (h.status === 'confirmed') return `<span class="hist-tag ok">${esc(t('confirmed_tag'))}</span>`;
+       if (h.status === 'pending') { if (h.canCancel) return `<span class="hist-tag">${esc(t('waiting_tag'))}</span>`; }
        if (h.status === 'declined') return `<span class="hist-tag bad">${esc(t('declined_tag'))}</span>`;
        if (h.status === 'cancelled') return `<span class="hist-tag bad">${esc(t('cancelled_tag'))}</span>`;
        return '';
@@ -1963,7 +1992,7 @@
           `<button type="button" class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="openHelpRegister()"><i class="fas fa-user-plus"></i> ${esc(t('help_register'))}</button>` +
           `<button type="button" class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="shareApp()"><i class="fas fa-share-nodes"></i> ${esc(t('share_app'))}</button>` +
           `<button type="button" class="btn btn-outline app-logout" onclick="logout()">${esc(tr('logout'))}</button>` +
-          `<button type="button" class="btn" style="width:100%; margin-top:8px; opacity:0.55; font-size:0.8rem;" onclick="openSecretPage()"><i class="fas fa-lock"></i> Backstage</button>`;
+          `<button type="button" class="btn" style="width:100%; margin-top:8px; opacity:0.55; font-size:0.8rem;" onclick="openSecretPage()"><i class="fas fa-lock"></i> Team</button>`;
     }
     // Redraw the profile form in the new language without losing what was typed
     function relabelProfile() {
@@ -2255,10 +2284,10 @@
 
     // The Booked! box: who, when, where, and Call / WhatsApp with the details filled in
     function showBooked(name, phone, b) {
-       document.getElementById('booked-title').innerText = t('booked_box');
+       document.getElementById('booked-title').innerText = t('request_sent');
        const where = b.location ? `<br><i class="fas fa-location-dot"></i> ${esc(b.location)}` : '';
        document.getElementById('booked-body').innerHTML =
-          `<p style="font-size:1.1rem; margin-bottom:6px;"><b>${esc(t('calling', name))}</b></p>` +
+          `<p style="font-size:1.1rem; margin-bottom:6px;"><b>${esc(t('waiting_box', name))}</b></p>` +
           `<p class="hist-meta" style="margin-bottom:14px;"><i class="fas fa-calendar-day"></i> ${esc(whenText(b.date, b.time))}${where}</p>` +
           (phone ? `<p style="margin-bottom:10px;">${esc(t('tell_worker', name))}</p><div class="hist-actions">${contactButtons(phone, bookingMessage(name, b.date, b.time, b.location))}</div>` : '') +
           `<button type="button" class="btn btn-outline" style="width:100%; margin-top:18px;" onclick="closeModal()">${esc(t('close'))}</button>`;
@@ -2316,10 +2345,13 @@
           barWrap.style.display = 'block'; countdown.style.display = 'block';
           btn.classList.add('pulse'); btn.style.background = 'var(--red)';
           btnText.innerText = t('stop_looking'); startTimerLoop();
+          btn.style.background = '#64748B';
+          const ls = document.getElementById('live-status'); if (ls) { ls.innerText = t('visible_now'); ls.style.color = 'var(--green)'; }
        } else {
           barWrap.style.display = 'none'; countdown.style.display = 'none';
           btn.classList.remove('pulse'); btn.style.background = currentTheme() === 'dark' ? '#C2410C' : 'var(--accent)';
           btnText.innerText = t('start_looking');
+          const ls2 = document.getElementById('live-status'); if (ls2) { ls2.innerText = t('hidden_now'); ls2.style.color = 'var(--text-secondary)'; }
           if (timerInt) clearInterval(timerInt);
        }
     }
@@ -2394,6 +2426,23 @@
     }
 
     async function openRoots(id, e) {
+       if (e) e.stopPropagation();
+       const w = workerCache[id] || {};
+       document.getElementById('booked-title').innerText = t('previous_jobs') + (w.name ? ' · ' + w.name : '');
+       const body = document.getElementById('booked-body');
+       body.innerHTML = LOADER;
+       document.getElementById('booked-modal').style.display = 'flex';
+       const close = `<button type="button" class="btn btn-outline" style="width:100%; margin-top:18px;" onclick="closeModal()">${esc(t('close'))}</button>`;
+       try {
+          const res = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${safeId(id)}/jobs`);
+          if (!res.ok) throw new Error();
+          const jobs = await res.json();
+          const rating = w.totalRatings > 0 ? `<p style="margin-bottom:12px; font-weight:800;">&#9733; ${esc(Number(w.rating).toFixed(1))} (${esc(Number(w.totalRatings))})</p>` : '';
+          body.innerHTML = rating + (jobs.length ? jobs.map(j => `<div class="hist-card" style="margin-bottom:10px;"><div class="hist-main"><div class="hist-name">${esc(skillName(j.jobType))} ${jobStatusTag(j)}</div>
+             <div class="hist-meta">${esc(j.city)} · ${esc(niceDay(null, j.completedAt || j.acceptedAt))}</div></div></div>`).join('') : `<p style="opacity:0.7;">${esc(t('roots_empty'))}</p>`) + close;
+       } catch (err) { body.innerHTML = `<p style="color:var(--red);">${esc(t('load_error_generic'))}</p>` + close; }
+    }
+    async function openRootsOld(id, e) {
        if (e) e.stopPropagation();
        document.getElementById('roots-overlay').style.display='flex';
        const svg = document.getElementById('roots-svg');
