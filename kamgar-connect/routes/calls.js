@@ -46,6 +46,14 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     const worker = await Worker.findById(workerId);
     if (!worker) return res.status(404).json({ success: false, msg: 'Worker not found' });
     if (worker.isWithdrawn) return res.status(409).json({ success: false, msg: 'This worker is not available' });
+    // The worker said which days they work (none chosen or 24/7 = any day)
+    const days = Array.isArray(worker.availability) ? worker.availability : [];
+    if (days.length) {
+      if (!days.includes('24/7')) {
+        const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(`${date}T12:00:00Z`).getUTCDay()];
+        if (!days.includes(weekday)) return res.status(409).json({ success: false, msg: 'This worker does not work on that day', days });
+      }
+    }
 
     const employer = await Employer.findById(req.user.id);
     // Same phone has both accounts: you can't hire yourself
