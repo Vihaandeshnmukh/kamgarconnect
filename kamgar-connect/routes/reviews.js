@@ -39,10 +39,10 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
     } else {
       // A website booking counts once its work day has come (not before), unless it was turned down or cancelled
       worked = await Call.findOne({ _id: hireId, callerId: req.user.id, receiverId: workerId, callType: 'assign',
-        'assignmentData.workerResponse': ACTIVE, 'assignmentData.date': { $lte: istDate(0) } });
+        'assignmentData.workerResponse': 'confirmed', 'assignmentData.date': { $lte: istDate(0) } });
     }
     if (!worked) {
-      return res.status(403).json({ success: false, msg: 'You can rate a worker on or after the day they worked for you' });
+      return res.status(403).json({ success: false, msg: 'You can rate a worker once they confirmed the booking and the work day has come' });
     }
     const already = await Review.exists(byJob ? { jobId } : { hireId });
     if (already) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
@@ -56,8 +56,11 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
       tags: Array.isArray(tags) ? tags.slice(0, 6).map(t => cleanText(t, 30)) : [],
       comment: cleanText(comment || '', 500)
     });
-    
-    await review.save();
+
+    try { await review.save(); } catch (e) {
+      if (e.code === 11000) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
+      throw e;
+    }
 
     // Worker rating = average of each employer's LATEST rating, so one employer who books
     // the same worker many times can't push the rating up or down on their own

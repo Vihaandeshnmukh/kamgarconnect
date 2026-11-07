@@ -14,6 +14,7 @@ const { requireRole, requireSelf } = require('../middleware/roles');
 router.put('/workers/:id/push-token', auth, requireRole('worker'), requireSelf(), async (req, res) => {
   try {
     const { push_token } = req.body;
+    if (push_token !== null && typeof push_token !== 'string') return res.status(400).json({ msg: 'push_token must be text' });
     await Worker.findByIdAndUpdate(req.params.id, { push_token });
     res.json({ success: true });
   } catch (err) {
@@ -25,6 +26,7 @@ router.put('/workers/:id/push-token', auth, requireRole('worker'), requireSelf()
 router.put('/employers/:id/push-token', auth, requireRole('employer'), requireSelf(), async (req, res) => {
   try {
     const { push_token } = req.body;
+    if (push_token !== null && typeof push_token !== 'string') return res.status(400).json({ msg: 'push_token must be text' });
     await Employer.findByIdAndUpdate(req.params.id, { push_token });
     res.json({ success: true });
   } catch (err) {

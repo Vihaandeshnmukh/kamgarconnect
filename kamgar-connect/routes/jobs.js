@@ -25,7 +25,10 @@ function jobError({ jobType, city, workerCount, amount, date, location, descript
   if (!SKILLS.includes(jobType)) return 'Please choose a worker type';
   if (!CITIES.includes(city)) return 'Please choose a city';
   if (workerCount !== undefined && !(Number.isInteger(Number(workerCount)) && workerCount >= 1 && workerCount <= 500)) return 'Number of workers must be 1-500';
-  if (amount !== undefined && amount !== null && amount !== '' && !(Number(amount) >= 0 && Number(amount) <= 100000)) return 'Invalid amount';
+  if (amount !== undefined && amount !== null && amount !== '') {
+    const n = typeof amount === 'number' ? amount : (typeof amount === 'string' ? (/^\d+$/.test(amount.trim()) ? Number(amount) : NaN) : NaN);
+    if (!(n >= 1 && n <= 100000)) return 'Daily wage must be a number from 1 to 100000';
+  }
   // Optional work date: today up to 30 days ahead
   if (date !== undefined && date !== null && date !== '') {
     if (!isDay(date)) return 'Please choose a date';
@@ -137,10 +140,10 @@ router.put('/:id/accept', auth, async (req, res) => {
     if (worker.phone === employer.phone) return res.status(400).json({ msg: 'You cannot take your own job' });
     if (job.date && job.date < istDate(0)) return res.status(400).json({ msg: 'This job date has passed' });
 
-    job.workerId = worker.id;
-    job.status = 'accepted';
-    job.acceptedAt = Date.now();
-    await job.save();
+    // Only one worker gets it, even when two press Accept at the same moment
+    const taken = await Job.findOneAndUpdate({ _id: job._id, status: 'pending' }, { $set: { workerId: worker._id, status: 'accepted', acceptedAt: Date.now() } }, { new: true });
+    if (!taken) return res.status(400).json({ msg: 'Job already accepted' });
+    Object.assign(job, { workerId: taken.workerId, status: taken.status, acceptedAt: taken.acceptedAt });
 
     worker.jobHistory.push(job.id);
     await worker.save();
@@ -185,6 +188,8 @@ router.put('/:id/complete', auth, async (req, res) => {
     if (!job) return res.status(404).json({ msg: 'Job not found' });
     if (String(job.employerId) !== req.user.id) return res.status(403).json({ msg: 'Not authorized' });
     if (job.status === 'completed') return res.status(400).json({ msg: 'Already completed' });
+    if (job.status !== 'accepted') return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
+    if (!job.workerId) return res.status(400).json({ msg: 'Only a job a worker has taken can be marked done' });
 
     job.status = 'completed';
     job.completedAt = Date.now();

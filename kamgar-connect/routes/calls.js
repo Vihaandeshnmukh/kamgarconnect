@@ -15,7 +15,10 @@ const Call = require('../models/Call');
 const Worker = require('../models/Worker');
 const Employer = require('../models/Employer');
 const { cleanText, cleanName } = require('../utils/sanitize');
-const { ACTIVE, istDate, endOfDay, bookingDateError } = require('../utils/bookings');
+const { ACTIVE, istDate, endOfDay, bookingDateError, activeKey } = require('../utils/bookings');
+
+// One employer may book at most this many workers for one day (stops emptying the list)
+const MAX_BOOKINGS_PER_DAY = 10;
 
 /* ═══════════════════════════════════════════
    POST /api/calls/assign-job
@@ -32,6 +35,10 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
     if (!mongoose.isValidObjectId(workerId)) {
       return res.status(400).json({ success: false, msg: 'Invalid worker id' });
     }
+    if (typeof location !== 'string' || typeof date !== 'string' || typeof time !== 'string') {
+      return res.status(400).json({ success: false, msg: 'Location, date and time must be text' });
+    }
+    if (!cleanText(location, 120)) return res.status(400).json({ success: false, msg: 'Please enter the job location' });
     const dateError = bookingDateError(date, time);
     if (dateError) return res.status(400).json({ success: false, msg: dateError });
 
@@ -56,10 +63,16 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
         return res.status(409).json({ success: false, msg: 'This worker is already booked for that day' });
       }
     }
-    const employerName = cleanName(req.body.employerName) || (employer ? employer.name : 'Employer');
+    // The worker sees the employer's real (registered) name, not one typed into the form
+    const employerName = employer ? employer.name : 'Employer';
+    const mineThatDay = await Call.countDocuments({ callerId: req.user.id, callType: 'assign', 'assignmentData.date': date, 'assignmentData.workerResponse': ACTIVE });
+    if (mineThatDay >= MAX_BOOKINGS_PER_DAY) return res.status(429).json({ success: false, msg: `You can book at most ${MAX_BOOKINGS_PER_DAY} workers for one day` });
 
-    // The hire record (reviews for website hires refer to it)
-    const hire = await new Call({
+    // The hire record (reviews for website hires refer to it); the unique activeKey makes a
+    // second booking for the same worker and day fail even when both arrive at once
+    const wasLive = worker.isLooking ? worker.availableUntil > new Date() : false;
+    let hire;
+    try { hire = await new Call({
       callerId: req.user.id,
       receiverId: worker._id,
       callerType: 'employer',
@@ -70,10 +83,15 @@ router.post('/assign-job', auth, requireRole('employer'), async (req, res) => {
         date,
         time: cleanText(time, 20),
         employerName,
-        instructions: cleanText(req.body.instructions || '', 300),
-        workerResponse: 'pending'
+        instructions: typeof req.body.instructions === 'string' ? cleanText(req.body.instructions, 300) : '',
+        workerResponse: 'pending',
+        activeKey: activeKey(worker._id, date),
+        ...(isToday ? (wasLive ? { prevAvailableUntil: worker.availableUntil } : {}) : {})
       }
-    }).save();
+    }).save(); } catch (e) {
+      if (e.code === 11000) return res.status(409).json({ success: false, msg: 'This worker is already booked for that day' });
+      throw e;
+    }
 
     // Work is today: off the search list until the end of the day (nobody else can book them)
     if (isToday) {

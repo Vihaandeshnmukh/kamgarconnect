@@ -1,4 +1,4 @@
-// WEB VERSION — FULLY TESTED AND WORKING
+// WEB VERSION ï¿½ FULLY TESTED AND WORKING
 // This code is the final base for the mobile app
 // Do not change core logic when converting to React Native
 const mongoose = require('mongoose');
@@ -13,6 +13,9 @@ const ReviewSchema = new mongoose.Schema({
   comment: { type: String, maxlength: 500 },
   createdAt: { type: Date, default: Date.now }
 });
+
+ReviewSchema.index({ hireId: 1 }, { unique: true, partialFilterExpression: { hireId: { $type: 'objectId' } } });
+ReviewSchema.index({ jobId: 1 }, { unique: true, partialFilterExpression: { jobId: { $type: 'objectId' } } });
 
 module.exports = mongoose.model('Review', ReviewSchema);
 

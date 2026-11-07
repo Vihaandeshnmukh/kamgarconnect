@@ -52,16 +52,24 @@ app.use(cors({
 
 // Setup Sockets function
 const setupSockets = (socketServer) => {
+  // Only logged-in users; each joins only their own room (and city rooms for new jobs)
+  socketServer.use((socket, next) => {
+    try {
+      const token = (socket.handshake.auth && socket.handshake.auth.token) || '';
+      socket.user = require('jsonwebtoken').verify(String(token), process.env.JWT_SECRET).user;
+      next();
+    } catch (e) { next(new Error('unauthorized')); }
+  });
   socketServer.on('connection', (socket) => {
     console.log('⚡ Socket client connected:', socket.id);
-    
+
     socket.on('join-city', (city) => {
       socket.join(city);
       console.log(`Socket ${socket.id} joined city: ${city}`);
     });
-    
-    socket.on('subscribe-user', (userId) => {
-      socket.join(`user-${userId}`);
+
+    socket.on('subscribe-user', () => {
+      socket.join(`user-${socket.user.id}`);
     });
 
     socket.on('disconnect', () => {

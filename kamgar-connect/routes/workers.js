@@ -11,7 +11,7 @@ const { normalizePhone, isPhone, parseLocation, toPoint } = require('../utils/sa
 const Worker = require('../models/Worker');
 const Job = require('../models/Job');
 const Call = require('../models/Call');
-const { ACTIVE, istDate, activateTodaysBookings } = require('../utils/bookings');
+const { ACTIVE, istDate, activateTodaysBookings, freeWorkerFromBooking } = require('../utils/bookings');
 
 // TODO BEFORE PRODUCTION:
 // 1. Workers only see worker dashboard
@@ -162,6 +162,7 @@ router.put('/:id/go-live', auth, requireRole('worker'), requireSelf(), async (re
         // Live for a few hours at a time (the website uses 4 h; at most 24 h)
         const ms = availableUntil - Date.now();
         if (!(ms > 0 && ms <= 24 * 3600 * 1000 + 60000)) return res.status(400).json({ msg: 'You can go live for up to 24 hours' });
+        await activateTodaysBookings();
         const me = await Worker.findById(req.params.id).select('hiredUntil');
         if (me) { if (me.hiredUntil > new Date()) return res.status(409).json({ msg: 'You are booked today. You can go live again after this booking.' }); }
         // Going live means the worker wants work again, so show them in search.
@@ -237,15 +238,15 @@ router.put('/:id/release', auth, requireRole('employer'), async (req, res) => {
         const target = await Worker.findById(req.params.id).select('hiredBy');
         if (!target) return res.status(404).json({ msg: 'Worker not found' });
         if (String(target.hiredBy) !== req.user.id) return res.status(403).json({ msg: 'Only the employer who hired this worker can release them' });
-        await Call.updateMany(
-            { receiverId: req.params.id, callerId: req.user.id, callType: 'assign', 'assignmentData.date': istDate(0), 'assignmentData.workerResponse': ACTIVE },
-            { $set: { 'assignmentData.workerResponse': 'cancelled' } }
-        );
-        const worker = await Worker.findByIdAndUpdate(
-            req.params.id,
-            { hiredUntil: null, hiredBy: null },
-            { new: true }
-        );
+        const todays = await Call.find({ receiverId: req.params.id, callerId: req.user.id, callType: 'assign', 'assignmentData.date': istDate(0), 'assignmentData.workerResponse': ACTIVE });
+        for (const c of todays) {
+            c.assignmentData.workerResponse = 'cancelled';
+            c.assignmentData.activeKey = undefined;
+            await c.save();
+            await freeWorkerFromBooking(c);
+        }
+        await Worker.updateOne({ _id: req.params.id, hiredBy: req.user.id }, { $set: { hiredUntil: null, hiredBy: null } });
+        const worker = await Worker.findById(req.params.id);
         res.json(publicWorker(worker, req.user));
     } catch (err) {
         res.status(500).json({ error: 'Server Error' });
@@ -255,6 +256,9 @@ router.put('/:id/release', auth, requireRole('employer'), async (req, res) => {
 // Past jobs for the "Previous jobs" view: type, city and dates only (no employer or pay)
 router.get('/:id/jobs', async (req, res) => {
     try {
+        const w = await Worker.findById(req.params.id).select('isWithdrawn');
+        if (!w) return res.status(404).json({ msg: 'Worker not found' });
+        if (w.isWithdrawn) return res.status(404).json({ msg: 'Worker not found' });
         const jobs = await Job.find({ workerId: req.params.id })
             .select('jobType city status acceptedAt completedAt')
             .sort({ completedAt: -1 })
