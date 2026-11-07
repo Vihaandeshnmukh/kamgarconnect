@@ -350,6 +350,18 @@ router.post('/bookings/:hireId/no-show', async (req, res) => {
   }
 });
 
+// POST /api/me/verify-request (worker): ask the team for the "verified" badge (checked in person by the team)
+router.post('/verify-request', async (req, res) => {
+  try {
+    if (req.user.role !== 'worker') return res.status(403).json({ msg: 'Only workers can ask for the badge' });
+    const w = await Worker.findById(req.user.id).select('verified verifyRequestedAt');
+    if (!w) return res.status(404).json({ msg: 'Account not found' });
+    if (w.verified) return res.json({ ok: true, verified: true });
+    if (!w.verifyRequestedAt) await Worker.updateOne({ _id: w._id }, { $set: { verifyRequestedAt: new Date() } });
+    res.json({ ok: true, requested: true });
+  } catch (err) { res.status(500).json({ msg: 'Server error' }); }
+});
+
 // ===== In-app inbox =====
 // GET /api/me/inbox - newest 50 messages and how many are unread
 router.get('/inbox', async (req, res) => {

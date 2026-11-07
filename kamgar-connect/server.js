@@ -132,7 +132,7 @@ app.get('/:filename.mp4', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 // Old pitch sign-up forms: same limit as /api/auth so they can't be used to flood the database
 app.use('/api/register', require('./middleware/rateLimit')({ windowMs: 10 * 60 * 1000, maxRequests: 40, message: 'Too many attempts. Please try again in a few minutes.' }), require('./routes/pitch'));
-app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin', require('./middleware/rateLimit')({ windowMs: 10 * 60 * 1000, maxRequests: 120, message: 'Too many attempts. Please try again in a few minutes.' }), require('./routes/admin'));
 app.use('/api/workers', require('./routes/workers'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/calls', require('./routes/calls'));

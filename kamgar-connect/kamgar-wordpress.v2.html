@@ -670,6 +670,29 @@
     .inbox-empty { color: var(--text-secondary); font-weight: 600; padding: 18px 6px; text-align: center; }
     .app-head-right .inbox-row { display: flex; gap: 10px; align-items: center; }
     @media (max-width: 760px) { #inbox-panel { top: 76px; max-height: calc(100vh - 180px); } }
+    /* ===== Admin dashboard ===== */
+    .adm { width: 100%; max-width: 1100px; margin: 0 auto; color: #F1F5F9; text-align: left; }
+    .adm h2 { color: var(--accent); font-family: 'Manrope', sans-serif; margin-bottom: 14px; }
+    .adm-login { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .adm-login input { flex: 1; min-width: 200px; min-height: 48px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.25); background: #171B22; color: #F1F5F9; padding: 0 14px; font-size: 1rem; }
+    .adm-bar { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; font-weight: 700; }
+    .adm-bar label { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; cursor: pointer; }
+    .adm-bar input[type=checkbox] { width: 22px; height: 22px; accent-color: #FF5C00; }
+    .adm-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .adm-card { background: #171B22; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px; }
+    .adm-card b { display: block; font-size: 1.7rem; font-family: 'Manrope', sans-serif; color: #FFFFFF; }
+    .adm-card span { color: #A8B3C4; font-weight: 700; font-size: 0.85rem; }
+    .adm-sec { background: #171B22; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 14px; margin-bottom: 14px; }
+    .adm-sec h3 { font-family: 'Manrope', sans-serif; margin-bottom: 10px; color: #FFFFFF; }
+    .adm-bars { display: flex; align-items: flex-end; gap: 4px; height: 90px; }
+    .adm-bars div { flex: 1; background: #FF5C00; border-radius: 4px 4px 0 0; min-height: 2px; position: relative; }
+    .adm-bars div span { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: #A8B3C4; white-space: nowrap; }
+    .adm-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+    .adm-row small { color: #A8B3C4; }
+    .adm-tag { font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #78350F; color: #FDE68A; margin-left: 6px; }
+    .adm-row .btn { min-height: 44px; }
+    .ver-tag { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; margin-left: 4px; font-size: 0.8rem; font-weight: 800; color: #1D4ED8; background: #DBEAFE; border-radius: 999px; padding: 3px 10px; }
+    html[data-theme="dark"] .ver-tag { color: #BFDBFE; background: #1E3A8A; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -968,6 +991,7 @@
       <div id="pane-profile" style="display:none;">
          <h3 class="pane-title" data-i18n="profile_title">My profile</h3>
          <form id="profile-form" class="prof-card" onsubmit="saveProfile(event)"><div id="profile-body"></div></form>
+         <div class="lite-row" id="verify-row" style="display:none;"><div><strong><i class="fas fa-circle-check"></i> <span class="dl" data-en="Verified badge" data-hi="जाँचा हुआ बैज" data-mr="तपासलेला बॅज">Verified badge</span></strong><span class="dl" data-en="Our team checks you in person, then employers see a badge" data-hi="हमारी टीम आपसे मिलकर जाँचेगी, फिर मालिकों को बैज दिखेगा" data-mr="आमची टीम भेटून तपासेल, मग मालकांना बॅज दिसेल">Our team checks you in person, then employers see a badge</span></div><button type="button" class="btn btn-outline lite-btn" id="verify-btn" onclick="askVerify()"><span class="dl" data-en="Ask" data-hi="माँगें" data-mr="मागा">Ask</span></button></div>
          <div class="lite-row"><div><strong><i class="fas fa-feather"></i> Lite mode</strong><span>Faster on slow internet and older phones</span></div><button type="button" class="btn btn-outline lite-btn" id="lite-btn" onclick="toggleLite()"><span class="lite-label">Off</span></button></div>
       </div>
     </div>
@@ -2043,6 +2067,7 @@
     // Logged in: the page becomes the app (marketing sections hidden)
     function enterAppMode() {
        document.body.classList.add('app-mode');
+       { const vr = document.getElementById('verify-row'); if (vr) vr.style.display = localStorage.getItem('user_type') === 'Worker' ? 'flex' : 'none'; }
        startInbox();
        updateAppHeader();
     }
@@ -2741,6 +2766,65 @@
     }
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadInbox(); });
     document.addEventListener('click', e => { const p = document.getElementById('inbox-panel'); if (p) { if (p.classList.contains('open')) { if (!p.contains(e.target)) { if (!e.target.closest('#inbox-btn')) p.classList.remove('open'); } } } });
+    // ===== Verified badge (worker) =====
+    async function askVerify() {
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/me/verify-request`, { method: 'POST', headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) { showNotif(d.msg || t('update_failed'), 'red'); return; }
+          showNotif(d.verified ? LX({ en: 'You are already verified', hi: 'आप पहले से जाँचे हुए हैं', mr: 'तुम्ही आधीच तपासलेले आहात' }) : LX({ en: 'Request sent. Our team will contact you.', hi: 'अनुरोध भेजा। हमारी टीम संपर्क करेगी।', mr: 'विनंती पाठवली. आमची टीम संपर्क करेल.' }), 'green');
+          document.getElementById('verify-btn').disabled = true;
+       } catch (e) { showNotif(t('network_problem'), 'red'); }
+    }
+    // ===== Admin dashboard (secret code ADMIN) =====
+    function admPw() { try { return sessionStorage.getItem('adm_pw') || ''; } catch (e) { return ''; } }
+    async function admGet(path) {
+       const r = await fetch(`${CONFIG.BACKEND_URL}/api/admin/${path}`, { headers: { Authorization: admPw() } });
+       if (r.status === 401) { try { sessionStorage.removeItem('adm_pw'); } catch (e) {} throw new Error('auth'); }
+       if (!r.ok) throw new Error('fail');
+       return r.json();
+    }
+    function renderAdmin() {
+       const c = document.getElementById('secret-content');
+       if (!admPw()) {
+          c.innerHTML = '<div class="adm"><h2><i class="fas fa-gauge"></i> Admin</h2><form class="adm-login" onsubmit="event.preventDefault(); try { sessionStorage.setItem(\'adm_pw\', document.getElementById(\'adm-pw\').value); } catch (e) {} renderAdmin();"><input type="password" id="adm-pw" autocomplete="off" placeholder="Admin password" aria-label="Admin password"><button class="btn btn-primary" type="submit">Open</button></form><p style="color:#A8B3C4">The password is the ADMIN_PASSWORD set on Render. It is kept only in this browser tab.</p></div>';
+          return;
+       }
+       c.innerHTML = '<div class="adm"><h2><i class="fas fa-gauge"></i> Admin dashboard</h2><div class="adm-bar"><label><input type="checkbox" id="adm-hide" onchange="loadAdmin()" checked> Hide demo data</label><button class="btn btn-outline" onclick="loadAdmin()"><i class="fas fa-rotate"></i> Refresh</button><button class="btn btn-outline" onclick="try { sessionStorage.removeItem(\'adm_pw\'); } catch (e) {} renderAdmin();"><i class="fas fa-right-from-bracket"></i> Lock</button></div><div id="adm-body">' + LOADER + '</div></div>';
+       loadAdmin();
+    }
+    async function loadAdmin() {
+       const body = document.getElementById('adm-body'); if (!body) return;
+       const hide = document.getElementById('adm-hide').checked ? '?hideDemo=1' : '';
+       try {
+          const [s, recent, queue] = await Promise.all([admGet('summary' + hide), admGet('recent' + hide), admGet('verify-queue' + hide)]);
+          const card = (n, label) => '<div class="adm-card"><b>' + esc(n) + '</b><span>' + esc(label) + '</span></div>';
+          const j = s.jobs || {};
+          const days = []; for (let i = 13; i >= 0; i--) { const d = new Date(Date.now() - i * 86400000 + 330 * 60000).toISOString().slice(0, 10); days.push(d); }
+          const per = {}; (s.signups.workers || []).concat(s.signups.employers || []).forEach(x => { per[x.day] = (per[x.day] || 0) + x.n; });
+          const max = Math.max(1, ...days.map(d => per[d] || 0));
+          const bars = days.map(d => '<div style="height:' + Math.round(100 * (per[d] || 0) / max) + '%" title="' + esc(d + ': ' + (per[d] || 0)) + '"><span>' + esc(d.slice(8)) + '</span></div>').join('');
+          body.innerHTML = '<div class="adm-cards">' + card(s.workers, 'Workers') + card(s.employers, 'Employers') + card(s.liveNow, 'Looking for work now') + card((j.pending || 0), 'Open jobs')
+             + card((j.accepted || 0) + (j['in-progress'] || 0), 'Jobs taken') + card((j.completed || 0), 'Jobs done') + card(s.bookings, 'Bookings') + card(s.confirmed, 'Confirmed bookings')
+             + card(s.noShows, 'No-shows') + card(s.verifyQueue, 'Badge requests') + card(s.openReports, 'Open reports') + card(s.demoWorkers, 'Demo workers in DB') + '</div>'
+             + '<div class="adm-sec"><h3>Sign-ups, last 14 days</h3><div class="adm-bars" style="margin-bottom:22px;">' + bars + '</div></div>'
+             + '<div class="adm-sec"><h3>Verified badge queue (' + queue.length + ')</h3>' + (queue.map(w => '<div class="adm-row"><span><b>' + esc(w.name) + '</b>' + (w.isDemo ? '<span class="adm-tag">Demo</span>' : '') + '<br><small>' + esc(w.skill) + ' · ' + esc(w.city) + ' · ' + esc(w.phone) + ' · ' + esc(w.jobsDone) + ' done · ' + esc(w.noShows) + ' no-shows</small></span><span><button class="btn btn-primary" onclick="admVerify(\'' + safeId(w._id) + '\', true)">Verify</button> <button class="btn btn-outline" onclick="admVerify(\'' + safeId(w._id) + '\', false)">Turn down</button></span></div>').join('') || '<small>Nobody is waiting.</small>') + '</div>'
+             + '<div class="adm-sec" id="adm-reports"></div>'
+             + '<div class="adm-sec"><h3>Newest sign-ups</h3>' + recent.map(r => '<div class="adm-row"><span><b>' + esc(r.name) + '</b>' + (r.isDemo ? '<span class="adm-tag">Demo</span>' : '') + (r.verified ? ' <i class="fas fa-circle-check" style="color:#60A5FA"></i>' : '') + '<br><small>' + esc(r.role) + ' · ' + esc(r.skill || r.company || '') + ' · ' + esc(r.city) + ' · ' + esc(r.phone) + '</small></span><small>' + esc(new Date(r.createdAt).toLocaleString()) + '</small></div>').join('') + '</div>';
+          if (typeof loadAdminReports === 'function') loadAdminReports(hide);
+       } catch (e) {
+          if (e.message === 'auth') { showNotif('Wrong admin password', 'red'); renderAdmin(); return; }
+          body.innerHTML = '<p>Could not load. The server may be waking up; try Refresh in a minute.</p>';
+       }
+    }
+    async function admVerify(id, approve) {
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/admin/workers/${id}/verify`, { method: 'POST', headers: { Authorization: admPw(), 'Content-Type': 'application/json' }, body: JSON.stringify({ approve }) });
+          if (!r.ok) throw new Error();
+          showNotif(approve ? 'Verified' : 'Turned down', 'green'); loadAdmin();
+       } catch (e) { showNotif('Could not update', 'red'); }
+    }
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
     function leaveJob(id) { if (confirm(t('give_back_q'))) jobAction(id, 'leave', t('given_back')); }
@@ -2821,6 +2905,7 @@
                    <div style="margin-top:20px; font-weight:800; color:var(--green);">&#8377;${esc(Number(w.expectedSalary) || 600)} / ${esc(t('day'))}</div>
                    <div style="font-size:0.8rem; margin-top:8px;">${rating}</div>
                    ${whereLine(w)}
+                   ${w.verified ? `<span class="ver-tag"><i class="fas fa-circle-check"></i> ${esc(LX({ en: 'Verified by team', hi: 'टीम ने जाँचा', mr: 'टीमने तपासले' }))}</span>` : ''}
                    ${w.reliability != null ? `<span class="rel-tag${w.reliability < 80 ? ' low' : ''}"><i class="fas fa-shield-halved"></i> ${esc(LX({ en: 'Reliable', hi: 'भरोसेमंद', mr: 'विश्वासू' }))} ${esc(Number(w.reliability))}%</span>` : ''}
                    ${phone}
                    <button class="btn btn-primary" style="margin-top:auto; height:45px;" onclick="openHireModal('${id}', event)">${esc(t('hire_now'))}</button>
@@ -3351,6 +3436,13 @@
 
     function unlockSecret() {
        const code = document.getElementById('secret-access-code').value.toUpperCase();
+       if (code === 'ADMIN') {
+          document.querySelectorAll('#secret-page > *:not(.btn-outline):not(#secret-content)').forEach(el => el.style.display='none');
+          const container = document.getElementById('secret-content');
+          container.style.display = 'flex';
+          renderAdmin();
+          return;
+       }
        if (code === 'TIME' || code === 'MIND') {
           showNotif("Access Granted", "green");
           document.querySelectorAll('#secret-page > *:not(.btn-outline):not(#secret-content)').forEach(el => el.style.display='none');

@@ -19,6 +19,8 @@ const WorkerSchema = new mongoose.Schema({
   isLooking: { type: Boolean, default: false }, // Whether the worker is currently seeking jobs
   availableUntil: { type: Date, default: null }, // Timestamp until which the worker is available
   isWithdrawn: { type: Boolean, default: false }, // Worker removed themselves from search results
+  verified: { type: Boolean, default: false }, // set by the admin after checking the worker in person (not an ID check)
+  verifyRequestedAt: { type: Date }, // the worker asked for the verified badge
   email: { type: String, select: false }, // From "Sign in with Google" (private)
   googleId: { type: String, index: true, sparse: true, select: false }, // Google account linked for one-tap login
   location: {
