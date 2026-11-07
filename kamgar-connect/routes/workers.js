@@ -12,6 +12,8 @@ const Worker = require('../models/Worker');
 const Job = require('../models/Job');
 const Call = require('../models/Call');
 const { ACTIVE, istDate, activateTodaysBookings, freeWorkerFromBooking } = require('../utils/bookings');
+const Employer = require('../models/Employer');
+const { AREAS, km, nearestArea, hasPoint, roughKm } = require('../utils/areas');
 
 // TODO BEFORE PRODUCTION:
 // 1. Workers only see worker dashboard
@@ -57,9 +59,14 @@ const publicWorker = (w, viewer) => {
         isLooking: w.isLooking,
         availableUntil: w.availableUntil,
         hiredUntil: w.hiredUntil,
-        ...(showPhone ? { phone: w.phone } : {})
+        ...(showPhone ? { phone: w.phone } : {}),
+        // Rough area name for employers ("CIDCO N-5"); never the GPS position
+        ...(showPhone ? { area: (nearestArea(w.location) || {}).name || null } : {})
     };
 };
+// Numbers from the query string, kept inside sensible limits (anything else is ignored)
+const num = (v, lo, hi) => { const n = Number(v); return typeof v === 'string' && v !== '' && Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
+const availableNow = (w) => !!(w.isLooking && w.availableUntil > new Date() && !w.hiredUntil && !w.isWithdrawn);
 
 // Workers employers may find: looking for work, not booked, not hidden
 const visibleNow = () => ({
@@ -96,8 +103,23 @@ router.get('/', optionalAuth, async (req, res) => {
     // Plain strings only (never objects/operators)
     if (typeof req.query.city === 'string' && req.query.city) query.city = req.query.city;
     if (typeof req.query.skill === 'string' && req.query.skill) query.skill = req.query.skill;
-    const workers = await Worker.find(query).sort({ rating: -1, createdAt: -1 }).limit(200);
-    res.json(workers.map(w => publicWorker(w, req.user)));
+    // Filters: daily wage range, minimum rating, minimum experience, distance from a point
+    const minWage = num(req.query.minWage, 0, 100000), maxWage = num(req.query.maxWage, 0, 100000);
+    if (minWage !== null || maxWage !== null) query.expectedSalary = { ...(minWage !== null ? { $gte: minWage } : {}), ...(maxWage !== null ? { $lte: maxWage } : {}) };
+    const minRating = num(req.query.minRating, 0, 5); if (minRating) query.rating = { $gte: minRating };
+    const minExp = num(req.query.minExp, 0, 60); if (minExp) query.experience = { $gte: minExp };
+    const lat = num(req.query.lat, -90, 90), lng = num(req.query.lng, -180, 180), radius = num(req.query.radiusKm, 0.5, 50);
+    const here = (lat !== null ? lng !== null : false) ? [lng, lat] : null;
+    if (here) { if (radius) query.location = { $geoWithin: { $centerSphere: [here, radius / 6378.1] } }; }
+    const sortBy = { wage: { expectedSalary: 1, rating: -1 }, experience: { experience: -1, rating: -1 } }[req.query.sort] || { rating: -1, createdAt: -1 };
+    const workers = await Worker.find(query).sort(sortBy).limit(200);
+    let list = workers.map(w => {
+        const pw = publicWorker(w, req.user);
+        if (here) { if (hasPoint(w.location)) pw.distanceKm = roughKm(km(here, w.location.coordinates)); }
+        return pw;
+    });
+    if (req.query.sort === 'distance') list = list.sort((a, b) => (a.distanceKm == null ? 999 : a.distanceKm) - (b.distanceKm == null ? 999 : b.distanceKm));
+    res.json(list);
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }
@@ -128,6 +150,57 @@ router.get('/nearby', optionalAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Server Error' });
   }
+});
+
+// Map view: how many visible workers are near each named area (area centres only, never worker positions)
+router.get('/map/areas', optionalAuth, async (req, res) => {
+  try {
+    await autoExpireAvailability();
+    const query = visibleNow();
+    if (typeof req.query.skill === 'string' && req.query.skill) query.skill = req.query.skill;
+    const workers = await Worker.find(query).select('location skill').limit(1000);
+    const counts = {};
+    for (const w of workers) { const a = nearestArea(w.location); if (a) counts[a.name] = (counts[a.name] || 0) + 1; }
+    res.json(AREAS.filter(a => counts[a.name]).map(a => ({ name: a.name, lat: a.lat, lng: a.lng, count: counts[a.name] })));
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+
+// Saved ("favourite") workers of the logged-in employer
+router.get('/favorites/mine', auth, requireRole('employer'), async (req, res) => {
+  try {
+    const e = await Employer.findById(req.user.id).select('favorites');
+    if (!e) return res.status(404).json({ msg: 'Employer not found' });
+    const workers = await Worker.find({ _id: { $in: e.favorites || [] } });
+    res.json(workers.map(w => ({ ...publicWorker(w, req.user), availableNow: availableNow(w) })));
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+router.put('/:id/favorite', auth, requireRole('employer'), async (req, res) => {
+  try {
+    if (!(await Worker.exists({ _id: req.params.id }))) return res.status(404).json({ msg: 'Worker not found' });
+    const e = await Employer.findById(req.user.id).select('favorites');
+    if (!e) return res.status(404).json({ msg: 'Employer not found' });
+    const already = (e.favorites || []).some(f => String(f) === req.params.id);
+    if (!already) { if ((e.favorites || []).length >= 100) return res.status(400).json({ msg: 'You can save up to 100 workers' }); }
+    await Employer.updateOne({ _id: req.user.id }, { $addToSet: { favorites: req.params.id } });
+    res.json({ ok: true, saved: true });
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+router.delete('/:id/favorite', auth, requireRole('employer'), async (req, res) => {
+  try {
+    await Employer.updateOne({ _id: req.user.id }, { $pull: { favorites: req.params.id } });
+    res.json({ ok: true, saved: false });
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+});
+// Workers this employer booked most recently (up to 10, newest first)
+router.get('/recent/mine', auth, requireRole('employer'), async (req, res) => {
+  try {
+    const calls = await Call.find({ callerId: req.user.id, callType: 'assign' }).sort({ timestamp: -1 }).limit(60).select('receiverId');
+    const ids = [];
+    for (const c of calls) { const id = String(c.receiverId); if (!ids.includes(id)) { if (ids.length < 10) ids.push(id); } }
+    const workers = await Worker.find({ _id: { $in: ids } });
+    const byId = Object.fromEntries(workers.map(w => [String(w._id), w]));
+    res.json(ids.filter(id => byId[id]).map(id => ({ ...publicWorker(byId[id], req.user), availableNow: availableNow(byId[id]) })));
+  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 });
 
 // GET /api/workers/phone/:phone - employer's "search by phone" (logged-in employers only)

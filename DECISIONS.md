@@ -10,3 +10,6 @@ One line each: what I chose and why.
 - Seed script only deletes records with isDemo: true and refuses any database not named exactly kamgar_demo.
 - Stage 2: the Stitch redesign approved earlier tonight is the base; added dark-by-default (brief asks for orange on dark), automatic lite mode, and a browser-made manifest. No service worker (needs a file on kamgar.de; logged in BLOCKED.md).
 - Stage 1 backend deploy: the browser was signed in to Render, so I used Manual Deploy → Deploy latest commit (your brief allows tested additive backend changes to go live). Stages that change only the page don't need a server deploy.
+- Stage 3 map: privacy rule wins over a pin-per-worker map. The server sends only the nearest named area of Aurangabad (16 areas) and a distance rounded up to 0.5 km, to logged-in employers only; the map shows how many workers are near each area centre. Worker GPS positions are never sent.
+- Saved workers are stored on the employer (favorites, max 100); recently hired comes from the employer's own bookings.
+- Leaflet + OpenStreetMap tiles load only when the employer opens Map (keeps the page light).

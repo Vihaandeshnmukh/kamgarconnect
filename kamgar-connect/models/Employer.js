@@ -20,6 +20,7 @@ const EmployerSchema = new mongoose.Schema({
     type: { type: String, default: 'Point' },
     coordinates: { type: [Number], default: [0, 0] } // [longitude, latitude]
   },
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Worker' }], // workers this employer saved (max 100)
   createdAt: { type: Date, default: Date.now },
   isDemo: { type: Boolean } // only records made by scripts/demo-seed.js in the kamgar_demo database
 });

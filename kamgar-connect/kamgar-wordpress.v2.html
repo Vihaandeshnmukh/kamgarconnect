@@ -610,6 +610,34 @@
     .lite-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 16px; background: var(--bg-surface); }
     .lite-row strong { display: block; color: var(--text-primary); }
     .lite-row span { color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; }
+    /* ===== Search and discovery ===== */
+    .disc-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .disc-views { display: inline-flex; background: var(--bg-elevated); border-radius: 14px; padding: 4px; gap: 4px; }
+    .disc-views button { border: 0; background: transparent; color: var(--text-secondary); font-weight: 800; min-height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 8px; }
+    .disc-views button.on { background: var(--accent); color: #FFFFFF; }
+    .disc-more { min-height: 44px; border-radius: 12px; font-weight: 800; }
+    .disc-filters { display: none; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; padding: 14px; border: 1.5px solid var(--border); border-radius: 16px; background: var(--bg-surface); }
+    .disc-filters.open { display: grid; }
+    .disc-filters label { display: flex; flex-direction: column; gap: 4px; font-weight: 800; font-size: 0.85rem; color: var(--text-secondary); }
+    .disc-filters select { min-height: 48px; }
+    #worker-map { height: 380px; border-radius: 18px; overflow: hidden; border: 1.5px solid var(--border); margin-bottom: 16px; display: none; }
+    .map-note { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin: -8px 0 16px; display: none; }
+    .recent-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 16px; }
+    .recent-strip:empty { display: none; }
+    .recent-chip { flex: none; display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--border); border-radius: 14px; padding: 8px 12px; background: var(--bg-surface); cursor: pointer; min-height: 52px; font-family: inherit; color: var(--text-primary); }
+    .recent-chip .av { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+    .recent-chip small { display: block; color: var(--text-secondary); font-weight: 600; }
+    .recent-chip .dot { width: 9px; height: 9px; border-radius: 50%; background: #9CA3AF; }
+    .recent-chip .dot.on { background: #16A34A; }
+    .recent-title { font-weight: 800; color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .fav-btn { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-surface); color: var(--text-secondary); font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
+    .fav-btn.on { color: #E11D48; border-color: #FDA4AF; }
+    .card-front h3 { padding-right: 52px; }
+    .w-where { font-size: 0.85rem; color: var(--text-secondary); font-weight: 700; margin-top: 6px; }
+    .area-pin { background: #FF5C00; color: #FFF; border: 3px solid #FFF; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 4px 12px rgba(0,0,0,0.35); font-family: 'Plus Jakarta Sans', sans-serif; }
+    html[data-theme="dark"] .area-pin, html[data-theme="dark"] .disc-views button.on, html[data-theme="dark"] .recent-chip .av { background: #C2410C; }
+    @media (max-width: 900px) { .disc-filters { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .disc-views { width: 100%; } .disc-views button { flex: 1; justify-content: center; padding: 0 8px; } .disc-more { width: 100%; } }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -873,6 +901,25 @@
             </select>
          </div>
 
+         <div class="recent-title" id="recent-title" style="display:none;"></div>
+         <div class="recent-strip" id="recent-hired"></div>
+         <div class="disc-bar">
+            <div class="disc-views" role="tablist">
+               <button type="button" id="view-list" class="on" onclick="setDiscView('list')"><i class="fas fa-list"></i> <span class="dl" data-en="List" data-hi="सूची" data-mr="यादी">List</span></button>
+               <button type="button" id="view-map" onclick="setDiscView('map')"><i class="fas fa-map-location-dot"></i> <span class="dl" data-en="Map" data-hi="नक्शा" data-mr="नकाशा">Map</span></button>
+               <button type="button" id="view-saved" onclick="setDiscView('saved')"><i class="fas fa-heart"></i> <span class="dl" data-en="Saved" data-hi="सेव किए" data-mr="सेव्ह केलेले">Saved</span></button>
+            </div>
+            <button type="button" class="btn btn-outline disc-more" id="disc-more" onclick="document.getElementById('disc-filters').classList.toggle('open')"><i class="fas fa-sliders"></i> <span class="dl" data-en="More filters" data-hi="और फ़िल्टर" data-mr="अधिक फिल्टर">More filters</span></button>
+         </div>
+         <div class="disc-filters" id="disc-filters">
+            <label><span class="dl" data-en="Daily wage" data-hi="रोज़ की मज़दूरी" data-mr="रोजची मजुरी">Daily wage</span><select id="f-wage" class="input-field" onchange="loadEmployerGrid()"><option value="">Any</option><option value="0-500">₹500 or less</option><option value="500-700">₹500 – ₹700</option><option value="700-900">₹700 – ₹900</option><option value="900-">₹900+</option></select></label>
+            <label><span class="dl" data-en="Rating" data-hi="रेटिंग" data-mr="रेटिंग">Rating</span><select id="f-rating" class="input-field" onchange="loadEmployerGrid()"><option value="">Any</option><option value="3">3 ★ +</option><option value="4">4 ★ +</option></select></label>
+            <label><span class="dl" data-en="Experience" data-hi="अनुभव" data-mr="अनुभव">Experience</span><select id="f-exp" class="input-field" onchange="loadEmployerGrid()"><option value="">Any</option><option value="2">2+ yrs</option><option value="5">5+ yrs</option><option value="10">10+ yrs</option></select></label>
+            <label><span class="dl" data-en="Distance" data-hi="दूरी" data-mr="अंतर">Distance</span><select id="f-dist" class="input-field" onchange="needHere(this.value); loadEmployerGrid()"><option value="">Any</option><option value="2">2 km</option><option value="5">5 km</option><option value="10">10 km</option><option value="25">25 km</option></select></label>
+            <label><span class="dl" data-en="Sort" data-hi="क्रम" data-mr="क्रम">Sort</span><select id="f-sort" class="input-field" onchange="needHere(this.value === 'distance' ? 1 : ''); loadEmployerGrid()"><option value="">Best rated</option><option value="distance">Nearest</option><option value="wage">Lowest wage</option><option value="experience">Most experienced</option></select></label>
+         </div>
+         <div id="worker-map" aria-label="Map of workers by area"></div>
+         <p class="map-note" id="map-note"></p>
          <div id="employer-stats" style="margin-bottom:20px; font-weight:800; color:var(--accent-blue); font-size:0.9rem;"></div>
          <div id="worker-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:25px;"></div>
       </div>
@@ -1538,6 +1585,7 @@
     }
 
     function setLang(l) {
+       setTimeout(() => { try { paintDiscLabels(); } catch (e) {} }, 0);
        currentLang = TRANSLATIONS[l] ? l : 'en'; localStorage.setItem('lang', currentLang);
        document.querySelectorAll('[data-i18n]').forEach(el => {
           const key = el.getAttribute('data-i18n');
@@ -2553,7 +2601,10 @@
           cityFilter.dataset.user = localStorage.getItem('user_id');
           cityFilter.value = CITY_LIST.includes(localStorage.getItem('user_city')) ? localStorage.getItem('user_city') : '';
        }
-       const query = [skill ? 'skill=' + encodeURIComponent(skill) : '', cityFilter.value ? 'city=' + encodeURIComponent(cityFilter.value) : ''].filter(Boolean).join('&');
+       const query = [skill ? 'skill=' + encodeURIComponent(skill) : '', cityFilter.value ? 'city=' + encodeURIComponent(cityFilter.value) : ''].concat(discQuery()).filter(Boolean).join('&');
+       loadFavIds(); loadRecentHired();
+       if (discView === 'saved') { loadSavedWorkers(); return; }
+       if (discView === 'map') showWorkerMap(skill);
        grid.innerHTML = LOADER;
        try {
           // With an employer login the server includes each worker's phone number
@@ -2578,10 +2629,12 @@
           <div class="card-scene" id="scene-${id}">
              <div class="card-inner" onclick="this.classList.toggle('flipped')">
                 <div class="card-front">
+                   ${localStorage.getItem('user_type') === 'Employer' ? favButton(id) : ''}
                    <h3>${esc(w.name)}</h3>
                    <span class="vid-label" style="background:#222; font-size:0.6rem; align-self:flex-start; margin-top:5px;">${esc(skillName(w.skill))}</span>
                    <div style="margin-top:20px; font-weight:800; color:var(--green);">&#8377;${esc(Number(w.expectedSalary) || 600)} / ${esc(t('day'))}</div>
                    <div style="font-size:0.8rem; margin-top:8px;">${rating}</div>
+                   ${whereLine(w)}
                    ${phone}
                    <button class="btn btn-primary" style="margin-top:auto; height:45px;" onclick="openHireModal('${id}', event)">${esc(t('hire_now'))}</button>
                 </div>
@@ -2596,6 +2649,127 @@
           </div>
        `;
     }
+
+    // ===== Search and discovery =====
+    const LX = (o) => o[currentLang] || o.en;
+    let discView = 'list', favIds = new Set(), favLoadedFor = '', workerMap = null, mapLayer = null;
+    function myHere() { try { return JSON.parse(sessionStorage.getItem('emp_here') || 'null'); } catch (e) { return null; } }
+    function needHere(v) {
+       if (!v) return;
+       if (myHere()) return;
+       if (!navigator.geolocation) return;
+       navigator.geolocation.getCurrentPosition(pos => {
+          sessionStorage.setItem('emp_here', JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude }));
+          loadEmployerGrid();
+       }, () => showNotif(t('loc_denied'), 'red'), { timeout: 15000, maximumAge: 600000 });
+    }
+    function discQuery() {
+       const v = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+       const q = [];
+       const wage = v('f-wage');
+       if (wage) { const [lo, hi] = wage.split('-'); if (lo) q.push('minWage=' + Number(lo)); if (hi) q.push('maxWage=' + Number(hi)); }
+       if (v('f-rating')) q.push('minRating=' + Number(v('f-rating')));
+       if (v('f-exp')) q.push('minExp=' + Number(v('f-exp')));
+       if (v('f-sort')) q.push('sort=' + encodeURIComponent(v('f-sort')));
+       const here = myHere();
+       if (here) { q.push('lat=' + Number(here.lat), 'lng=' + Number(here.lng)); if (v('f-dist')) q.push('radiusKm=' + Number(v('f-dist'))); }
+       return q;
+    }
+    function whereLine(w) {
+       const bits = [];
+       if (w.area) bits.push('<i class="fas fa-location-dot"></i> ' + esc(LX({ en: 'Near ', hi: 'पास: ', mr: 'जवळ: ' })) + esc(w.area));
+       if (w.distanceKm != null) bits.push(esc(Number(w.distanceKm)) + ' km');
+       return bits.length ? '<div class="w-where">' + bits.join(' · ') + '</div>' : '';
+    }
+    function favButton(id) {
+       const on = favIds.has(id);
+       return '<button type="button" class="fav-btn' + (on ? ' on' : '') + '" data-fav="' + id + '" aria-label="' + esc(LX({ en: 'Save worker', hi: 'कामगार सेव करें', mr: 'कामगार सेव्ह करा' })) + '" aria-pressed="' + on + '" onclick="toggleFav(\'' + id + '\', event)"><i class="' + (on ? 'fas' : 'far') + ' fa-heart"></i></button>';
+    }
+    async function loadFavIds() {
+       if (localStorage.getItem('user_type') !== 'Employer') return;
+       if (favLoadedFor === localStorage.getItem('user_id')) return;
+       favLoadedFor = localStorage.getItem('user_id');
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/workers/favorites/mine`, { headers: authHeaders() });
+          if (!r.ok) return;
+          favIds = new Set((await r.json()).map(w => safeId(w._id)));
+          document.querySelectorAll('[data-fav]').forEach(b => paintFav(b, favIds.has(b.dataset.fav)));
+       } catch (e) {}
+    }
+    function paintFav(b, on) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.innerHTML = '<i class="' + (on ? 'fas' : 'far') + ' fa-heart"></i>'; }
+    async function toggleFav(id, e) {
+       if (e) e.stopPropagation();
+       const on = !favIds.has(id);
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/workers/${id}/favorite`, { method: on ? 'PUT' : 'DELETE', headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          if (!r.ok) throw new Error();
+          if (on) favIds.add(id); else favIds.delete(id);
+          document.querySelectorAll('[data-fav="' + id + '"]').forEach(b => paintFav(b, on));
+          showNotif(on ? LX({ en: 'Saved', hi: 'सेव हो गया', mr: 'सेव्ह झाले' }) : LX({ en: 'Removed from saved', hi: 'सेव से हटाया', mr: 'सेव्हमधून काढले' }), 'green');
+          if (discView === 'saved') loadSavedWorkers();
+       } catch (err) { showNotif(t('load_error'), 'red'); }
+    }
+    async function loadSavedWorkers() {
+       const grid = document.getElementById('worker-grid');
+       grid.innerHTML = LOADER;
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/workers/favorites/mine`, { headers: authHeaders() });
+          if (sessionExpired(r)) return;
+          const list = await r.json();
+          favIds = new Set(list.map(w => safeId(w._id)));
+          document.getElementById('employer-stats').innerText = LX({ en: list.length + ' saved workers', hi: list.length + ' सेव किए कामगार', mr: list.length + ' सेव्ह केलेले कामगार' });
+          grid.innerHTML = list.length ? list.map(w => renderWorkerCard(w)).join('') : '<p style="grid-column:1/-1; opacity:0.7;">' + esc(LX({ en: 'Tap the heart on a worker to save them here.', hi: 'कामगार को यहाँ सेव करने के लिए दिल दबाएँ।', mr: 'कामगार इथे सेव्ह करण्यासाठी हृदय दाबा.' })) + '</p>';
+       } catch (e) { grid.innerHTML = '<p>' + esc(t('load_error')) + '</p>'; }
+    }
+    async function loadRecentHired() {
+       const box = document.getElementById('recent-hired'), title = document.getElementById('recent-title');
+       if (!box) return;
+       if (localStorage.getItem('user_type') !== 'Employer') { box.innerHTML = ''; title.style.display = 'none'; return; }
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/workers/recent/mine`, { headers: authHeaders() });
+          if (!r.ok) return;
+          const list = await r.json();
+          list.forEach(w => { workerCache[safeId(w._id)] = w; });
+          title.innerText = LX({ en: 'Recently hired', hi: 'हाल में काम पर रखे', mr: 'अलीकडे कामावर घेतलेले' });
+          title.style.display = list.length ? 'block' : 'none';
+          box.innerHTML = list.map(w => '<button type="button" class="recent-chip" onclick="openHireModal(\'' + safeId(w._id) + '\', event)"><span class="av">' + esc((w.name || '?')[0]) + '</span><span><b>' + esc(w.name) + '</b><small>' + esc(skillName(w.skill)) + '</small></span><span class="dot' + (w.availableNow ? ' on' : '') + '" title="' + esc(w.availableNow ? LX({ en: 'Looking for work now', hi: 'अभी काम ढूँढ रहे हैं', mr: 'आता काम शोधत आहेत' }) : LX({ en: 'Not looking now', hi: 'अभी नहीं', mr: 'आता नाही' })) + '"></span></button>').join('');
+       } catch (e) {}
+    }
+    function setDiscView(v) {
+       discView = v;
+       ['list', 'map', 'saved'].forEach(x => document.getElementById('view-' + x).classList.toggle('on', x === v));
+       document.getElementById('worker-map').style.display = v === 'map' ? 'block' : 'none';
+       document.getElementById('map-note').style.display = v === 'map' ? 'block' : 'none';
+       loadEmployerGrid();
+    }
+    function loadLeaflet() {
+       if (window.L) return Promise.resolve();
+       return new Promise((ok, bad) => {
+          const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+          const s = document.createElement('script'); s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; s.onload = ok; s.onerror = bad; document.head.appendChild(s);
+       });
+    }
+    async function showWorkerMap(skill) {
+       const note = document.getElementById('map-note');
+       note.innerText = LX({ en: 'Numbers show how many workers are looking for work near each area. Exact homes are never shown.', hi: 'हर इलाके के पास काम ढूँढ रहे कामगारों की संख्या। घर का पता कभी नहीं दिखता।', mr: 'प्रत्येक भागाजवळ काम शोधणाऱ्या कामगारांची संख्या. घराचा पत्ता कधीच दिसत नाही.' });
+       try {
+          await loadLeaflet();
+          if (!workerMap) {
+             workerMap = L.map('worker-map', { scrollWheelZoom: false }).setView([19.8762, 75.3433], 12);
+             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }).addTo(workerMap);
+          }
+          setTimeout(() => workerMap.invalidateSize(), 50);
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/workers/map/areas${skill ? '?skill=' + encodeURIComponent(skill) : ''}`);
+          const areas = r.ok ? await r.json() : [];
+          if (mapLayer) mapLayer.remove();
+          mapLayer = L.layerGroup(areas.map(a => L.marker([a.lat, a.lng], { icon: L.divIcon({ className: '', html: '<div class="area-pin">' + Number(a.count) + '</div>', iconSize: [38, 38], iconAnchor: [19, 19] }) })
+             .bindPopup('<b>' + esc(a.name) + '</b><br>' + esc(LX({ en: a.count + ' workers looking for work', hi: a.count + ' कामगार काम ढूँढ रहे हैं', mr: a.count + ' कामगार काम शोधत आहेत' }))))).addTo(workerMap);
+          const here = myHere();
+          if (here) mapLayer.addLayer(L.circleMarker([here.lat, here.lng], { radius: 8, color: '#1E2A4A', fillColor: '#3B82F6', fillOpacity: 0.9 }).bindPopup(esc(LX({ en: 'You', hi: 'आप', mr: 'तुम्ही' }))));
+       } catch (e) { note.innerText = LX({ en: 'The map could not load. Check your internet and try again.', hi: 'नक्शा नहीं खुला। इंटरनेट देखें।', mr: 'नकाशा उघडला नाही. इंटरनेट तपासा.' }); }
+    }
+    function paintDiscLabels() { document.querySelectorAll('.dl').forEach(el => { el.innerText = el.dataset[currentLang] || el.dataset.en; }); }
 
     function openHireModal(id, e) {
        if (e) e.stopPropagation();
