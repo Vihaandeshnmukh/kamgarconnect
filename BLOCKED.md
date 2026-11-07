@@ -7,3 +7,6 @@ Steps if you want it later: 1) WordPress admin → Plugins → Add New → insta
 
 ## Web push notifications
 Same blocker as the service worker: push needs sw.js on https://kamgar.de/ plus VAPID keys (free) stored on Render. Steps: 1) do the service-worker step above; 2) on Render add environment variables VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY (Claude can generate them, free): https://dashboard.render.com/web/srv-dbfkordg1s2s7386lq5g/env ; 3) ask Claude to wire the existing inbox to web push.
+
+## Not done: loading three.js (about 600 KB) only when needed
+Tried in stage 8; automated page loads then timed out in tests, so it was reverted (the 3D scene is already skipped in lite mode on slow phones). Worth retrying with a real slow phone: ask Claude "retry lazy three.js".

@@ -708,6 +708,15 @@
     .legal-body ul { padding-left: 20px; }
     .danger-btn { color: var(--red) !important; border-color: var(--red) !important; }
     .adm-sec:empty { display: none; }
+    /* ===== Waking-up card ===== */
+    .wake-card { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; z-index: 200300; width: min(440px, calc(100vw - 32px)); display: flex; gap: 14px; align-items: center; background: #1E2A4A; color: #FFFFFF; border-radius: 18px; padding: 16px 18px; box-shadow: 0 18px 40px rgba(0,0,0,0.35); }
+    .wake-card b { display: block; font-size: 1.05rem; }
+    .wake-card span { display: block; color: #D7DCE6; font-size: 0.9rem; font-weight: 600; margin-top: 2px; }
+    .wake-spin { width: 34px; height: 34px; flex: none; border-radius: 50%; border: 4px solid rgba(255,255,255,0.25); border-top-color: #FF5C00; animation: wakespin 0.9s linear infinite; }
+    @keyframes wakespin { to { transform: rotate(360deg); } }
+    body.app-mode .wake-card { bottom: 96px; }
+    @media (min-width: 1024px) { body.app-mode .wake-card { bottom: 24px; } }
+    html[data-lite="1"] .wake-spin { animation: wakespin 0.9s linear infinite !important; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -1644,12 +1653,20 @@
          healthDone = true; clearTimeout(wakeTimer); showWakeBanner();
        }
     }
+    let wakePoll = null;
     function showWakeBanner() {
        if (document.getElementById('wake-banner')) return;
-       document.body.insertAdjacentHTML('afterbegin',
-         '<div id="wake-banner" style="background:#B45309;color:white;text-align:center;padding:8px;position:fixed;top:44px;width:100%;z-index:999999;font-size:0.85rem;">&#9888;&#65039; ' + esc(t('waking')) + '</div>');
+       const off = navigator.onLine === false;
+       document.body.insertAdjacentHTML('beforeend',
+         '<div id="wake-banner" role="status" class="wake-card"><div class="wake-spin" aria-hidden="true"></div><div><b>' + esc(off ? LX({ en: 'No internet', hi: 'इंटरनेट नहीं है', mr: 'इंटरनेट नाही' }) : LX({ en: 'Waking up the server…', hi: 'सर्वर चालू हो रहा है…', mr: 'सर्व्हर सुरू होत आहे…' })) + '</b><span>'
+         + esc(off ? LX({ en: 'Check your mobile data or Wi-Fi. We will keep trying.', hi: 'मोबाइल डेटा या वाई-फ़ाई देखें। हम कोशिश करते रहेंगे।', mr: 'मोबाइल डेटा किंवा वाय-फाय तपासा. आम्ही प्रयत्न करत राहू.' }) : LX({ en: 'The first visit can take up to a minute. Please wait, no need to refresh.', hi: 'पहली बार एक मिनट तक लग सकता है। कृपया रुकें, रिफ़्रेश की ज़रूरत नहीं।', mr: 'पहिल्यांदा एक मिनिट लागू शकतो. कृपया थांबा, रिफ्रेश करू नका.' })) + '</span></div></div>');
+       if (!wakePoll) wakePoll = setInterval(async () => {
+          try { const r = await fetch(CONFIG.BACKEND_URL + '/api/health', { cache: 'no-store' }); if (r.ok) { hideWakeBanner(); showNotif(LX({ en: 'Ready', hi: 'तैयार', mr: 'तयार' }), 'green'); } } catch (e) {}
+       }, 5000);
     }
-    function hideWakeBanner() { const b = document.getElementById('wake-banner'); if (b) b.remove(); }
+    function hideWakeBanner() { const b = document.getElementById('wake-banner'); if (b) b.remove(); if (wakePoll) { clearInterval(wakePoll); wakePoll = null; } }
+    window.addEventListener('offline', () => showWakeBanner());
+    window.addEventListener('online', () => { if (document.getElementById('wake-banner')) fetch(CONFIG.BACKEND_URL + '/api/health').then(r => { if (r.ok) hideWakeBanner(); }).catch(() => {}); });
 
     // ── Dark / light ──
     function currentTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
@@ -1699,6 +1716,16 @@
        }
     }
 
+    // Loads a script once, only when it is needed
+    const scriptLoads = {};
+    function loadScriptOnce(src) {
+       if (!scriptLoads[src]) scriptLoads[src] = new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src; s.async = true; s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
+       return scriptLoads[src];
+    }
+    function fireConfetti(opts) {
+       if (typeof window.confetti === 'function') { try { window.confetti(opts); } catch (e) {} return; }
+       loadScriptOnce('https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js').then(() => { try { if (typeof window.confetti === 'function') window.confetti(opts); } catch (e) {} }).catch(() => {});
+    }
     function initThree() {
        if (isLite()) return;
        try { initThreeScene(); } catch (e) { console.log('3D background unavailable'); }
@@ -3237,7 +3264,7 @@
           if (sessionExpired(res)) return;
           const data = await res.json();
           if (!res.ok) { showNotif(data.msg || t('hire_failed'), "red"); return; }
-          confetti({ particleCount: 150, colors: ['#FF5C00', '#3b82f6'] });
+          fireConfetti({ particleCount: 150, colors: ['#FF5C00', '#3b82f6'] });
           closeModal();
           const who = currentWorkerToHire.name;
           const done = () => {
