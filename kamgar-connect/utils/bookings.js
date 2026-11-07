@@ -66,7 +66,18 @@ async function freeWorkerFromBooking(call) {
     { $set: back ? { hiredUntil: null, hiredBy: null, isLooking: true, availableUntil: prev } : { hiredUntil: null, hiredBy: null } });
 }
 
+// The work has started: an earlier day, or today at/after the reporting time "HH:MM" (India time)
+function workStarted(date, time) {
+  const today = istDate(0);
+  if (!date) return true;
+  if (date < today) return true;
+  if (date > today) return false;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(time || ''));
+  if (!m) return true;
+  return istMinutesNow() >= Number(m[1]) * 60 + Number(m[2]);
+}
+
 // The key that makes "one booking per worker per day" hold even for requests at the same moment
 const activeKey = (workerId, date) => `${workerId}:${date}`;
 
-module.exports = { ACTIVE, MAX_DAYS_AHEAD, istDate, isDay, endOfDay, bookingDateError, activateTodaysBookings, freeWorkerFromBooking, activeKey };
+module.exports = { workStarted, ACTIVE, MAX_DAYS_AHEAD, istDate, isDay, endOfDay, bookingDateError, activateTodaysBookings, freeWorkerFromBooking, activeKey };

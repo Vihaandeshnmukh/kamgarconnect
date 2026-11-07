@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 const { cleanText } = require('../utils/sanitize');
 const auth = require('../middleware/auth');
 const { requireRole } = require('../middleware/roles');
-const { ACTIVE, istDate } = require('../utils/bookings');
+const { ACTIVE, istDate, workStarted } = require('../utils/bookings');
 
 // POST /api/reviews - only an employer who really worked with this worker:
 // either a completed job (jobId) or a website hire the worker did not turn down (hireId).
@@ -44,6 +44,7 @@ router.post('/', auth, requireRole('employer'), async (req, res) => {
     if (!worked) {
       return res.status(403).json({ success: false, msg: 'You can rate a worker once they confirmed the booking and the work day has come' });
     }
+    if (!byJob) { if (!workStarted(worked.assignmentData.date, worked.assignmentData.time)) return res.status(403).json({ success: false, msg: 'You can rate a worker after the work has started' }); }
     const already = await Review.exists(byJob ? { jobId } : { hireId });
     if (already) return res.status(409).json({ success: false, msg: 'This job has already been rated' });
 

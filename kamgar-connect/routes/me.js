@@ -14,7 +14,7 @@ const Job = require('../models/Job');
 const Review = require('../models/Review');
 const { cleanName, isValidName, cleanText, CITIES, SKILLS, parseLocation, nearestCity, toPoint } = require('../utils/sanitize');
 const mongoose = require('mongoose');
-const { ACTIVE, istDate, freeWorkerFromBooking, activateTodaysBookings } = require('../utils/bookings');
+const { ACTIVE, istDate, freeWorkerFromBooking, activateTodaysBookings, workStarted } = require('../utils/bookings');
 
 // What a booking looks like to both sides: its state and what can still be done with it
 const bookingState = (h) => {
@@ -24,7 +24,7 @@ const bookingState = (h) => {
   const today = istDate(0);
   const upcoming = active ? (a.date ? a.date >= today : false) : false;
   // Rating needs the worker's confirmation (the proof the work was agreed) and the work day to have come
-  const dayCome = a.date ? a.date <= today : true;
+  const dayCome = workStarted(a.date, a.time);
   // "happened": the worker confirmed and the day has come (unconfirmed bookings are not counted as work)
   return { status, active, upcoming, workDayCome: status === 'confirmed' ? dayCome : false, happened: status === 'confirmed' ? dayCome : false };
 };
