@@ -1,3 +1,18 @@
+# Update 8 Nov afternoon: live-site fixes (published)
+
+**Live now:** page commit `7581232` on kamgar.de and staging (SHA-256 `d1504263…`); server deployed on Render (`7581232`). Rollback for the page: commit `a2a4e30` (SHA-256 `e4a414a1…`); for the server: Render → Deploys → previous deploy → Rollback.
+
+1. **Text:** hero and mission now say "A free way for daily-wage workers to be found directly by employers, in their own language. GPS-based matching." No "AI", "India's first" or "without smartphones" (also in Hindi and Marathi).
+2. **Footer:** the lock now sits inside the footer when logged out, so it can't cover "Privacy policy (draft)" on any screen (tested 375 and 1280 px).
+3. **History vs Stats:** not a counting bug. Stats counts only bookings the worker *confirmed* whose day has come; the 28 Oct hire was never confirmed. History now tags these "Not confirmed". Test added (test-live-fixes.js).
+4. **Database:** backed up first to `D:\kamgar-backups\kamgar-2026-11-08T1354` (outside the repo). **Deleted 1 record:** hire `6ae0cb8ff92d35db0e5e9519` (employer "ddddd", place "ssss", 28 Oct, never confirmed). It was the only hire in production. No accounts deleted. Still there for you to decide: employer account "ddddd" and older test accounts named "(Demo)" (10 workers, 1 employer with 2 open jobs).
+5. **Badge:** now "Checked by team (phone)". What it does: worker taps **Ask** in Profile → request shows in the admin dashboard with their number → someone calls them and checks name, work and wage → **Verify** → employers see the tag on the card and the worker gets an inbox message. Turn down removes the request.
+6. **Google login:** an account with Google linked can no longer be opened by phone number alone (also not by switching role from a phone-only account). Phone login still works for accounts without Google. Your Google-linked account is the worker "vihaan deshmukh"; use Continue with Google for it.
+7. **Forms:** experience and daily wage start empty with placeholders and are required at sign-up and in Profile.
+8. **Contact:** add `CONTACT_EMAIL` and `WHATSAPP_NUMBER` on Render (link below); the footer link appears by itself, no page change needed.
+9. **Checked:** "Delete my account" is in Profile. New screens checked in Hindi and Marathi, and the logged-out layout with no admin bar (375 and 1280 px).
+10. **Tests:** all suites green except the one test-me check that fails before any change (books a Sunday); new: test-live-fixes 11/11, live-fix page checks 23/23.
+
 # Morning report: overnight build, 8 Nov 2026
 
 **Your live page (kamgar.de) was not changed overnight.** The new website is in the repo as `kamgar-connect/kamgar-wordpress.v2.html` and on the private staging page. The server changes (all additive and tested) are live on Render.
