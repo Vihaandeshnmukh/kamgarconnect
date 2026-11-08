@@ -78,6 +78,7 @@ router.post('/workers/:id/verify', adminAuth, async (req, res) => {
     const approve = req.body ? req.body.approve === true : false;
     const r = await Worker.updateOne({ _id: req.params.id }, approve ? { $set: { verified: true } } : { $set: { verified: false }, $unset: { verifyRequestedAt: 1 } });
     if (!r.matchedCount) return res.status(404).json({ msg: 'Worker not found' });
+    if (approve) require('../utils/inbox').notify(req.io, req.params.id, 'worker', 'badge_approved', {});
     res.json({ ok: true, verified: approve });
   } catch (err) { res.status(500).json({ msg: 'Server Error' }); }
 });

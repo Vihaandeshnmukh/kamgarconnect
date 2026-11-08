@@ -168,6 +168,8 @@ router.post('/login', [
     }
 
     if (!user) return res.status(404).json({ exists: false, msg: 'User not found' });
+    // An account with Google linked opens only with Google: a phone number alone is not proof it's yours
+    if (user.googleId) return res.status(403).json({ googleRequired: true, msg: 'This account uses Google sign-in. Tap "Continue with Google".' });
 
     // Accounts created by the old pitch form have no password yet
     if (!user.password) {
@@ -198,6 +200,9 @@ router.post('/switch', authMw, async (req, res) => {
   try {
     const fromWorker = req.user.role === 'worker';
     const me = await (fromWorker ? Worker : Employer).findById(req.user.id);
+    // The other account has Google linked: only someone signed in with that Google account may open it
+    { const other = await (fromWorker ? Employer : Worker).findOne({ phone: me ? me.phone : '' }).select('+googleId'); const mine = me ? await (fromWorker ? Worker : Employer).findById(me._id).select('+googleId') : null;
+      if (other ? (other.googleId ? String(other.googleId) !== String(mine ? mine.googleId || '' : '') : false) : false) return res.status(403).json({ googleRequired: true, msg: 'That account uses Google sign-in. Log out and tap "Continue with Google".' }); }
     if (!me) return res.status(404).json({ msg: 'Account not found' });
     const Other = fromWorker ? Employer : Worker;
     const role = fromWorker ? 'employer' : 'worker';

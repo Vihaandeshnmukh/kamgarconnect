@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Kamgar" />
   <meta name="description" content="Kamgar Connect: find daily-wage work or hire masons, plumbers, electricians, painters, carpenters, drivers, factory workers and domestic help in Aurangabad. English, हिंदी, मराठी." />
-  <title>Kamgar Connect — India's GPS-Powered Labour Marketplace</title>
+  <title>Kamgar Connect — Daily-wage work and workers in Aurangabad</title>
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Kamgar Connect","url":"https://kamgar.de","areaServed":"Chhatrapati Sambhajinagar (Aurangabad), Maharashtra, India","description":"Free website connecting daily-wage workers and employers in Aurangabad, in English, Hindi and Marathi."},{"@type":"WebSite","name":"Kamgar Connect","url":"https://kamgar.de","inLanguage":["en","hi","mr"]}]}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -762,6 +762,8 @@
     html:not([data-theme="dark"]) .lang-switcher .btn { color: var(--text-primary); }
     .team-card p { color: #FF8A4C !important; }
     .avail-item input[type=checkbox] { width: 24px; height: 24px; accent-color: #C2410C; flex: none; }
+    /* ===== Live fixes: lock in the footer (logged out) ===== */
+    body:not(.app-mode) .st-footer .secret-trigger { position: static; width: 48px; height: 48px; opacity: 0.8; box-shadow: none; animation: none; flex: none; }
     .jobs-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .jobs-head h3 { margin: 0; }
     .voice-row { display: flex; gap: 8px; align-items: stretch; }
@@ -834,7 +836,7 @@
       <div class="st-badge"><i class="fas fa-location-dot"></i> Aurangabad (Chhatrapati Sambhajinagar) &amp; Marathwada</div>
       <h1 class="glitch" data-text="Dignity, Not Chowks." data-i18n="hero_title">Dignity, Not Chowks.</h1>
       <p class="st-hi">चौक पर खड़े रहने की ज़रूरत नहीं, सम्मान से काम पाएं।</p>
-      <p data-i18n="hero_subtitle">The marketplace connecting India's workforce instantly using AI and GPS.</p>
+      <p data-i18n="hero_subtitle">A free way for daily-wage workers to be found directly by employers, in their own language. GPS-based matching.</p>
       <div class="st-cta">
         <button class="btn btn-primary" onclick="handleFindWorkClick()"><i class="fas fa-helmet-safety"></i><span><span data-i18n="btn_worker">I am a Worker</span><small>मैं कामगार हूँ / मी कामगार आहे</small></span></button>
         <button class="btn st-employer" onclick="handleHireClick()"><i class="fas fa-user-tie"></i><span><span data-i18n="btn_employer">I Need a Worker</span><small>मुझे कामगार चाहिए / मला कामगार हवा</small></span></button>
@@ -1063,10 +1065,10 @@
       <div id="pane-profile" style="display:none;">
          <h3 class="pane-title" data-i18n="profile_title">My profile</h3>
          <form id="profile-form" class="prof-card" onsubmit="saveProfile(event)"><div id="profile-body"></div></form>
-         <div class="lite-row" id="verify-row" style="display:none;"><div><strong><i class="fas fa-circle-check"></i> <span class="dl" data-en="Verified badge" data-hi="जाँचा हुआ बैज" data-mr="तपासलेला बॅज">Verified badge</span></strong><span class="dl" data-en="Our team checks you in person, then employers see a badge" data-hi="हमारी टीम आपसे मिलकर जाँचेगी, फिर मालिकों को बैज दिखेगा" data-mr="आमची टीम भेटून तपासेल, मग मालकांना बॅज दिसेल">Our team checks you in person, then employers see a badge</span></div><button type="button" class="btn btn-outline lite-btn" id="verify-btn" onclick="askVerify()"><span class="dl" data-en="Ask" data-hi="माँगें" data-mr="मागा">Ask</span></button></div>
+         <div class="lite-row" id="verify-row" style="display:none;"><div><strong><i class="fas fa-circle-check"></i> <span class="dl" data-en="Verified badge" data-hi="जाँचा हुआ बैज" data-mr="तपासलेला बॅज">Verified badge</span></strong><span class="dl" data-en="Our team calls you to check your name, work and wage. After that, employers see “Checked by team”." data-hi="हमारी टीम आपको फ़ोन करके नाम, काम और मज़दूरी जाँचेगी। उसके बाद मालिकों को “टीम ने जाँचा” दिखेगा।" data-mr="आमची टीम फोन करून नाव, काम आणि मजुरी तपासेल. त्यानंतर मालकांना “टीमने तपासले” दिसेल.">Our team calls you to check your name, work and wage. After that, employers see “Checked by team”.</span></div><button type="button" class="btn btn-outline lite-btn" id="verify-btn" onclick="askVerify()"><span class="dl" data-en="Ask" data-hi="माँगें" data-mr="मागा">Ask</span></button></div>
          <div class="lite-row" id="blocked-row" style="display:none;"><div style="width:100%"><strong><i class="fas fa-ban"></i> <span class="dl" data-en="Blocked" data-hi="ब्लॉक किए" data-mr="ब्लॉक केलेले">Blocked</span></strong><div id="blocked-list"></div></div></div>
          <div class="lite-row"><div><strong><i class="fas fa-user-xmark"></i> <span class="dl" data-en="Delete my account" data-hi="मेरा खाता हटाएँ" data-mr="माझे खाते काढा">Delete my account</span></strong><span class="dl" data-en="We hide you at once and delete your data within 30 days" data-hi="आपको तुरंत छिपा देंगे, 30 दिन में डेटा हटा देंगे" data-mr="तुम्हाला लगेच लपवू, 30 दिवसांत माहिती काढू">We hide you at once and delete your data within 30 days</span></div><button type="button" class="btn btn-outline lite-btn danger-btn" id="delete-btn" onclick="requestDelete()"><span class="dl" data-en="Delete" data-hi="हटाएँ" data-mr="काढा">Delete</span></button></div>
-         <div class="lite-row"><div><strong><i class="fas fa-feather"></i> Lite mode</strong><span>Faster on slow internet and older phones</span></div><button type="button" class="btn btn-outline lite-btn" id="lite-btn" onclick="toggleLite()"><span class="lite-label">Off</span></button></div>
+         <div class="lite-row"><div><strong><i class="fas fa-feather"></i> <span class="dl" data-en="Lite mode" data-hi="हल्का मोड" data-mr="हलका मोड">Lite mode</span></strong><span class="dl" data-en="Faster on slow internet and older phones" data-hi="धीमे इंटरनेट और पुराने फ़ोन पर तेज़" data-mr="हळू इंटरनेट आणि जुन्या फोनवर वेगवान">Faster on slow internet and older phones</span></div><button type="button" class="btn btn-outline lite-btn" id="lite-btn" onclick="toggleLite()"><span class="lite-label">Off</span></button></div>
       </div>
     </div>
   </section>
@@ -1098,9 +1100,9 @@
     <div class="container">
       <div><strong>Kamgar Connect • कामगार कनेक्ट</strong><em>Dignity, Not Chowks | सम्मान, चौक नहीं</em></div>
       <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> Serving Chhatrapati Sambhajinagar (Aurangabad), Maharashtra</div>
-      <div style="display:flex; gap:16px; flex-wrap:wrap;"><button class="linkish" onclick="openLegal('privacy')">Privacy policy (draft)</button><button class="linkish" onclick="openLegal('terms')">Terms (draft)</button></div>
-      <button class="btn btn-outline st-demo-btn" id="poster-open" onclick="openPoster()"><i class="fas fa-qrcode"></i> Poster for chowks</button>
-      <button class="btn btn-outline st-demo-btn" id="demo-open" onclick="openDemoTour()"><i class="fas fa-circle-play"></i> Investor demo</button>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;"><button class="linkish" onclick="openLegal('privacy')"><span class="dl" data-en="Privacy policy (draft)" data-hi="गोपनीयता नीति (मसौदा)" data-mr="गोपनीयता धोरण (मसुदा)">Privacy policy (draft)</span></button><button class="linkish" onclick="openLegal('terms')"><span class="dl" data-en="Terms (draft)" data-hi="शर्तें (मसौदा)" data-mr="अटी (मसुदा)">Terms (draft)</span></button><span id="contact-links" style="display:none; gap:16px; flex-wrap:wrap;"></span></div>
+      <button class="btn btn-outline st-demo-btn" id="poster-open" onclick="openPoster()"><i class="fas fa-qrcode"></i> <span class="dl" data-en="Poster for chowks" data-hi="चौक के लिए पोस्टर" data-mr="चौकासाठी पोस्टर">Poster for chowks</span></button>
+      <button class="btn btn-outline st-demo-btn" id="demo-open" onclick="openDemoTour()"><i class="fas fa-circle-play"></i> <span class="dl" data-en="Investor demo" data-hi="डेमो" data-mr="डेमो">Investor demo</span></button>
       <button class="btn btn-outline lite-btn" id="lite-btn-footer" onclick="toggleLite()"><i class="fas fa-feather"></i> <span class="lite-label">Lite mode</span></button>
     </div>
   </footer>
@@ -1116,15 +1118,15 @@
   </div></div>
   <div class="modal" id="poster-modal"><div class="modal-content">
      <button class="btn no-print" style="position:absolute; top:20px; right:20px; background:none; font-size:2rem;" onclick="closeModal()" aria-label="Close">&times;</button>
-     <h2 class="no-print">Poster for chowks</h2>
-     <p class="prof-hint no-print">Print it, stick it where workers wait. The QR code opens kamgar.de.</p>
+     <h2 class="no-print"><span class="dl" data-en="Poster for chowks" data-hi="चौक के लिए पोस्टर" data-mr="चौकासाठी पोस्टर">Poster for chowks</span></h2>
+     <p class="prof-hint no-print"><span class="dl" data-en="Print it, stick it where workers wait. The QR code opens kamgar.de." data-hi="छापकर वहाँ लगाएँ जहाँ कामगार खड़े होते हैं। QR कोड kamgar.de खोलता है।" data-mr="छापून कामगार जिथे थांबतात तिथे लावा. QR कोड kamgar.de उघडतो.">Print it, stick it where workers wait. The QR code opens kamgar.de.</span></p>
      <div class="poster-opts no-print">
         <label>Language<select id="ps-lang" class="input-field" onchange="drawPoster()"><option value="mr">मराठी</option><option value="hi">हिंदी</option><option value="en">English</option></select></label>
         <label>Work type<select id="ps-trade" class="input-field" onchange="drawPoster()"><option value="">All work types</option></select></label>
         <label>Area (optional)<input id="ps-area" class="input-field" maxlength="30" placeholder="e.g. Kranti Chowk" oninput="drawPoster()"></label>
      </div>
      <div id="poster-sheet"></div>
-     <div class="hist-actions no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="printPoster()"><i class="fas fa-print"></i> Print</button></div>
+     <div class="hist-actions no-print" style="margin-top:14px;"><button class="btn btn-primary" onclick="printPoster()"><i class="fas fa-print"></i> <span class="dl" data-en="Print" data-hi="छापें" data-mr="छापा">Print</span></button></div>
   </div></div>
   <div class="modal" id="legal-modal"><div class="modal-content" style="max-width:760px;">
      <button class="btn" style="position:absolute; top:20px; right:20px; background:none; font-size:2rem;" onclick="closeModal()" aria-label="Close">&times;</button>
@@ -1214,12 +1216,12 @@
              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
                 <div class="input-grp">
                    <label data-i18n="label_exp">Experience (Years)</label>
-                   <input type="number" id="reg-exp" class="input-field" value="1" min="0" max="60">
+                   <input type="number" id="reg-exp" class="input-field" min="0" max="60" inputmode="numeric" placeholder="e.g. 5">
                    <div class="err-msg" id="err-exp" data-i18n="err_exp">Please enter experience</div>
                 </div>
                 <div class="input-grp">
                    <label data-i18n="label_salary">Daily Wage (&#8377;)</label>
-                   <input type="number" id="reg-salary" class="input-field" value="600" min="100" max="5000">
+                   <input type="number" id="reg-salary" class="input-field" min="100" max="5000" inputmode="numeric" placeholder="₹ e.g. 700">
                    <div class="err-msg" id="err-salary" data-i18n="err_salary">Please enter salary</div>
                 </div>
              </div>
@@ -1354,27 +1356,27 @@
     const TRANSLATIONS = {
        en: {
           nav_team: "Our Team", test_banner: "TESTING MODE — All features unlocked for all accounts",
-          hero_title: "Dignity, Not Chowks.", hero_subtitle: "The marketplace connecting India's workforce instantly using AI and GPS.",
+          hero_title: "Dignity, Not Chowks.", hero_subtitle: "A free way for daily-wage workers to be found directly by employers, in their own language. GPS-based matching.",
           btn_worker: "I am a Worker", btn_employer: "I Need a Worker",
-          mission_title: "Our Mission", mission_text: "Kamgar Connect was built for the workers who have been ignored by every other platform. The daily wage workers who stand at chowks every morning with no guarantee of work. We are building India's first platform specifically for workers without smartphones.",
+          mission_title: "Our Mission", mission_text: "Daily-wage workers stand at chowks every morning with no guarantee of work. Kamgar Connect is a free way for them to be found directly by employers nearby, in English, Hindi or Marathi, with no middleman taking a cut.",
           vid_title_1: "Workers used to wait hours at the chowk...", vid_title_2: "Finding home help used to be stressful...",
           tab_worker: "Worker View", tab_employer: "Employer View", logout: "Logout", reg_title: "Join the Marketplace",
           label_name: "Full Name", label_phone: "Phone Number", label_city: "City", available_jobs: "Available Jobs in your City"
        },
        hi: {
           nav_team: "हमारी टीम", test_banner: "टेस्टिंग मोड — सभी फीचर्स अनलॉक हैं",
-          hero_title: "सम्मान, चौक नहीं।", hero_subtitle: "AI और GPS का उपयोग करके भारत के कार्यबल को जोड़ने वाला बाज़ार।",
+          hero_title: "सम्मान, चौक नहीं।", hero_subtitle: "दिहाड़ी कामगारों के लिए मुफ़्त तरीका: मालिक उन्हें सीधे ढूँढ सकें, उनकी अपनी भाषा में। GPS से पास के काम।",
           btn_worker: "मैं कामगार हूँ", btn_employer: "मुझे कामगार चाहिए",
-          mission_title: "हमारा मिशन", mission_text: "कामगार कनेक्ट उन मजदूरों के लिए बनाया गया है जिन्हें हर दूसरे प्लेटफॉर्म ने नजरअंदाज कर दिया है। दिहाड़ी मजदूर जो हर सुबह काम की गारंटी के बिना चौकों पर खड़े होते हैं।",
+          mission_title: "हमारा मिशन", mission_text: "दिहाड़ी मजदूर हर सुबह काम की गारंटी के बिना चौकों पर खड़े होते हैं। कामगार कनेक्ट उनके लिए मुफ़्त तरीका है कि पास के मालिक उन्हें सीधे ढूँढ सकें, हिंदी, मराठी या अंग्रेज़ी में, बिना किसी बिचौलिए के।",
           vid_title_1: "कामगार अक्सर घंटों चौक पर इंतजार करते थे...", vid_title_2: "मदद ढूँढना अक्सर तनावपूर्ण होता था...",
           tab_worker: "कामगार व्यू", tab_employer: "नियोक्ता व्यू", logout: "लॉगआउट", reg_title: "कामगार कनेक्ट से जुड़ें",
           label_name: "पूरा नाम", label_phone: "फोन नंबर", label_city: "शहर", available_jobs: "आपके शहर में उपलब्ध काम"
        },
        mr: {
           nav_team: "आमची टीम", test_banner: "चाचणी मोड — सर्व वैशिष्ट्ये अनलॉक आहेत",
-          hero_title: "सन्मान, चौक नाही।", hero_subtitle: "AI आणि GPS वापरून भारताच्या कार्यबलला जोडणारे बाजारपेठ।",
+          hero_title: "सन्मान, चौक नाही।", hero_subtitle: "रोजंदारी कामगारांसाठी मोफत मार्ग: मालक त्यांना थेट शोधू शकतात, त्यांच्या स्वतःच्या भाषेत. GPS ने जवळचे काम.",
           btn_worker: "मी कामगार आहे", btn_employer: "मला कामगार हवा आहे",
-          mission_title: "आमचे ध्येय", mission_text: "कामगार कनेक्ट त्या कामगारांसाठी बनवले गेले आहे ज्यांना प्रत्येक इतर प्लॅटफॉर्मने दुर्लक्षित केले आहे। रोजंदारी कामगार जे दररोज सकाळी चौकात काम मिळण्याच्या हमीशिवाय उभे असतात।",
+          mission_title: "आमचे ध्येय", mission_text: "रोजंदारी कामगार दररोज सकाळी कामाच्या हमीशिवाय चौकात उभे असतात. कामगार कनेक्ट हा त्यांच्यासाठी मोफत मार्ग आहे: जवळचे मालक त्यांना थेट शोधू शकतात, मराठी, हिंदी किंवा इंग्रजीत, कोणत्याही दलालाशिवाय.",
           vid_title_1: "कामगार अनेकदा चौकात तासनतास वाट पाहायचे...", vid_title_2: "मदत मिळवणे अनेकदा तणावपूर्ण असायचे...",
           tab_worker: "कामगार व्यू", tab_employer: "एम्प्लॉयर व्यू", logout: "लॉगआउट", reg_title: "कामगार कनेक्टमध्ये सामील व्हा",
           label_name: "पूर्ण नाव", label_phone: "फोन नंबर", label_city: "शहर", available_jobs: "तुमच्या शहरातील उपलब्ध कामे"
@@ -1700,7 +1702,7 @@
           switchTab(localStorage.getItem('active_tab') || 'home');
        }
        appReady = true;
-       showLite(); setupManifest(); paintConsent(); paintTradeLinks(); linkLabels();
+       showLite(); setupManifest(); paintConsent(); paintTradeLinks(); linkLabels(); placeLock(); loadContact();
        { const m = location.search.match(/[?&]trade=([a-z-]+)/); if (m) { if (!localStorage.getItem('user_id')) showTrade(m[1], false); } }
        if (/[?&]demo=1/.test(location.search)) openDemoTour();
        openReviewFromLink();
@@ -1795,7 +1797,7 @@
     function isLite() { return document.documentElement.getAttribute('data-lite') === '1'; }
     function showLite() {
        const on = isLite();
-       document.querySelectorAll('.lite-label').forEach(el => { el.innerText = el.closest('#lite-btn') ? (on ? 'On' : 'Off') : (on ? 'Lite mode: on' : 'Lite mode: off'); });
+       document.querySelectorAll('.lite-label').forEach(el => { el.innerText = el.closest('#lite-btn') ? LX(on ? { en: 'On', hi: 'चालू', mr: 'चालू' } : { en: 'Off', hi: 'बंद', mr: 'बंद' }) : LX(on ? { en: 'Lite mode: on', hi: 'हल्का मोड: चालू', mr: 'हलका मोड: चालू' } : { en: 'Lite mode: off', hi: 'हल्का मोड: बंद', mr: 'हलका मोड: बंद' }); });
     }
     function toggleLite() {
        const next = isLite() ? '0' : '1';
@@ -1950,6 +1952,9 @@
           if (!document.getElementById('reg-skill').value) { document.getElementById('err-skill').style.display='block'; valid=false; }
           const avail = getAvail();
           if (avail.length === 0) { document.getElementById('err-avail').style.display='block'; valid=false; }
+          const ex = document.getElementById('reg-exp').value.trim(), sal = document.getElementById('reg-salary').value.trim();
+          if (!/^\d{1,2}$/.test(ex)) { document.getElementById('err-exp').style.display='block'; valid=false; }
+          if (!/^\d{3,4}$/.test(sal) ? true : (Number(sal) < 100 ? true : Number(sal) > 5000)) { document.getElementById('err-salary').style.display='block'; valid=false; }
        }
        return valid;
     }
@@ -1987,6 +1992,7 @@
           }
           if (loginRes.status === 400) { const d = await loginRes.json(); showError(d.msg || (d.errors ? d.errors[0].msg : '') || "Please check your phone number."); return; }
           if (loginRes.status === 429) { const d = await loginRes.json(); showError(d.error || "Too many attempts. Please wait a few minutes."); return; }
+          if (loginRes.status === 403) { const d = await loginRes.json().catch(() => ({})); if (d.googleRequired) { showError(LX({ en: 'This account uses Google sign-in. Tap "Continue with Google" above.', hi: 'यह खाता Google से खुलता है। ऊपर "Continue with Google" दबाएँ।', mr: 'हे खाते Google ने उघडते. वर "Continue with Google" दाबा.' })); const g = document.getElementById('google-signin-wrap'); if (g) g.scrollIntoView({ block: 'center' }); return; } }
           if (loginRes.status !== 404) { showError(t('server_problem')); return; }
           if (!signupFieldsOk(name, city)) return;
           const regUrl = `${CONFIG.BACKEND_URL}/api/auth/register-${selectedType.toLowerCase()}`;
@@ -2337,7 +2343,7 @@
     }
     function statusTag(h) {
        if (h.status === 'confirmed') return `<span class="hist-tag ok">${esc(t('confirmed_tag'))}</span>`;
-       if (h.status === 'pending') { if (h.canCancel) return `<span class="hist-tag">${esc(t('waiting_tag'))}</span>`; }
+       if (h.status === 'pending') { if (h.canCancel) return `<span class="hist-tag">${esc(t('waiting_tag'))}</span>`; return `<span class="hist-tag bad" title="${esc(LX({ en: 'Not counted in Stats', hi: 'आंकड़ों में नहीं गिना जाता', mr: 'आकडेवारीत मोजले जात नाही' }))}">${esc(LX({ en: 'Not confirmed', hi: 'पक्का नहीं हुआ', mr: 'पक्के झाले नाही' }))}</span>`; }
        if (h.status === 'declined') return `<span class="hist-tag bad">${esc(t('declined_tag'))}</span>`;
        if (h.status === 'cancelled') return `<span class="hist-tag bad">${esc(t('cancelled_tag'))}</span>`;
        return '';
@@ -2531,8 +2537,8 @@
        if (isWorker) {
           roleFields = grp(t('label_skill'), `<select id="pf-skill" class="input-field">${opts(SKILL_LIST, p.skill, true)}</select>`) +
              `<div class="prof-row2">` +
-             grp(t('label_exp'), `<input type="number" id="pf-exp" class="input-field" min="0" max="60" value="${esc(p.experience || 0)}">`) +
-             grp(t('label_salary'), `<input type="number" id="pf-salary" class="input-field" min="100" max="5000" value="${esc(p.expectedSalary || 600)}">`) +
+             grp(t('label_exp'), `<input type="number" id="pf-exp" class="input-field" min="0" max="60" inputmode="numeric" placeholder="e.g. 5" value="${p.experience != null ? esc(p.experience) : ''}">`) +
+             grp(t('label_salary'), `<input type="number" id="pf-salary" class="input-field" min="100" max="5000" inputmode="numeric" placeholder="₹ e.g. 700" value="${p.expectedSalary ? esc(p.expectedSalary) : ''}">`) +
              `</div>` +
              grp(t('availability'), `<div class="day-chips">` + days.map(d =>
                 `<label class="day-chip"><input type="checkbox" name="pf-day" value="${d}" onchange="profDayChange(this)"${have.includes(d) ? ' checked' : ''}> ${esc(dayName(d))}</label>`).join('') + `</div>`);
@@ -2588,6 +2594,7 @@
        if (profileLoc) body.location = profileLoc;
        if (isWorker) {
           body.skill = document.getElementById('pf-skill').value;
+          if (document.getElementById('pf-exp').value.trim() === '' ? true : document.getElementById('pf-salary').value.trim() === '') { showNotif(LX({ en: 'Please fill in your experience and daily wage', hi: 'कृपया अनुभव और रोज़ की मज़दूरी भरें', mr: 'कृपया अनुभव आणि रोजची मजुरी भरा' }), 'red'); return; }
           body.experience = Number(document.getElementById('pf-exp').value);
           body.expectedSalary = Number(document.getElementById('pf-salary').value);
           body.availability = [...document.querySelectorAll('input[name="pf-day"]:checked')].map(c => c.value);
@@ -2831,6 +2838,7 @@
        booking_confirmed: ['fa-circle-check', d => ({ en: d.name + ' confirmed the booking for ' + fmtWhen(d), hi: d.name + ' ने ' + fmtWhen(d) + ' की बुकिंग पक्की की', mr: d.name + ' यांनी ' + fmtWhen(d) + ' ची बुकिंग पक्की केली' })],
        booking_declined: ['fa-circle-xmark', d => ({ en: d.name + ' cannot come on ' + fmtWhen(d), hi: d.name + ' ' + fmtWhen(d) + ' को नहीं आ सकते', mr: d.name + ' ' + fmtWhen(d) + ' ला येऊ शकत नाहीत' })],
        booking_cancelled: ['fa-ban', d => ({ en: d.name + ' cancelled the booking for ' + fmtWhen(d), hi: d.name + ' ने ' + fmtWhen(d) + ' की बुकिंग रद्द की', mr: d.name + ' यांनी ' + fmtWhen(d) + ' ची बुकिंग रद्द केली' })],
+       badge_approved: ['fa-circle-check', d => ({ en: 'Our team checked your details. Employers now see "Checked by team" on your card.', hi: 'हमारी टीम ने आपकी जानकारी जाँच ली। अब मालिकों को आपके कार्ड पर "टीम ने जाँचा" दिखेगा।', mr: 'आमच्या टीमने तुमची माहिती तपासली. आता मालकांना तुमच्या कार्डवर "टीमने तपासले" दिसेल.' })],
        booking_noshow: ['fa-user-slash', d => ({ en: d.name + ' reported that you did not come on ' + fmtWhen(d), hi: d.name + ' ने बताया कि आप ' + fmtWhen(d) + ' को नहीं आए', mr: d.name + ' यांनी कळवले की तुम्ही ' + fmtWhen(d) + ' ला आला नाहीत' })],
        job_taken: ['fa-handshake', d => ({ en: d.name + ' took your ' + skillName(d.jobType) + ' job', hi: d.name + ' ने आपकी ' + skillName(d.jobType) + ' नौकरी ली', mr: d.name + ' यांनी तुमचे ' + skillName(d.jobType) + ' काम घेतले' })],
        job_started: ['fa-person-digging', d => ({ en: d.name + ' started work (' + skillName(d.jobType) + ')', hi: d.name + ' ने काम शुरू किया', mr: d.name + ' यांनी काम सुरू केले' })],
@@ -3133,6 +3141,25 @@
        });
     }
     new MutationObserver(() => linkLabels()).observe(document.getElementById('profile-body') || document.body, { childList: true, subtree: true });
+    // The Backstage lock lives in the footer (it used to float over the footer links)
+    function placeLock() {
+       const lock = document.querySelector('.secret-trigger'), row = document.querySelector('.st-footer .container');
+       if (lock) { if (row) { if (lock.parentElement !== row) row.appendChild(lock); } }
+    }
+    // Contact links appear only when the server has CONTACT_EMAIL / WHATSAPP_NUMBER set
+    async function loadContact() {
+       try {
+          const r = await fetch(`${CONFIG.BACKEND_URL}/api/contact`);
+          if (!r.ok) return;
+          const c = await r.json();
+          const box = document.getElementById('contact-links'); if (!box) return;
+          const links = [];
+          if (/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(c.email || '')) links.push('<a class="linkish" href="mailto:' + esc(c.email) + '"><i class="fas fa-envelope"></i> ' + esc(LX({ en: 'Contact', hi: 'संपर्क', mr: 'संपर्क' })) + '</a>');
+          if (/^\d{10,15}$/.test(c.whatsapp || '')) links.push('<a class="linkish" href="https://wa.me/' + c.whatsapp + '" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>');
+          box.innerHTML = links.join('');
+          box.style.display = links.length ? 'inline-flex' : 'none';
+       } catch (e) {}
+    }
     function cancelJob(id, taken) { if (confirm(taken ? t('cancel_taken_q') : t('cancel_job_q'))) jobAction(id, 'cancel', t('job_cancelled')); }
     function completeJob(id) { jobAction(id, 'complete', t('job_done')); }
     function leaveJob(id) { if (confirm(t('give_back_q'))) jobAction(id, 'leave', t('given_back')); }
@@ -3213,7 +3240,7 @@
                    <div style="margin-top:20px; font-weight:800; color:var(--green);">&#8377;${esc(Number(w.expectedSalary) || 600)} / ${esc(t('day'))}</div>
                    <div style="font-size:0.8rem; margin-top:8px;">${rating}</div>
                    ${whereLine(w)}
-                   ${w.verified ? `<span class="ver-tag"><i class="fas fa-circle-check"></i> ${esc(LX({ en: 'Verified by team', hi: 'टीम ने जाँचा', mr: 'टीमने तपासले' }))}</span>` : ''}
+                   ${w.verified ? `<span class="ver-tag"><i class="fas fa-circle-check"></i> ${esc(LX({ en: 'Checked by team (phone)', hi: 'टीम ने जाँचा (फ़ोन)', mr: 'टीमने तपासले (फोन)' }))}</span>` : ''}
                    ${w.reliability != null ? `<span class="rel-tag${w.reliability < 80 ? ' low' : ''}"><i class="fas fa-shield-halved"></i> ${esc(LX({ en: 'Reliable', hi: 'भरोसेमंद', mr: 'विश्वासू' }))} ${esc(Number(w.reliability))}%</span>` : ''}
                    ${phone}
                    <button class="btn btn-primary" style="margin-top:auto; height:45px;" onclick="openHireModal('${id}', event)">${esc(t('hire_now'))}</button>

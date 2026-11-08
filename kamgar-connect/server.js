@@ -142,6 +142,12 @@ app.use('/api/stats', require('./routes/stats'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/timeline', require('./routes/timeline'));
 app.use('/api/me', require('./routes/me'));
+// Contact details shown in the website footer; set CONTACT_EMAIL / WHATSAPP_NUMBER on Render (empty = link hidden)
+app.get('/api/contact', (req, res) => {
+  const email = String(process.env.CONTACT_EMAIL || '').trim();
+  const wa = String(process.env.WHATSAPP_NUMBER || '').replace(/\D/g, '');
+  res.json({ email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '', whatsapp: wa.length >= 10 ? (wa.length === 10 ? '91' + wa : wa) : '' });
+});
 
 // Health Check for split frontend. Reports the database too: when Atlas is
 // paused or unreachable this returns 503, so Render's health check and the

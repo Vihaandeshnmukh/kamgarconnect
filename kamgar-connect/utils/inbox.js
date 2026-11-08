@@ -3,7 +3,7 @@
 const Notification = require('../models/Notification');
 
 const TYPES = ['booking_new', 'booking_confirmed', 'booking_declined', 'booking_cancelled', 'booking_noshow',
-  'job_taken', 'job_left', 'job_started', 'job_done', 'job_noshow', 'job_cancelled', 'offer_new', 'offer_accepted', 'offer_declined', 'review_new'];
+  'job_taken', 'job_left', 'job_started', 'job_done', 'job_noshow', 'job_cancelled', 'offer_new', 'offer_accepted', 'offer_declined', 'review_new', 'badge_approved'];
 
 async function notify(io, userId, role, type, data = {}) {
   try {
