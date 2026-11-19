@@ -6,13 +6,13 @@ Branch `rebrand-chowk` (worktree `D:\kamgar connect\work\rebrand-wt`). Names: En
 | Step | Status |
 |---|---|
 | Backup of live page | Done: `D:\kamgar connect\backups\rebrand-2026-11-19\kamgar-wordpress.v2.7581232.html` (SHA-256 `d1504263…`, equals live) |
-| Page + server + old pages + docs renamed | Done on `rebrand-chowk`, merged to `main` (see git log) |
+| Page + server + old pages + docs renamed | Done on `rebrand-chowk`, merged to `main` as `bec242f` |
 | Tests | New rebrand check 52/52; full gate: see "Tests" below |
-| Staging + live publish | **Blocked**: WordPress sign-in in the browser pane had expired (BLOCKED.md, first item) |
-| Server deploy (Mitra prompt, mind-map name, old pages at api.kamgar.de) | **Blocked**: Render sign-in in the browser pane had expired (BLOCKED.md) |
+| Staging + live publish | **Done 19 Nov**: staging then live = `bec242f` file, SHA-256 `5911d4b4…`; content.raw matched; public page: scripts parse, no `&#038;&#038;`, logo Kamgar + Chowk at 375 and 1280, no old name in EN/हिं/मरा. Only remaining old name on kamgar.de: the WordPress **site title** (browser tab title, RSS link names, admin bar), your manual step |
+| Server deploy (Mitra prompt, mind-map name, old pages at api.kamgar.de) | **Done 19 Nov**: Render Manual Deploy of `bec242f` live; /api/health ok, db connected; api.kamgar.de pages show Kamgar Chowk |
 
 ## Search method
-Case-insensitive search of the whole repo for `Kamgar Connect`, `KamgarConnect`, `kamgar connect`, `kamgarconnect`, `KAMGAR CONNECT`, `कामगार कनेक्ट`, standalone `कनेक्ट`, and split logo spans (`Kamgar<span>Connect</span>`, `Kamgar<span class="logo-highlight">Connect</span>`, `Kamgar<Text …>Connect</Text>`). Every standalone "Connect"/"connect" in the live page was read by hand. The WordPress database (other templates, template parts, pages, posts, site title) could not be searched because the sign-in had expired; the login page tab title shows the WordPress **site title is still "Kamgar Connect"** (manual item in BLOCKED.md).
+Case-insensitive search of the whole repo for `Kamgar Connect`, `KamgarConnect`, `kamgar connect`, `kamgarconnect`, `KAMGAR CONNECT`, `कामगार कनेक्ट`, standalone `कनेक्ट`, and split logo spans (`Kamgar<span>Connect</span>`, `Kamgar<span class="logo-highlight">Connect</span>`, `Kamgar<Text …>Connect</Text>`). Every standalone "Connect"/"connect" in the live page was read by hand. WordPress database searched through the REST API after sign-in: no other templates, template parts, posts, reusable blocks or menus contain the name. Hits: site title "Kamgar Connect" (your manual step); page 17 "Categories" (https://kamgar.de/categories/, published, an old Elementor copy of the 2025 site with its own old title, "Kamgar Connect" logo and made-up numbers) - not edited because Elementor keeps its own copy of the content and a blind edit could break it, see BLOCKED.md; Privacy Policy (165) and Terms of Use (166) WordPress drafts (not public) - left, the current drafts live in the page and in `docs/legal/`. Plugins: Elementor, Hostinger Easy Onboarding / Reach / Tools, LiteSpeed Cache; no SEO plugin.
 
 ## What changed
 | File | What |
