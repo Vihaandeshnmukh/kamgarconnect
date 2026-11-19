@@ -9,7 +9,7 @@ const TRANSLATIONS = {
     btn_hire: "Hire Workers",
     btn_work: "Find Work",
     hero_title: "India's daily wage workers<br/>deserve dignity, not chowks.",
-    hero_subtitle: "Kamgar Connect is the GPS-powered marketplace that instantly matches verified workers with nearby employers. No middlemen. No wasted mornings. Just honest work at fair pay.",
+    hero_subtitle: "Kamgar Chowk is the GPS-powered marketplace that instantly matches verified workers with nearby employers. No middlemen. No wasted mornings. Just honest work at fair pay.",
     hero_stat_workers: "Workers Registered",
     hero_stat_jobs: "Jobs Completed",
     stat_employers: "Employers",
@@ -19,7 +19,7 @@ const TRANSLATIONS = {
     trust_backed: "Backed by",
     problem_eyebrow: "The Problem We're Solving",
     problem_title: "Every morning, lakhs of workers <br/>wait at chowks for hours.",
-    problem_desc: "They stand in the sun. They negotiate unfairly. They go home empty-handed. Kamgar Connect changes this forever.",
+    problem_desc: "They stand in the sun. They negotiate unfairly. They go home empty-handed. Kamgar Chowk changes this forever.",
     video_drag: "Drag the slider below",
     step_01: "Sign Up",
     step_01_desc: "Register in 2 minutes with your phone number. Verify via OTP — that's it.",
@@ -32,7 +32,7 @@ const TRANSLATIONS = {
     step_05: "Pay & Rate",
     step_05_desc: "Pay securely via Razorpay (UPI, cards, wallets). Rate to build trust for future hires.",
     home_title: "Finding reliable help used to be<br/>a nightmare. Not anymore.",
-    home_desc: "See how homes across Aurangabad are getting the skilled help they need — all through Kamgar Connect.",
+    home_desc: "See how homes across Aurangabad are getting the skilled help they need — all through Kamgar Chowk.",
     cat_title: "Every skill you need.<br/>One trusted platform.",
     cat_desc: "Verified professionals across 8 trade categories — all rated, reviewed, and ready to work.",
     worker_eyebrow: "Available Professionals",
@@ -78,7 +78,7 @@ const TRANSLATIONS = {
     form_company_placeholder: "e.g. Patil Constructions or My Home",
     marker_before: "👈 Before Kamgar",
     marker_after: "After Kamgar 👉",
-    impact_pill: "<strong>5,000+</strong> homes transformed through Kamgar Connect",
+    impact_pill: "<strong>5,000+</strong> homes transformed through Kamgar Chowk",
     cat_constr: "Construction",
     cat_constr_desc: "Masons, labourers & site helpers",
     cat_elec: "Electrician",
@@ -106,9 +106,9 @@ const TRANSLATIONS = {
     workers: "workers",
     story_raju: '"I used to stand at Mondha chowk from 6 AM hoping for work. Now I get job alerts on my phone before I even wake up. My family finally has stability."',
     story_priya: '"Within 30 minutes of posting, I had 3 verified maid options with ratings and reviews. The transparency is incredible. This app is a game-changer."',
-    story_vikram: '"I run a construction firm. Kamgar Connect saves me 2 hours every morning — no more driving to chowks. I\'ve hired 50+ workers through the platform."',
+    story_vikram: '"I run a construction firm. Kamgar Chowk saves me 2 hours every morning — no more driving to chowks. I\'ve hired 50+ workers through the platform."',
     stories_title: "Trusted by <span class='text-gradient'>thousands</span> across Aurangabad",
-    stories_desc: "Hear from real workers and employers whose lives changed with Kamgar Connect.",
+    stories_desc: "Hear from real workers and employers whose lives changed with Kamgar Chowk.",
     join_eyebrow: "Get Started Free",
     join_title: "Ready to join the<br/>workforce revolution?",
     footer_product: "Product",
@@ -137,7 +137,7 @@ const TRANSLATIONS = {
     btn_hire: "कामगार खोजें",
     btn_work: "काम पाएं",
     hero_title: "भारत के दैनिक वेतन भोगी कामगारों को<br/>इज्जत मिलनी चाहिए, चौक पर इंतजार नहीं।",
-    hero_subtitle: "कामगार कनेक्ट एक जीपीएस-आधारित मार्केटप्लेस है जो तुरंत सत्यापित कामगारों को पास के नियोक्ताओं से जोड़ता है। कोई बिचौलिया नहीं। कोई सुबह की बर्बादी नहीं। बस उचित वेतन पर ईमानदारी का काम।",
+    hero_subtitle: "कामगार चौक एक जीपीएस-आधारित मार्केटप्लेस है जो तुरंत सत्यापित कामगारों को पास के नियोक्ताओं से जोड़ता है। कोई बिचौलिया नहीं। कोई सुबह की बर्बादी नहीं। बस उचित वेतन पर ईमानदारी का काम।",
     hero_stat_workers: "पंजीकृत कामगार",
     hero_stat_jobs: "पूरे हुए काम",
     stat_employers: "नियोक्ता",
@@ -147,7 +147,7 @@ const TRANSLATIONS = {
     trust_backed: "द्वारा समर्थित",
     problem_eyebrow: "समस्या जिसका हम समाधान कर रहे हैं",
     problem_title: "हर सुबह, लाखों कामगार <br/>घंटों तक चौकों पर इंतजार करते हैं।",
-    problem_desc: "वे धूप में खड़े रहते हैं। उनसे अनुचित सौदेबाजी की जाती है। वे खाली हाथ घर जाते हैं। कामगार कनेक्ट इसे हमेशा के लिए बदल देता है।",
+    problem_desc: "वे धूप में खड़े रहते हैं। उनसे अनुचित सौदेबाजी की जाती है। वे खाली हाथ घर जाते हैं। कामगार चौक इसे हमेशा के लिए बदल देता है।",
     video_drag: "नीचे स्लाइडर को खींचें",
     step_01: "साइन अप करें",
     step_01_desc: "अपने फोन नंबर के साथ 2 मिनट में पंजीकरण करें। ओटीपी के माध्यम से सत्यापित करें - बस इतना ही।",
@@ -160,7 +160,7 @@ const TRANSLATIONS = {
     step_05: "भुगतान और रेटिंग",
     step_05_desc: "रेजरपे (UPI, कार्ड, वॉलेट) के माध्यम से सुरक्षित भुगतान करें। भविष्य के लिए विश्वास बनाने के लिए रेटिंग दें।",
     home_title: "विश्वसनीय मदद ढूँढना एक<br/>दुःस्वप्न हुआ करता था। अब और नहीं।",
-    home_desc: "देखें कि कैसे औरंगाबाद के घरों को वह कुशल मदद मिल रही है जिसकी उन्हें ज़रूरत है — कामगार कनेक्ट के माध्यम से।",
+    home_desc: "देखें कि कैसे औरंगाबाद के घरों को वह कुशल मदद मिल रही है जिसकी उन्हें ज़रूरत है — कामगार चौक के माध्यम से।",
     cat_title: "हर कौशल जिसकी आपको जरूरत है।<br/>एक भरोसेमंद मंच।",
     cat_desc: "8 व्यापार श्रेणियों में सत्यापित पेशेवर - सभी रेटेड, समीक्षा किए गए और काम के लिए तैयार।",
     worker_eyebrow: "उपलब्ध पेशेवर",
@@ -206,7 +206,7 @@ const TRANSLATIONS = {
     form_company_placeholder: "जैसे पाटिल कंस्ट्रक्शन या माय होम",
     marker_before: "👈 कामगार से पहले",
     marker_after: "कामगार के बाद 👉",
-    impact_pill: "कामगार कनेक्ट के माध्यम से <strong>5,000+</strong> घरों का कायाकल्प",
+    impact_pill: "कामगार चौक के माध्यम से <strong>5,000+</strong> घरों का कायाकल्प",
     cat_constr: "निर्माण",
     cat_constr_desc: "मिस्त्री, मजदूर और साइट हेल्पर",
     cat_elec: "इलेक्ट्रीशियन",
@@ -234,9 +234,9 @@ const TRANSLATIONS = {
     workers: "कामगार",
     story_raju: '"मैं सुबह 6 बजे से काम की उम्मीद में मोंढा चौक पर खड़ा रहता था। अब मुझे जागने से पहले ही अपने फोन पर काम के अलर्ट मिल जाते हैं। मेरे परिवार में आखिरकार स्थिरता आ गई है."',
     story_priya: '"पोस्ट करने के 30 मिनट के भीतर, मेरे पास रेटिंग और समीक्षाओं के साथ 3 सत्यापित बाई के विकल्प थे। पारदर्शिता अविश्वसनीय है। यह ऐप गेम-चेंजर है."',
-    story_vikram: '"मैं एक निर्माण फर्म चलाता हूं। कामगार कनेक्ट हर सुबह मेरे 2 घंटे बचाता है - अब चौकों पर जाने की जरूरत नहीं है। मैंने प्लेटफॉर्म के माध्यम से 50+ कामगारों को काम पर रखा है."',
+    story_vikram: '"मैं एक निर्माण फर्म चलाता हूं। कामगार चौक हर सुबह मेरे 2 घंटे बचाता है - अब चौकों पर जाने की जरूरत नहीं है। मैंने प्लेटफॉर्म के माध्यम से 50+ कामगारों को काम पर रखा है."',
     stories_title: "औरंगाबाद भर में <span class='text-gradient'>हजारों</span> लोगों द्वारा विश्वसनीय",
-    stories_desc: "उन असली कामगारों और नियोक्ताओं से सुनें जिनका जीवन कामगार कनेक्ट से बदल गया।",
+    stories_desc: "उन असली कामगारों और नियोक्ताओं से सुनें जिनका जीवन कामगार चौक से बदल गया।",
     join_eyebrow: "मुफ्त में शुरू करें",
     join_title: "क्या आप कार्यबल क्रांति में<br/>शामिल होने के लिए तैयार हैं?",
     footer_product: "उत्पाद",
@@ -265,7 +265,7 @@ const TRANSLATIONS = {
     btn_hire: "कामगार शोधा",
     btn_work: "काम मिळवा",
     hero_title: "भारतातील रोजंदारी कामगारांना<br/>प्रतिष्ठा मिळायला हवी, चौकात प्रतीक्षा नको.",
-    hero_subtitle: "कामगार कनेक्ट हे GPS-आधारित मार्केटप्लेस आहे जे सत्यापित कामगारांना जवळच्या मालकांशी त्वरित जोडते. कोणताही मध्यस्थ नाही. सकाळची वेळ वाया जाणार नाही. फक्त रास्त मोबदल्यात प्रामाणिक काम.",
+    hero_subtitle: "कामगार चौक हे GPS-आधारित मार्केटप्लेस आहे जे सत्यापित कामगारांना जवळच्या मालकांशी त्वरित जोडते. कोणताही मध्यस्थ नाही. सकाळची वेळ वाया जाणार नाही. फक्त रास्त मोबदल्यात प्रामाणिक काम.",
     hero_stat_workers: "नोंदणीकृत कामगार",
     hero_stat_jobs: "पूर्ण झालेली कामे",
     stat_employers: "मालक",
@@ -275,7 +275,7 @@ const TRANSLATIONS = {
     trust_backed: "द्वारे समर्थित",
     problem_eyebrow: "आम्ही सोडवत असलेली समस्या",
     problem_title: "दररोज सकाळी लाखो कामगार <br/>तासन्तास चौकात थांबतात.",
-    problem_desc: "ते उन्हात उभे राहतात. त्यांच्याशी अन्यायकारक बोलणी होते. ते रिकाम्या हाताने घरी जातात. कामगार कनेक्ट हे कायमचे बदलतो.",
+    problem_desc: "ते उन्हात उभे राहतात. त्यांच्याशी अन्यायकारक बोलणी होते. ते रिकाम्या हाताने घरी जातात. कामगार चौक हे कायमचे बदलतो.",
     video_drag: "खाली स्लाइडर ओढा",
     step_01: "साइन अप करा",
     step_01_desc: "आपल्या फोन नंबरसह २ मिनिटात नोंदणी करा. OTP द्वारे सत्यापित करा - बस्स संपलं.",
@@ -288,7 +288,7 @@ const TRANSLATIONS = {
     step_05: "पैसे आणि रेटिंग",
     step_05_desc: "रेझरपे (UPI, कार्ड, वॉलेट) द्वारे सुरक्षितपणे पैसे द्या. भविष्यासाठी विश्वास निर्माण करण्यासाठी रेटिंग द्या.",
     home_title: "विश्वसनीय मदत शोधणे हे एक<br/>दुःस्वप्न होते. आता तसे नाही.",
-    home_desc: "औरंगाबादमधील घरांना त्यांना हवी असलेली कुशल मदत कशी मिळत आहे ते पहा — कामगार कनेक्टद्वारे.",
+    home_desc: "औरंगाबादमधील घरांना त्यांना हवी असलेली कुशल मदत कशी मिळत आहे ते पहा — कामगार चौकद्वारे.",
     cat_title: "आपल्याला हवी असलेली प्रत्येक कौशल्य.<br/>एक विश्वसनीय प्लॅटफॉर्म.",
     cat_desc: "८ व्यापार श्रेणींमधील सत्यापित व्यावसायिक - सर्व रेट केलेले, पुनरावलोकन केलेले आणि कामासाठी तयार.",
     worker_eyebrow: "उपलब्ध व्यावसायिक",
@@ -334,7 +334,7 @@ const TRANSLATIONS = {
     form_company_placeholder: "उदा. पाटील कन्स्ट्रक्शन्स किंवा माझे घर",
     marker_before: "👈 कामगार पूर्वी",
     marker_after: "कामगार नंतर 👉",
-    impact_pill: "कामगार कनेक्टद्वारे <strong>5,000+</strong> घरांचे परिवर्तन झाले",
+    impact_pill: "कामगार चौकद्वारे <strong>5,000+</strong> घरांचे परिवर्तन झाले",
     cat_constr: "बांधकाम",
     cat_constr_desc: "गवंडी, मजूर आणि साइट मदतनीस",
     cat_elec: "इलेक्ट्रीशियन",
@@ -362,9 +362,9 @@ const TRANSLATIONS = {
     workers: "कामगार",
     story_raju: '"मी कामाच्या आशेने सकाळी ६ वाजल्यापासून मोंढा चौकात उभा राहायचो. आता मला जाग येण्यापूर्वीच माझ्या फोनवर कामाचे अलर्ट मिळतात. माझ्या कुटुंबाला अखेर स्थिरता मिळाली आहे."',
     story_priya: '"पोस्ट केल्यानंतर ३० मिनिटांच्या आत, माझ्याकडे रेटिंग आणि पुनरावलोकनांसह ३ सत्यापित घरकामगारांचे पर्याय होते. पारदर्शकता अविश्वसनीय आहे. हे अॅप गेम-चेंजर आहे."',
-    story_vikram: '"मी एक बांधकाम कंपनी चालवतो. कामगार कनेक्ट दररोज सकाळी माझे २ तास वाचवते - आता चौकात जाण्याची गरज नाही. मी प्लॅटफॉर्मद्वारे ५०+ कामगारांना कामावर ठेवले आहे."',
+    story_vikram: '"मी एक बांधकाम कंपनी चालवतो. कामगार चौक दररोज सकाळी माझे २ तास वाचवते - आता चौकात जाण्याची गरज नाही. मी प्लॅटफॉर्मद्वारे ५०+ कामगारांना कामावर ठेवले आहे."',
     stories_title: "औरंगाबादमधील <span class='text-gradient'>हजारो</span> लोकांचा विश्वास",
-    stories_desc: "कामगार कनेक्टमुळे ज्यांचे आयुष्य बदलले अशा खऱ्या कामगारांकडून आणि मालकांकडून ऐका.",
+    stories_desc: "कामगार चौकमुळे ज्यांचे आयुष्य बदलले अशा खऱ्या कामगारांकडून आणि मालकांकडून ऐका.",
     join_eyebrow: "मोफत सुरुवात करा",
     join_title: "तुम्ही कार्यबल क्रांतीमध्ये<br/>सहभागी होण्यासाठी तयार आहात का?",
     footer_product: "उत्पाद",
@@ -470,15 +470,15 @@ function initLanguageGate() {
       <p class="lang-gate-subtitle">Choose your preferred language to continue</p>
       <button class="lang-btn" onclick="selectLang('en')">
         <span class="num">1</span>
-        <div class="text-wrap"><b>English</b><small>Welcome to Kamgar Connect</small></div>
+        <div class="text-wrap"><b>English</b><small>Welcome to Kamgar Chowk</small></div>
       </button>
       <button class="lang-btn" onclick="selectLang('hi')">
         <span class="num">2</span>
-        <div class="text-wrap"><b>हिंदी</b><small>कामगार कनेक्ट में आपका स्वागत है</small></div>
+        <div class="text-wrap"><b>हिंदी</b><small>कामगार चौक में आपका स्वागत है</small></div>
       </button>
       <button class="lang-btn" onclick="selectLang('mr')">
         <span class="num">3</span>
-        <div class="text-wrap"><b>मराठी</b><small>कामगार कनेक्टमध्ये आपले स्वागत आहे</small></div>
+        <div class="text-wrap"><b>मराठी</b><small>कामगार चौकमध्ये आपले स्वागत आहे</small></div>
       </button>
     </div>
   `;

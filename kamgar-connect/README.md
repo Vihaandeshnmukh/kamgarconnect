@@ -1,4 +1,4 @@
-# Kamgar Connect — Backend
+# Kamgar Chowk — Backend
 
 India's first GPS-powered labour marketplace. Connecting verified daily wage workers with employers instantly.
 

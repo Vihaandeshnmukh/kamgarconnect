@@ -56,7 +56,7 @@ export default function EmployerRegisterScreen({ navigation }) {
           console.log('Push token registration failed:', pushErr);
         }
 
-        Alert.alert('Success', 'Welcome to Kamgar Connect!', [{ text: 'OK', onPress: () => navigation.navigate('EmployerDashboard') }]);
+        Alert.alert('Success', 'Welcome to Kamgar Chowk!', [{ text: 'OK', onPress: () => navigation.navigate('EmployerDashboard') }]);
       } else {
         Alert.alert('Error', data.msg || 'Registration failed');
       }

@@ -1,7 +1,7 @@
 {
   "name": "kamgar-connect",
   "version": "1.0.0",
-  "description": "Kamgar Connect — Find Workers Instantly, No Chowk Waits!",
+  "description": "Kamgar Chowk — Find Workers Instantly, No Chowk Waits!",
   "main": "server.js",
   "engines": {
     "node": "22.x"
@@ -18,7 +18,7 @@
     "daily-wage",
     "india"
   ],
-  "author": "Kamgar Connect",
+  "author": "Kamgar Chowk",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

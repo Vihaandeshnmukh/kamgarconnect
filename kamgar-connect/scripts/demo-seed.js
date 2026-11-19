@@ -1,4 +1,4 @@
-// Demo data for Kamgar Connect: realistic Aurangabad workers, employers, jobs, bookings and reviews.
+// Demo data for Kamgar Chowk: realistic Aurangabad workers, employers, jobs, bookings and reviews.
 // SAFETY: refuses to run unless the database name is exactly "kamgar_demo"; every record has isDemo: true;
 // phone numbers start with 1 (no Indian mobile number does), so they cannot belong to a real person.
 //

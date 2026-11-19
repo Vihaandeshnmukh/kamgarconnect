@@ -12,7 +12,7 @@ export default function SplashScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Kamgar<Text style={styles.logoHighlight}>Connect</Text></Text>
+          <Text style={styles.logoText}>Kamgar<Text style={styles.logoHighlight}>Chowk</Text></Text>
           <Text style={styles.welcomeText}>Select Language / भाषा निवडा</Text>
         </View>
 
@@ -21,7 +21,7 @@ export default function SplashScreen({ navigation }) {
             <Text style={styles.emoji}>🇬🇧</Text>
             <View>
               <Text style={styles.btnText}>English</Text>
-              <Text style={styles.subText}>Welcome to Kamgar Connect</Text>
+              <Text style={styles.subText}>Welcome to Kamgar Chowk</Text>
             </View>
           </TouchableOpacity>
 
@@ -29,7 +29,7 @@ export default function SplashScreen({ navigation }) {
             <Text style={styles.emoji}>🟠</Text>
             <View>
               <Text style={styles.btnText}>मराठी</Text>
-              <Text style={styles.subText}>कामगार कनेक्टमध्ये आपले स्वागत आहे</Text>
+              <Text style={styles.subText}>कामगार चौकमध्ये आपले स्वागत आहे</Text>
             </View>
           </TouchableOpacity>
 
@@ -37,7 +37,7 @@ export default function SplashScreen({ navigation }) {
             <Text style={styles.emoji}>🇮🇳</Text>
             <View>
               <Text style={styles.btnText}>हिंदी</Text>
-              <Text style={styles.subText}>कामगार कनेक्ट में आपका स्वागत है</Text>
+              <Text style={styles.subText}>कामगार चौक में आपका स्वागत है</Text>
             </View>
           </TouchableOpacity>
         </View>

@@ -1,10 +1,10 @@
-# Kamgar Connect — Complete Product Information
+# Kamgar Chowk — Complete Product Information
 
-## What is Kamgar Connect?
+## What is Kamgar Chowk?
 
-Kamgar Connect is a digital platform that connects daily wage workers (kamgars) with employers in tier-2 Indian cities, starting with Aurangabad (Chhatrapati Sambhajinagar), Maharashtra. The name "Kamgar" means "worker" in Marathi and Hindi.
+Kamgar Chowk is a digital platform that connects daily wage workers (kamgars) with employers in tier-2 Indian cities, starting with Aurangabad (Chhatrapati Sambhajinagar), Maharashtra. The name "Kamgar" means "worker" in Marathi and Hindi.
 
-It solves a decades-old problem: every morning, hundreds of daily wage workers — masons, electricians, plumbers, domestic helpers, factory workers — gather at street corners called "chowks" and wait for hours hoping someone will come and hire them. Employers also waste time driving to chowks hoping to find the right worker. Kamgar Connect eliminates this inefficiency by bringing both sides onto a single mobile-friendly platform.
+It solves a decades-old problem: every morning, hundreds of daily wage workers — masons, electricians, plumbers, domestic helpers, factory workers — gather at street corners called "chowks" and wait for hours hoping someone will come and hire them. Employers also waste time driving to chowks hoping to find the right worker. Kamgar Chowk eliminates this inefficiency by bringing both sides onto a single mobile-friendly platform.
 
 ---
 
@@ -28,7 +28,7 @@ It solves a decades-old problem: every morning, hundreds of daily wage workers �
 
 ## The Solution
 
-Kamgar Connect is like an Uber for daily wage labor. Workers create a verified digital profile with their skills, experience, location, and availability. Employers post job requirements. The platform uses GPS to match the nearest available verified worker to the employer instantly — all from a smartphone.
+Kamgar Chowk is like an Uber for daily wage labor. Workers create a verified digital profile with their skills, experience, location, and availability. Employers post job requirements. The platform uses GPS to match the nearest available verified worker to the employer instantly — all from a smartphone.
 
 ---
 
@@ -100,7 +100,7 @@ Kamgar Connect is like an Uber for daily wage labor. Workers create a verified d
 
 ## Brand Identity
 
-- **Name:** Kamgar Connect
+- **Name:** Kamgar Chowk
 - **Tagline:** "Find Workers Instantly — No Chowk Waits!"
 - **Mission:** Digitise India's daily wage labour market, give every worker dignity and opportunity, and give every employer instant access to verified skilled workers
 - **Tone:** Trustworthy, warm, community-driven, empowering
@@ -113,7 +113,7 @@ Kamgar Connect is like an Uber for daily wage labor. Workers create a verified d
 
 ### Chowk Scene:
 - **Before:** Dozens of workers crowded at a street corner at 7am, waiting, uncertain, wasting time
-- **After:** The same corner is nearly empty — everyone already got a job through Kamgar Connect, only 2 confused latecomers remain
+- **After:** The same corner is nearly empty — everyone already got a job through Kamgar Chowk, only 2 confused latecomers remain
 
 ### Home Scene:
 - **Before:** A stressed homeowner surrounded by a messy house — dirty dishes, cluttered rooms, overwhelmed and tired
@@ -142,7 +142,7 @@ Kamgar Connect is like an Uber for daily wage labor. Workers create a verified d
 
 ## Website Goals
 The new website should:
-- Tell the Kamgar Connect story powerfully and emotionally
+- Tell the Kamgar Chowk story powerfully and emotionally
 - Show the before/after transformation using video sliders
 - Be mobile-first (most users are on mobile)
 - Sign up both workers and employers

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   KAMGAR CONNECT — Main JavaScript
+   KAMGAR CHOWK — Main JavaScript
    Drag-to-scrub video slider, animations, nav, smooth scroll
    ═══════════════════════════════════════════════════════════ */
 
@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (res.ok) {
           localStorage.setItem('kamgar-token', data.token);
-          workerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Connect, ${String(data.user.name).replace(/[<>&"']/g, '')}</p>`;
+          workerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Chowk, ${String(data.user.name).replace(/[<>&"']/g, '')}</p>`;
         } else {
           alert('Signup failed: ' + (data.msg || (data.errors ? data.errors[0].msg : 'Unknown error')));
           btn.innerText = originalText;
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (res.ok) {
           localStorage.setItem('kamgar-token', data.token);
-          employerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Connect, ${String(data.user.name).replace(/[<>&"']/g, '')}</p>`;
+          employerForm.innerHTML = `<h3 style="color:var(--orange-primary); text-align:center;">Signup Successful!</h3><p style="text-align:center;">Welcome to Kamgar Chowk, ${String(data.user.name).replace(/[<>&"']/g, '')}</p>`;
         } else {
           alert('Signup failed: ' + (data.msg || (data.errors ? data.errors[0].msg : 'Unknown error')));
           btn.innerText = originalText;

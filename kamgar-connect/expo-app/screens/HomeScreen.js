@@ -34,7 +34,7 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Kamgar<Text style={styles.logoHighlight}>Connect</Text></Text>
+          <Text style={styles.logoText}>Kamgar<Text style={styles.logoHighlight}>Chowk</Text></Text>
           <Text style={styles.tagline}>Dignity for workers. Ease for employers.</Text>
         </View>
 

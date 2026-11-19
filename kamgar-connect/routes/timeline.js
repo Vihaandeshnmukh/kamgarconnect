@@ -36,7 +36,7 @@ router.get('/mindmap', async (req, res) => {
     try {
         // Structured static nodes with branch data
         const data = {
-            center: { id: 'root', name: 'Kamgar Connect', color: '#FF5C00' },
+            center: { id: 'root', name: 'Kamgar Chowk', color: '#FF5C00' },
             branches: [
                 {
                     id: 'frontend', name: 'Frontend', color: '#3b82f6',

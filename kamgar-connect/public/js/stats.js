@@ -1,5 +1,5 @@
 /**
- * Kamgar Connect — Live Public Stats
+ * Kamgar Chowk — Live Public Stats
  * Real-time data from /api/stats/public
  */
 

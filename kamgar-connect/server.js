@@ -187,7 +187,7 @@ app.get('*', (req, res) => {
 });
 
 const server = app.listen(PORT, () => {
-  console.log(`\n🔧 Kamgar Connect Backend is running on port ${PORT}\n`);
+  console.log(`\n🔧 Kamgar Chowk Backend is running on port ${PORT}\n`);
 });
 
 // Initialize Socket.io

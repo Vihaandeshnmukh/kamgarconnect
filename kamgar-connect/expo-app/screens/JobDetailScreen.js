@@ -31,7 +31,7 @@ export default function JobDetailScreen({ route, navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.desc}>
-            This is a verified job posting from Kamgar Connect. The employer needs someone specialized in {job.jobType} to work in {job.city}. 
+            This is a verified job posting from Kamgar Chowk. The employer needs someone specialized in {job.jobType} to work in {job.city}. 
             Accepting this job will share your contact info with the employer.
           </Text>
         </View>

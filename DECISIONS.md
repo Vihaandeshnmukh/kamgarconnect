@@ -1,3 +1,37 @@
+# Rebrand decisions: "Kamgar Connect" -> "Kamgar Chowk" (19 Nov 2026)
+One line each: what I chose and why.
+
+- Worked in a new worktree `work/rebrand-wt`, branch `rebrand-chowk` from origin/main (dac21d7); shared checkouts untouched.
+- Live page backed up before any change: `D:\kamgar connectackupsebrand-2026-11-19\kamgar-wordpress.v2.7581232.html` (SHA-256 d1504263…, same as live).
+- One `BRAND` constant at the top of the page's main script (`en`, `hi`, `mr`, `logoA`, `logoB`, `short`). Every JS-built text uses it: i18n dictionaries, WhatsApp/family/share texts, web-app manifest, poster logo, trade (SEO) pages, Privacy/Terms drafts, investor demo tour, Backstage mind map.
+- Static HTML that search engines and no-JS visitors read (title, meta description, JSON-LD, header logo, headings, footer, join panel) is replaced in place; JS cannot feed those before the page loads. The patch script `qa-tools/site-patches/23-rebrand-chowk.js` does both and refuses to save if any old name is left.
+- The logo keeps its two spans: `Kamgar<span>Chowk</span>` (header, poster; old public pages and the paused Expo app too).
+- Hindi/Marathi texts that already used the Devanagari brand now say "कामगार चौक" (with suffixes: "कामगार चौकमध्ये", "कामगार चौकवर", "कामगार चौकद्वारे"). Hindi/Marathi WhatsApp/share texts that used the Latin "Kamgar Connect" now use the Latin "Kamgar Chowk", as before, so the name matches the link preview.
+- Home-screen name: manifest `short_name` and `apple-mobile-web-app-title` were "Kamgar"; now "Kamgar Chowk" (12 characters, fits).
+- Old pages served by the server at https://api.kamgar.de/ (`public/index.html`, register, admin, review) are still reachable, so they are renamed too. Their footer said "© 2026 Kamgar Connect Pvt. Ltd." - no such company exists, so it now says "© 2026 Kamgar Chowk" (no "Pvt. Ltd.").
+- Assistant "Mitra" system prompt and the Backstage mind-map root name are user-visible: renamed. Server start-up log line renamed too (harmless).
+- Not renamed (see REBRAND_REPORT.md for each hit): old unused page `kamgar-wordpress.html` and the `apply-*` generator scripts (not served; they are history and rollback material), past reports (they describe what happened under the old name), paths/repo names like `kamgarconnect`, `kamgar-connect/`, `D:\kamgar connect`.
+- Company name: the KYC/telephony company is still "Kamgar Connect (to be renamed)". Not changed in docs: renaming a company is a legal step, not a text edit.
+- `scripts/uptime-check.js` looks for "Kamgar" on the website: still true after the rename and after a rollback, so it is left as is.
+- No email templates exist in the code (no mail library, no subjects), so there was nothing to rename there.
+- New test `qa-tools/ui-stage-12.js` (stage "rebrand", 52 checks) runs inside the normal gate from now on.
+
+## Tagline conflict (NOT changed, as you asked)
+"Dignity, Not Chowks." / "सम्मान, चौक नहीं।" now argues against the product's own name. Same conflict in:
+- Hindi hero line "चौक पर खड़े रहने की ज़रूरत नहीं, सम्मान से काम पाएं।"
+- Investor demo first step "Daily-wage work without the chowk" / "चौक पर खड़े रहने की ज़रूरत नहीं".
+- Poster headline "Need work? Don't wait at the chowk." / "काम चाहिए? चौक पर खड़े मत रहिए।" / "काम हवे आहे? चौकात थांबू नका."
+
+Three alternatives for the new name (idea: the chowk reclaimed as a digital place of dignity):
+
+| | English | हिंदी | मराठी |
+|---|---|---|---|
+| 1 | The chowk, now with dignity. | चौक, अब सम्मान के साथ। | चौक, आता सन्मानाने. |
+| 2 | Your chowk, now on your phone. | आपका चौक, अब आपके फ़ोन पर। | तुमचा चौक, आता तुमच्या फोनवर. |
+| 3 | A chowk where work finds you. | ऐसा चौक जहाँ काम आपको ढूँढे। | असा चौक जिथे काम तुम्हाला शोधते. |
+
+Matching hero line if you pick one: "No more waiting in the sun. Find work with respect." / "धूप में इंतज़ार नहीं, सम्मान से काम पाएं।" / "उन्हात वाट पाहणे नाही, सन्मानाने काम मिळवा." Tell Claude which number and it changes the hero, footer, demo tour and poster together.
+
 # Overnight decisions (8 Nov 2026)
 One line each: what I chose and why.
 

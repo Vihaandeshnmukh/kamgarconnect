@@ -1,4 +1,4 @@
-# Kamgar Connect: Audit Report
+# Kamgar Chowk (formerly Kamgar Connect): Audit Report
 
 **Date:** 2 Nov 2026. **Scope:** backend (`kamgar-connect/`), MongoDB Atlas `kamgar`, Twilio voice, Render hosting, Hostinger DNS, kamgar.de (WordPress).
 **Method:** zero trust. Every claim below was reproduced: code read, local tests against in-memory MongoDB, live HTTP checks, Twilio REST API, Render/Hostinger/WordPress dashboards, read-only DB queries.

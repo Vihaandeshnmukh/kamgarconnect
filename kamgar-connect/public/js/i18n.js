@@ -3,10 +3,10 @@
    ═══════════════════════════════════════════ */
 
 const dictionary = {
-  "Welcome to Kamgar Connect": {
-    "en": "Welcome to Kamgar Connect",
-    "hi": "कामगार कनेक्ट में आपका स्वागत है",
-    "mr": "कामगार कनेक्टमध्ये आपले स्वागत आहे"
+  "Welcome to Kamgar Chowk": {
+    "en": "Welcome to Kamgar Chowk",
+    "hi": "कामगार चौक में आपका स्वागत है",
+    "mr": "कामगार चौकमध्ये आपले स्वागत आहे"
   },
   "Find Workers Instantly, No Chowk Waits!": {
     "en": "Find Workers Instantly, No Chowk Waits!",
@@ -38,10 +38,10 @@ const dictionary = {
     "hi": "बोलने के लिए माइक दबाएं...",
     "mr": "बोलण्यासाठी माइक दाबा..."
   },
-  "Get started with Kamgar Connect today.": {
-    "en": "Get started with Kamgar Connect today.",
-    "hi": "आज ही कामगार कनेक्ट से शुरू करें।",
-    "mr": "आजच कामगार कनेक्ट सुरू करा."
+  "Get started with Kamgar Chowk today.": {
+    "en": "Get started with Kamgar Chowk today.",
+    "hi": "आज ही कामगार चौक से शुरू करें।",
+    "mr": "आजच कामगार चौक सुरू करा."
   },
   "Hire Workers": {
     "en": "Hire Workers",
@@ -104,17 +104,17 @@ function initLanguageGate() {
       <button class="lang-btn" onclick="selectLang('en')">
         <span class="flag">🇬🇧</span> 
         <span class="num">1</span> English
-        <small>Welcome to Kamgar Connect</small>
+        <small>Welcome to Kamgar Chowk</small>
       </button>
       <button class="lang-btn" onclick="selectLang('mr')">
         <span class="flag">🟠</span> 
         <span class="num">2</span> मराठी
-        <small>कामगार कनेक्टमध्ये आपले स्वागत आहे</small>
+        <small>कामगार चौकमध्ये आपले स्वागत आहे</small>
       </button>
       <button class="lang-btn" onclick="selectLang('hi')">
         <span class="flag">🇮🇳</span> 
         <span class="num">3</span> हिंदी
-        <small>कामगार कनेक्ट में आपका स्वागत है</small>
+        <small>कामगार चौक में आपका स्वागत है</small>
       </button>
     </div>
   `;
